@@ -1,8 +1,8 @@
 import { lighten } from 'polished'
 
 const colors = {
-  primary: '#d02e77', // Color for buttons or links
-  primaryLight: lighten(0.05, '#d02e77'),
+  primary: '#153259', // Color for buttons or links
+  primaryLight: lighten(0.05, '#153259'),
   bg: '#fafaf8', // Background color
   grey: {
     dark: 'rgba(0, 0, 0, 0.9)',

@@ -25,19 +25,19 @@ const Content = styled.div`
 
 const Category = ({ pageContext: { category }, data: { allMdx } }) => {
   const { nodes, totalCount } = allMdx
-  const subline = `${totalCount} post${totalCount === 1 ? '' : 's'} tagged with "${category}"`
+  const subline = `${totalCount} reflex${totalCount === 1 ? 'ão' : 'ões'} marcadas com "${category}"`
 
   return (
     <Layout>
       <Wrapper>
-        <Helmet title={`Category: ${category} | ${config.siteTitle}`} />
+        <Helmet title={`Categoria: ${category} | ${config.siteTitle}`} />
         <Header>
           <Link to="/">{config.siteTitle}</Link>
         </Header>
         <Content>
           <SectionTitle>Category &ndash; {category}</SectionTitle>
           <Subline sectionTitle>
-            {subline} (See <Link to="/categories">all categories</Link>)
+            {subline} (Veja <Link to="/categories">todas categorias</Link>)
           </Subline>
           {nodes.map(post => (
             <Article

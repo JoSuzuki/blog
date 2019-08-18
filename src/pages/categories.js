@@ -37,12 +37,12 @@ const Category = ({
 }) => (
   <Layout>
     <Wrapper>
-      <Helmet title={`Categories | ${config.siteTitle}`} />
+      <Helmet title={`Categorias | ${config.siteTitle}`} />
       <Header>
         <Link to="/">{config.siteTitle}</Link>
       </Header>
       <Content>
-        <SectionTitle>Categories</SectionTitle>
+        <SectionTitle>Categorias</SectionTitle>
         {group.map(category => (
           <Title key={category.fieldValue}>
             <Link to={`/categories/${kebabCase(category.fieldValue)}`}>{category.fieldValue}</Link> (
