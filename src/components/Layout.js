@@ -204,7 +204,7 @@ const Layout = ({ children, customSEO }) => {
         <GlobalStyle />
         {children}
         <Footer>
-          &copy; 2019 by JoSuzuki derived from LekoArts. All rights reserved. <br />
+          &copy; 2019 by JoSuzuki <br />
           <a href="https://github.com/JoSuzuki/blog">GitHub Repository</a> <br />
           <span>Last build: {buildTime}</span>
         </Footer>

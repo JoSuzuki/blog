@@ -51,6 +51,10 @@ const PostContent = styled.div`
   margin-top: 4rem;
 `
 
+const HeaderContainer = styled.div`
+  font-weight: 600;
+`
+
 const Post = ({ pageContext: { slug, prev, next }, data: { mdx: postNode } }) => {
   const post = postNode.frontmatter
 
@@ -59,7 +63,9 @@ const Post = ({ pageContext: { slug, prev, next }, data: { mdx: postNode } }) =>
       <Wrapper>
         <SEO postPath={slug} postNode={postNode} article />
         <Header>
-          <Link to="/">{config.siteTitle}</Link>
+          <HeaderContainer>
+            <Link to="/">{config.siteTitle}</Link>
+          </HeaderContainer>
         </Header>
         <Content>
           <Title>{post.title}</Title>
