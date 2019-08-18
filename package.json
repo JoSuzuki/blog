@@ -4,6 +4,7 @@
   "version": "3.0.0",
   "author": "LekoArts <hello@lekoarts.de> (https://www.lekoarts.de)",
   "dependencies": {
+    "@debiki/gatsby-plugin-talkyard": "^0.5.8",
     "@mdx-js/mdx": "^1.2.2",
     "@mdx-js/react": "^1.2.2",
     "babel-plugin-styled-components": "^1.10.6",

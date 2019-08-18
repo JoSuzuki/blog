@@ -75,5 +75,11 @@ module.exports = {
     },
     'gatsby-plugin-offline',
     'gatsby-plugin-netlify',
+    {
+      resolve: '@debiki/gatsby-plugin-talkyard',
+      options: {
+        talkyardServerUrl: 'https://comments-for-josuzuki-netlify-com.talkyard.net',
+      },
+    },
   ],
 }

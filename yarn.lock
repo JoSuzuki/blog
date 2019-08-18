@@ -1357,6 +1357,13 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
+"@debiki/gatsby-plugin-talkyard@^0.5.8":
+  version "0.5.8"
+  resolved "https://registry.yarnpkg.com/@debiki/gatsby-plugin-talkyard/-/gatsby-plugin-talkyard-0.5.8.tgz#414398909a03b7792e3ee61f25bb71b383555e05"
+  integrity sha512-IOzmARaD3gFk70h4vzJA4FilHxenFhG4AX3RCW/Ihuw2jkybGOMc/fBh8uEaM32g2WRYDDI9Fhrahib0XIbqJA==
+  dependencies:
+    babel-runtime "^6.26.0"
+
 "@emotion/is-prop-valid@^0.8.1":
   version "0.8.1"
   resolved "https://registry.yarnpkg.com/@emotion/is-prop-valid/-/is-prop-valid-0.8.1.tgz#6fb3ae2d24f07c8cd090f233e45771d9cd826d48"

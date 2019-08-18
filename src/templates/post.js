@@ -4,6 +4,7 @@ import { Link, graphql } from 'gatsby'
 import styled from 'styled-components'
 import kebabCase from 'lodash/kebabCase'
 import { MDXRenderer } from 'gatsby-plugin-mdx'
+import TalkyardCommentsIframe from '@debiki/gatsby-plugin-talkyard'
 
 import { Layout, Wrapper, Header, Subline, SEO, PrevNext } from '../components'
 import config from '../../config'
@@ -15,7 +16,7 @@ const Content = styled.article`
   border-radius: 1rem;
   padding: 2rem 4.5rem;
   background-color: ${props => props.theme.colors.bg};
-  z-index: 9000;
+  z-index: 1000;
   margin-top: -3rem;
   @media (max-width: ${props => props.theme.breakpoints.tablet}) {
     padding: 3rem 3rem;
@@ -74,6 +75,7 @@ const Post = ({ pageContext: { slug, prev, next }, data: { mdx: postNode } }) =>
           <PostContent>
             <MDXRenderer>{postNode.body}</MDXRenderer>
           </PostContent>
+          <TalkyardCommentsIframe />
           <PrevNext prev={prev} next={next} />
         </Content>
       </Wrapper>
@@ -108,7 +110,7 @@ export const postQuery = graphql`
       excerpt
       frontmatter {
         title
-        date(formatString: "MM/DD/YYYY")
+        date(formatString: "DD/MM/YYYY")
         categories
       }
       timeToRead
