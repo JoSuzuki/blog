@@ -21,7 +21,7 @@ const Content = styled.div`
 
 const Hero = styled.div`
   grid-column: 2;
-  padding: 3rem 2rem 6rem 2rem;
+  padding: 3rem 2rem 3rem 2rem;
   text-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
   color: ${props => props.theme.colors.grey.dark};
 
@@ -41,8 +41,12 @@ const Hero = styled.div`
   }
 `
 
-const H1 = styled.span`
+const Refle = styled.span`
   color: ${props => props.theme.colors.primary};
+`
+const Xivo = styled.span`
+  color: ${props => props.theme.colors.white};
+  background-color: ${props => props.theme.colors.primary};
 `
 
 const IndexPage = ({
@@ -54,7 +58,8 @@ const IndexPage = ({
     <Wrapper>
       <Hero>
         <h1>
-          Eu, <H1>reflexivo</H1>
+          Eu, <Refle>refle</Refle>
+          <Xivo>xivo</Xivo>
         </h1>
         <p>Às vezes só não sei mesmo</p>
         {/* <Link to="/contact">
