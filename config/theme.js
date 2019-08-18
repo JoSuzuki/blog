@@ -3,14 +3,14 @@ import { lighten } from 'polished'
 const colors = {
   primary: '#d02e77', // Color for buttons or links
   primaryLight: lighten(0.05, '#d02e77'),
-  bg: '#fffcf0', // Background color
+  bg: '#fafaf8', // Background color
   grey: {
     dark: 'rgba(0, 0, 0, 0.9)',
     default: 'rgba(0, 0, 0, 0.7)',
     light: 'rgba(0, 0, 0, 0.5)',
     ultraLight: 'rgba(0, 0, 0, 0.25)',
   },
-  white: 'white',
+  white: '#fffffc',
 }
 
 const transitions = {

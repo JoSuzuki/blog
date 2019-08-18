@@ -59,7 +59,7 @@ const GlobalStyle = createGlobalStyle`
     }
   }
   body {
-    background: ${props => props.theme.colors.bg};
+    background: ${props => props.theme.colors.white};
     color: ${props => props.theme.colors.grey.default};
   }
   a {
@@ -204,8 +204,8 @@ const Layout = ({ children, customSEO }) => {
         <GlobalStyle />
         {children}
         <Footer>
-          &copy; 2019 by LekoArts. All rights reserved. <br />
-          <a href="https://github.com/LekoArts/gatsby-starter-minimal-blog">GitHub Repository</a> <br />
+          &copy; 2019 by JoSuzuki derived from LekoArts. All rights reserved. <br />
+          <a href="https://github.com/JoSuzuki/blog">GitHub Repository</a> <br />
           <span>Last build: {buildTime}</span>
         </Footer>
       </>
