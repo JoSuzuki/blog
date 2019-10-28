@@ -53,6 +53,8 @@ const PostContent = styled.div`
 
 const HeaderContainer = styled.div`
   font-weight: 600;
+  font-family: ${props => props.theme.fontFamily.serif};
+  font-size: 1.6rem;
 `
 
 const Post = ({ pageContext: { slug, prev, next }, data: { mdx: postNode } }) => {
@@ -63,9 +65,9 @@ const Post = ({ pageContext: { slug, prev, next }, data: { mdx: postNode } }) =>
       <Wrapper>
         <SEO postPath={slug} postNode={postNode} article />
         <Header>
-          <HeaderContainer>
-            <Link to="/">{config.siteTitle}</Link>
-          </HeaderContainer>
+          <Link to="/">
+            <HeaderContainer>{config.siteTitle}</HeaderContainer>
+          </Link>
         </Header>
         <Content>
           <Title>{post.title}</Title>

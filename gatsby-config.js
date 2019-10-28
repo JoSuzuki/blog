@@ -10,6 +10,7 @@ module.exports = {
     description: 'Escrevendo, aprendendo, refletindo. Vivendo.',
   },
   plugins: [
+    'gatsby-plugin-robots-txt',
     'gatsby-plugin-react-helmet',
     'gatsby-plugin-styled-components',
     'gatsby-plugin-sharp',
