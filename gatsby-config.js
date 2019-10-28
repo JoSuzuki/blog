@@ -119,7 +119,7 @@ module.exports = {
                     }
                     frontmatter {
                       title
-                      date(formatString: "DD/MM/YYYY")
+                      date(formatString: "MM/DD/YYYY")
                       categories
                     }
                     excerpt(pruneLength: 200)
