@@ -6,6 +6,8 @@ module.exports = {
   pathPrefix: config.pathPrefix,
   siteMetadata: {
     siteUrl: config.siteUrl + pathPrefix,
+    title: 'Eu, reflexivo',
+    description: 'Escrevendo, aprendendo, refletindo. Vivendo.',
   },
   plugins: [
     'gatsby-plugin-react-helmet',
@@ -79,6 +81,57 @@ module.exports = {
       resolve: '@debiki/gatsby-plugin-talkyard',
       options: {
         talkyardServerUrl: 'https://comments-for-josuzuki-netlify-com.talkyard.net',
+      },
+    },
+    {
+      resolve: `gatsby-plugin-feed`,
+      options: {
+        query: `
+          {
+            site {
+              siteMetadata {
+                title
+                description
+                siteUrl
+                site_url: siteUrl
+              }
+            }
+          }
+        `,
+        feeds: [
+          {
+            serialize: ({ query: { site, allMdx } }) =>
+              allMdx.nodes.map(node => ({
+                ...node.frontmatter,
+                description: node.excerpt,
+                date: node.frontmatter.date,
+                url: site.siteMetadata.siteUrl + node.fields.slug,
+                guid: site.siteMetadata.siteUrl + node.fields.slug,
+                custom_elements: [{ 'content:encoded': node.html }],
+              })),
+            query: `
+              {
+                allMdx(sort: { fields: [frontmatter___date], order: DESC }) {
+                  nodes {
+                    html
+                    fields {
+                      slug
+                    }
+                    frontmatter {
+                      title
+                      date(formatString: "DD/MM/YYYY")
+                      categories
+                    }
+                    excerpt(pruneLength: 200)
+                    timeToRead
+                  }
+                }
+              }
+            `,
+            output: '/rss.xml',
+            title: 'Eu, reflexivo [JoSuzuki] RSS Feed',
+          },
+        ],
       },
     },
   ],
