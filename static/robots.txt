@@ -1,3 +1,0 @@
-User-agent: *
-
-sitemap: https://josuzuki.netlify.com/sitemap.xml
