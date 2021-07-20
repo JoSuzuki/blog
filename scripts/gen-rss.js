@@ -1,12 +1,7 @@
 import fs from 'fs/promises'
 import path from 'path'
-// import RSS from 'rss'
-import {Feed} from 'feed'
+import { Feed } from 'feed'
 import matter from 'gray-matter'
-import ReactDOMServer from 'react-dom/server'
-import React from 'react'
-import { serialize } from 'next-mdx-remote/serialize'
-import { MDXRemote } from 'next-mdx-remote'
 
 const feed = new Feed({
   title: "JoSuzuki Blog",
