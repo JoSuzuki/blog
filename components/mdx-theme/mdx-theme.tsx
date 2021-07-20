@@ -13,6 +13,7 @@ import Highlight, {
   defaultProps,
   Language,
 } from 'prism-react-renderer'
+import Image from 'next/image'
 import nightOwl from 'prism-react-renderer/themes/nightOwl'
 import styles from './mdx-theme.module.css'
 import CommonLink from '../common-link/common-link'
@@ -343,6 +344,15 @@ const components: MDXProviderComponentsProp = {
   tr: Tr,
   td: Td,
   inlineCode: InlineCode,
+}
+
+const RSS_COMPONENTS = {
+  Image: Image,
+}
+
+export const COMPONENTS = {
+  ...components,
+  ...RSS_COMPONENTS,
 }
 
 const MDXThemeWithSlugger = ({ children }: { children: ReactNode }) => {
