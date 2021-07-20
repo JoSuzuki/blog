@@ -1,9 +1,9 @@
-import fs from 'fs/promises'
-import path from 'path'
-import RSS from 'rss'
-import matter from 'gray-matter'
-import { serialize } from 'next-mdx-remote/serialize'
-import { MDXRemote } from 'next-mdx-remote'
+const { promises: fs } = require('fs')
+const path = require('path')
+const RSS = require('rss')
+const matter = require('gray-matter')
+const { serialize } = require('next-mdx-remote/serialize')
+const { MDXRemote } = require('next-mdx-remote')
 
 async function generate() {
   const feed = new RSS({
