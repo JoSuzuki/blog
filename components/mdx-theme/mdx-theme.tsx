@@ -12,19 +12,10 @@ import React from 'react'
 import Highlight, {
   defaultProps,
   Language,
-  PrismTheme,
 } from 'prism-react-renderer'
 import nightOwl from 'prism-react-renderer/themes/nightOwl'
 import styles from './mdx-theme.module.css'
 import CommonLink from '../common-link/common-link'
-
-function chanceOfSeeingTheSameSkin(numberOfSkinsSeen: number) {
-  let p = (1.0 / 1251) ** numberOfSkinsSeen
-  for (let i = 1252 - numberOfSkinsSeen; i < 1252; i++) {
-    p *= i
-  }
-  return 1 - p
-}
 
 // Anchor links
 
