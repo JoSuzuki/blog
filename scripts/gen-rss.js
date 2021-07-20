@@ -54,8 +54,6 @@ async function generate() {
 
       const frontmatter = matter(content)
 
-      console.log(htmlBuffer.toString('utf-8'))
-
       feed.addItem({
         title: frontmatter.data.title,
         id: '/posts/' + name.replace(/\.mdx?/, ''),
