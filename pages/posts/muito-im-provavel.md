@@ -30,4 +30,4 @@ function chanceOfSeeingTheSameSkin(numberOfSkinsSeen) {
 
 > 0.5988069260942293
 
-59,8% de chance de ver a mesma skin em 48 skins por mês, maior do que a probabilide de tirar cara num flip de uma moeda. E foi ai que a gnt percebeu que o ~~im~~provável, era na verdade, muito provável.
+59,8% de chance de ver a mesma skin contando 48 skins por mês num universo de 1251, maior do que a probabilide de tirar cara num flip de uma moeda. E foi ai que a gnt percebeu que o ~~im~~provável, era na verdade, muito provável.
