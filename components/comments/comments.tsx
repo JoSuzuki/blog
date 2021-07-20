@@ -11,7 +11,7 @@ interface Comment {
 
 const Comments = () => {
   const { currentPage } = usePagesContext()
-  const [comments, setComments] = useState<Comment[] | null>(null)
+  const [comments, setComments] = useState<Comment[]>([])
   useEffect(() => {
     fetch(`/api/comments?route=${currentPage.route}`)
       .then((response) => response.json())
@@ -37,9 +37,9 @@ const Comments = () => {
 
   return (
     <div className="comments-container">
-      <h3>Comentários</h3>
+      <h2 className="comments-title">Comentários ({comments.length})</h2>
       <ol>
-        {comments?.map((comment) => (
+        {comments.map((comment) => (
           <li key={comment.comment} className="comment-container">
             <div className="comment-info">
               <div className="name">{comment.name}</div>
@@ -68,8 +68,14 @@ const Comments = () => {
         .time {
           font-size: var(--font-sizes-sm);
         }
+        .comments-title {
+          font-size: 1.3rem;
+          font-variation-settings: 'wght' 650;
+          margin-bottom: var(--spaces-md);
+        }
         .comments-container {
           margin: var(--spaces-md);
+          margin-top: var(--spaces-lg);
         }
         .comment-container {
           margin-bottom: var(--spaces-md);
