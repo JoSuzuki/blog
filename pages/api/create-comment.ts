@@ -1,5 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { createComment, getComments } from '../../utils/faunadb'
+import sgMail from '@sendgrid/mail'
+import { notifyComment } from '../../utils/sendgrid'
 
 interface ResponseData {
   data:
@@ -33,6 +35,8 @@ export default async (
   }
 
   await createComment({ route: route as string, name, comment })
+
+  notifyComment({ author: name, comment, post: route as string })
 
   const { data } = await getComments({ route: route as string })
 
