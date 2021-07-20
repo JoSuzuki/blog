@@ -2,8 +2,8 @@ import fs from 'fs/promises'
 import path from 'path'
 import RSS from 'rss'
 import matter from 'gray-matter'
-import renderToString from 'next-mdx-remote/render-to-string'
-import { MDXProvider } from '@mdx-js/react'
+import { serialize } from 'next-mdx-remote/serialize'
+import { MDXRemote } from 'next-mdx-remote'
 
 async function generate() {
   const feed = new RSS({
@@ -23,24 +23,14 @@ async function generate() {
       )
 
       const frontmatter = matter(content)
-      const { renderedOutput } = await renderToString(content, {
-        provider: { component: MDXProvider },
-        mdxOptions: {
-          remarkPlugins: [],
-          rehypePlugins: [],
-        },
-      })
+      const source = await serialize(content)
 
       feed.item({
         title: frontmatter.data.title,
         url: '/posts/' + name.replace(/\.mdx?/, ''),
         date: frontmatter.data.date,
         description: frontmatter.data.description,
-        content: ReactDOMServer.renderToStaticMarkup(
-          <MDXProvider>
-            <div dangerouslySetInnerHTML={{ __html: renderedOutput }}></div>
-          </MDXProvider>,
-        ),
+        content: ReactDOMServer.renderToStaticMarkup(<MDXRemote {...source} />),
         categories: frontmatter.data.tags,
         author: frontmatter.data.author,
       })
