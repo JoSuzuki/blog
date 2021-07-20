@@ -1,9 +1,11 @@
-const { promises: fs } = require('fs')
-const path = require('path')
-const RSS = require('rss')
-const matter = require('gray-matter')
-const { serialize } = require('next-mdx-remote/serialize')
-const { MDXRemote } = require('next-mdx-remote')
+import fs from 'fs/promises'
+import path from 'path'
+import RSS from 'rss'
+import matter from 'gray-matter'
+import ReactDOMServer from 'react-dom'
+import React from 'react'
+import { serialize } from 'next-mdx-remote/serialize'
+import { MDXRemote } from 'next-mdx-remote'
 
 async function generate() {
   const feed = new RSS({
@@ -23,14 +25,16 @@ async function generate() {
       )
 
       const frontmatter = matter(content)
-      const source = await serialize(content)
+      const source = await serialize(frontmatter.content)
 
       feed.item({
         title: frontmatter.data.title,
         url: '/posts/' + name.replace(/\.mdx?/, ''),
         date: frontmatter.data.date,
         description: frontmatter.data.description,
-        content: ReactDOMServer.renderToStaticMarkup(<MDXRemote {...source} />),
+        content: ReactDOMServer.renderToStaticMarkup(
+          React.createElement(MDXRemote, source),
+        ),
         categories: frontmatter.data.tags,
         author: frontmatter.data.author,
       })
