@@ -10,7 +10,7 @@ module.exports = withNextra({
         const entries = { ...(await originalEntry()) }
 
         // These scripts can import components from the app and use ES modules
-        entries['./scripts/gen-rss'] = './scripts/gen-rss.js'
+        entries['gen-rss'] = './scripts/gen-rss.js'
 
         return entries
       }
