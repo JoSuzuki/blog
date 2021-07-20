@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { createComment, getComments } from '../../utils/faunadb'
-import sgMail from '@sendgrid/mail'
 import { notifyComment } from '../../utils/sendgrid'
 
 interface ResponseData {
