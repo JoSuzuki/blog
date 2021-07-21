@@ -141,6 +141,7 @@ const withLayout = (opts: Opts) => {
         navPages.push(page)
       }
     }
+    if (page.route.startsWith('/api/')) return
     if (page.children) return
     if (page.name.startsWith('_')) return
     if (
