@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useRedactedContext } from '../redacted/redacted'
 
 enum THEMES {
   light = 'light',
@@ -12,8 +13,13 @@ const themeMap = {
   [THEMES.dark]: '🌙',
 }
 
+const REVEAL_TIME = 2000
+
 const ThemeButton = () => {
   const [theme, setTheme] = useState<THEMES | null>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const { reveal, setReveal } = useRedactedContext()
 
   useEffect(() => {
     const savedTheme = localStorage.getItem(THEME_KEY) as THEMES
@@ -31,9 +37,24 @@ const ThemeButton = () => {
     updateTheme(newTheme)
   }
 
+  const startTimer = () => {
+    timeoutRef.current = setTimeout(() => {
+      setReveal(!reveal)
+    }, REVEAL_TIME)
+  }
+
+  const endTimer = () => {
+    clearTimeout(timeoutRef.current as ReturnType<typeof setTimeout>)
+  }
+
   return (
-    <button onClick={toggleTheme} aria-label="Trocar tema">
-      {theme === null ? null : themeMap[theme]}
+    <button
+      onClick={toggleTheme}
+      onMouseDown={startTimer}
+      onMouseUp={endTimer}
+      aria-label="Trocar tema"
+    >
+      {theme === null ? null : reveal ? '🔓' : themeMap[theme]}
       <style jsx>{`
         button {
           position: relative;

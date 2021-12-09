@@ -21,6 +21,7 @@ export default async (
       error: "Article 'route' not provided",
     })
   }
+
   // Check and see if the doc exists.
   const doesHitCounterExist = await hitCounterExists({ route: route as string })
   if (!doesHitCounterExist) {
