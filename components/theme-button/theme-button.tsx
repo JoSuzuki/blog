@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useRedactedContext } from '../redacted/redacted'
 
 enum THEMES {
   light = 'light',
@@ -12,8 +13,14 @@ const themeMap = {
   [THEMES.dark]: '🌙',
 }
 
+const REVEAL_TIME = 2000
+
 const ThemeButton = () => {
   const [theme, setTheme] = useState<THEMES | null>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const skipClickRef = useRef<boolean>(false)
+
+  const { reveal, setReveal } = useRedactedContext()
 
   useEffect(() => {
     const savedTheme = localStorage.getItem(THEME_KEY) as THEMES
@@ -21,9 +28,12 @@ const ThemeButton = () => {
   }, [])
 
   const updateTheme = (newTheme: THEMES) => {
-    setTheme(newTheme)
-    document.documentElement.setAttribute('data-theme', newTheme)
-    localStorage.setItem(THEME_KEY, newTheme)
+    if(!skipClickRef.current) {
+      setTheme(newTheme)
+      document.documentElement.setAttribute('data-theme', newTheme)
+      localStorage.setItem(THEME_KEY, newTheme)
+    }
+    skipClickRef.current = false;
   }
 
   const toggleTheme = () => {
@@ -31,9 +41,25 @@ const ThemeButton = () => {
     updateTheme(newTheme)
   }
 
+  const startTimer = () => {
+    timeoutRef.current = setTimeout(() => {
+      setReveal(!reveal)
+      skipClickRef.current = true;
+    }, REVEAL_TIME)
+  }
+
+  const endTimer = () => {
+    clearTimeout(timeoutRef.current as ReturnType<typeof setTimeout>)
+  }
+
   return (
-    <button onClick={toggleTheme} aria-label="Trocar tema">
-      {theme === null ? null : themeMap[theme]}
+    <button
+      onClick={toggleTheme}
+      onMouseDown={startTimer}
+      onMouseUp={endTimer}
+      aria-label="Trocar tema"
+    >
+      {theme === null ? null : reveal ? '🔓' : themeMap[theme]}
       <style jsx>{`
         button {
           position: relative;

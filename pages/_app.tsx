@@ -3,6 +3,7 @@ import Head from 'next/head'
 
 import '../styles/reset.css'
 import '../styles/main.css'
+import { RedactedProvider } from '../components/redacted/redacted'
 
 export default function Nextra({ Component, pageProps }: AppProps) {
   return (
@@ -41,7 +42,9 @@ export default function Nextra({ Component, pageProps }: AppProps) {
           crossOrigin="anonymous"
         />
       </Head>
-      <Component {...pageProps} />
+      <RedactedProvider>
+        <Component {...pageProps} />
+      </RedactedProvider>
     </>
   )
 }

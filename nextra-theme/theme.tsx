@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import ReactDOMServer from 'react-dom/server'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
