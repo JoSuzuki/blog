@@ -50,7 +50,7 @@ const Redacted = ({ children, redacted }: RedactedProps) => {
   return (
     <span tabIndex={0}>
       {children}
-      <div className="popup">{finalText}</div>
+      <span className="popup">{finalText}</span>
       <style jsx>{`
         span {
           position: relative;
