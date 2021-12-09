@@ -18,6 +18,7 @@ const REVEAL_TIME = 2000
 const ThemeButton = () => {
   const [theme, setTheme] = useState<THEMES | null>(null)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const skipClickRef = useRef<boolean>(false)
 
   const { reveal, setReveal } = useRedactedContext()
 
@@ -27,9 +28,12 @@ const ThemeButton = () => {
   }, [])
 
   const updateTheme = (newTheme: THEMES) => {
-    setTheme(newTheme)
-    document.documentElement.setAttribute('data-theme', newTheme)
-    localStorage.setItem(THEME_KEY, newTheme)
+    if(!skipClickRef.current) {
+      setTheme(newTheme)
+      document.documentElement.setAttribute('data-theme', newTheme)
+      localStorage.setItem(THEME_KEY, newTheme)
+    }
+    skipClickRef.current = false;
   }
 
   const toggleTheme = () => {
@@ -40,6 +44,7 @@ const ThemeButton = () => {
   const startTimer = () => {
     timeoutRef.current = setTimeout(() => {
       setReveal(!reveal)
+      skipClickRef.current = true;
     }, REVEAL_TIME)
   }
 
