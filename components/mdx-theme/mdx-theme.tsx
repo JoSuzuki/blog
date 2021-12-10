@@ -17,6 +17,7 @@ import Image from 'next/image'
 import nightOwl from 'prism-react-renderer/themes/nightOwl'
 import styles from './mdx-theme.module.css'
 import CommonLink from '../common-link/common-link'
+import Redacted from '../redacted/redacted'
 
 // Anchor links
 
@@ -31,7 +32,7 @@ const HeaderLink = ({
   children: ReactElement
 }) => {
   const slugger = useContext(SluggerContext)
-  const slug = slugger.slug(ReactDOMServer.renderToStaticMarkup(children) || '')
+  const slug = slugger?.slug(ReactDOMServer.renderToStaticMarkup(children) || '')
   return (
     <Tag {...props}>
       <span id={slug} />
@@ -348,6 +349,7 @@ const components: MDXProviderComponentsProp = {
 
 const RSS_COMPONENTS = {
   Image: Image,
+  Redacted: Redacted,
 }
 
 export const COMPONENTS = {
