@@ -5,7 +5,10 @@ title: Nada dura para sempre
 description: Tava olhando esse texto que escrevi em 2015 e fiquei perplexo tem tantas coisas acontecendo nele...
 tags:
   - reflexões
+  - redacted
 ---
+
+import Redacted from '../../components/redacted/redacted.tsx'
 
 # Nada dura para sempre
 
@@ -23,4 +26,4 @@ Mas estando em outro lugar nós também conhecemos pessoas que nunca iríamos co
 
 E o terceiro parágrafo também não me desaponta: Ele fala sobre um momento de conflito, um conflito no que eu era, um conflito no que eu acreditava. Um esteriótipo. E ele esconde um pouquinho mais: o estereótipo não era do estudante nota 10. O conflito era em descobrir o que eu era sem a igreja para me guiar moralmente. O conflito era em olhar para os ultimos 19 anos da minha vida e admitir que eu não tinha certeza daquilo. O estereótipo era o do "bom cristão", não conseguia falar pra mim mesmo isso naquela época, me faltava maturidade então eu recorri (eu fugi) ao mais simples porém acreditável. O paralelo era fácil porque eram duas imagens que eram esperadas de mim.
 
-Durante esses 4 anos eu mudei bastante, mas ao mesmo tempo não muito. As dores que me incomodavam ainda são muito reais. Ontem eu tive que falar de novo tá tudo bem para mais uma pessoa. E de verdade: tá tudo bem pessoas vem, pessoas vão. Não dá pra prendê-las. Não dá para julgar elas por tomarem a decisão certa (ainda que o certo seja relativo). Não dá para esperar que as coisas vão continuar do jeito que são pra sempre, mesmo que seja muito bom. Vou sentir saudades de infinitas coisas e desejar que elas nunca tivessem acabado, talvez a verdade é que nem sempre elas acabaram. Elas só se transformaram. Hoje ainda tenho dúvidas do que eu sou, hoje ainda estou me transformando assim como várias pessoas a minha volta também. Hoje acredito que arriscar mais é o que transforma mais possibilidades em realidade e hoje mais do que nunca gosto de acreditar que tá tudo bem porque eu adoraria ficar bravo ou triste, mas a parte importante de amar as pessoas é respeitar a decisão delas, no fundo gosto de acreditar que a decisão que elas tomam é a melhor decisão pra elas mesmas naquele momento.
+Durante esses 4 anos eu mudei bastante, mas ao mesmo tempo não muito. As dores que me incomodavam ainda são muito reais. Ontem eu tive que falar de novo tá tudo bem para <Redacted redacted="sdds puyol e fla na qulture">mais uma pessoa</Redacted>. E de verdade: tá tudo bem pessoas vem, pessoas vão. Não dá pra prendê-las. Não dá para julgar elas por tomarem a decisão certa (ainda que o certo seja relativo). Não dá para esperar que as coisas vão continuar do jeito que são pra sempre, mesmo que seja muito bom. Vou sentir saudades de infinitas coisas e desejar que elas nunca tivessem acabado, talvez a verdade é que nem sempre elas acabaram. Elas só se transformaram. Hoje ainda tenho dúvidas do que eu sou, hoje ainda estou me transformando assim como várias pessoas a minha volta também. Hoje acredito que arriscar mais é o que transforma mais possibilidades em realidade e hoje mais do que nunca gosto de acreditar que tá tudo bem porque eu adoraria ficar bravo ou triste, mas a parte importante de amar as pessoas é respeitar a decisão delas, no fundo gosto de acreditar que a decisão que elas tomam é a melhor decisão pra elas mesmas naquele momento.
