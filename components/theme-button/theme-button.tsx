@@ -19,6 +19,7 @@ const ThemeButton = () => {
   const [theme, setTheme] = useState<THEMES | null>(null)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const skipClickRef = useRef<boolean>(false)
+  const keyPressedRef = useRef<boolean>(false)
 
   const { reveal, setReveal } = useRedactedContext()
 
@@ -28,12 +29,12 @@ const ThemeButton = () => {
   }, [])
 
   const updateTheme = (newTheme: THEMES) => {
-    if(!skipClickRef.current) {
+    if (!skipClickRef.current) {
       setTheme(newTheme)
       document.documentElement.setAttribute('data-theme', newTheme)
       localStorage.setItem(THEME_KEY, newTheme)
     }
-    skipClickRef.current = false;
+    skipClickRef.current = false
   }
 
   const toggleTheme = () => {
@@ -43,8 +44,9 @@ const ThemeButton = () => {
 
   const startTimer = () => {
     timeoutRef.current = setTimeout(() => {
+      console.log('timeout');
       setReveal(!reveal)
-      skipClickRef.current = true;
+      skipClickRef.current = true
     }, REVEAL_TIME)
   }
 
@@ -52,11 +54,32 @@ const ThemeButton = () => {
     clearTimeout(timeoutRef.current as ReturnType<typeof setTimeout>)
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (
+      (e.key === 'Enter' || e.key === ' ') &&
+      keyPressedRef.current === false
+    ) {
+      startTimer()
+      keyPressedRef.current = true
+    }
+  }
+
+  const handleKeyUp = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    keyPressedRef.current = false
+    if (e.key === 'Enter' || e.key === ' ') {
+      endTimer()
+    }
+  }
+
   return (
     <button
       onClick={toggleTheme}
       onMouseDown={startTimer}
       onMouseUp={endTimer}
+      onTouchStart={startTimer}
+      onTouchEnd={endTimer}
+      onKeyDown={handleKeyDown}
+      onKeyUp={handleKeyUp}
       aria-label="Trocar tema"
     >
       {theme === null ? null : reveal ? '🔓' : themeMap[theme]}
