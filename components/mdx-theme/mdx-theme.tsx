@@ -18,6 +18,7 @@ import nightOwl from 'prism-react-renderer/themes/nightOwl'
 import styles from './mdx-theme.module.css'
 import CommonLink from '../common-link/common-link'
 import Redacted from '../redacted/redacted'
+import VideoContainer from '../video-container/video-container'
 
 // Anchor links
 
@@ -350,6 +351,7 @@ const components: MDXProviderComponentsProp = {
 const RSS_COMPONENTS = {
   Image: Image,
   Redacted: Redacted,
+  VideoContainer: VideoContainer,
 }
 
 export const COMPONENTS = {

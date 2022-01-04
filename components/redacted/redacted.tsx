@@ -1,4 +1,4 @@
-import React, { Children, useEffect, useLayoutEffect, useState } from 'react'
+import React, { useLayoutEffect, useState } from 'react'
 
 const REVEAL_KEY = 'redacted'
 
