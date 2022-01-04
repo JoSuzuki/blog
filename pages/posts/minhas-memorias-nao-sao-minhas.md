@@ -31,7 +31,7 @@ Marvel's agents of shield é uma série underrated (na real nem tanto, ela tem a
 > Pra dar um pouco de contexto, nós temos o nosso típico cientista maluco, Dr. Radcliff, que conseguiu não só uma, mas duas proezas: criar um "Framework" (é igual a matrix) e também uma série de robos super avançados, o robo mais avançado é a Aida que tem ajudado ele ao longo da série. O nosso cientista conseguiu capturar 4 integrantes da equipe e estava tentando capturar os próximos, até que a seguinte cena ocorre:
 >
 > <VideoContainer>
-  <iframe width="560" height="315" src="https://www.youtube.com/embed/lpCE_4cMGDk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/lpCE_4cMGDk" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
 </VideoContainer>
 >
 > De maneira sensata a Aida conclui que se ele realmente acredita que a percepção é a realidade, então dentro do "Framework" ele ainda vai estar vivo, removendo a necessidade dele estar vivo no mundo real. Foi um dos plot twists da série 🤯.
@@ -39,7 +39,7 @@ Marvel's agents of shield é uma série underrated (na real nem tanto, ela tem a
 > Outra cena desse mesmo episódio (tô falando 4x15 melhor episódio de todos, mas é difícil assistir só ele, pq vc não tá apegado aos personagens ainda) é no final, ah é o Radcliff conseguiu uma terceira proesa que foi criar LMDs, que basicamente são clones na íntegra de outras pessoas. Nesse momento os LMDs já tinham infiltrado a base dos agentes, sendo que tinham dois tipos de LMDs, um deles era a May, clonada praticamente de maneira intacta, com a missão de recuperar o Darkhold (um livrinho especial lá) e o Coulson cuja missão era sequestrar o resto dos agentes. Nessa cena final a May estava bloqueando o caminho entre o Coulson e os agentes que estavam fugindo.
 >
 > <VideoContainer>
-  <iframe width="560" height="315" src="https://www.youtube.com/embed/2bCHEylEM1Q" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/2bCHEylEM1Q" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
 </VideoContainer>
 >
 > Dentro da percepção dela, com a consciência dela, ela conseguiu interpretar e perceber que o seu sacrifício era barato e indolor e que quem ela estaria matando também não era o Coulson que ela amava.
