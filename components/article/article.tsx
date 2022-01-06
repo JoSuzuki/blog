@@ -16,7 +16,7 @@ const Article = ({ children }: { children: ReactNode }) => {
           .container {
             max-width: 65ch;
             line-height: 1.75;
-            font-size: 1rem;
+            font-size: var(--font-sizes-md);
           }
         }
       `}</style>
