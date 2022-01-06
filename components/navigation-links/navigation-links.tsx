@@ -6,29 +6,38 @@ const NavigationLinks = () => {
   const { navPages } = usePagesContext()
 
   return (
-    <ul className="container">
-      {navPages.map((navPage) => {
-        const pageName = navPage.frontMatter?.title ?? navPage.name
-        return (
-          <li key={navPage.route}>
-            <Link href={navPage.route}>
-              <a
-                className={`nav-link ${navPage.active ? 'nav-current' : ''}`}
-                {...(navPage.active && { 'aria-current': 'page' })}
-              >
-                {pageName}
-              </a>
-            </Link>
-          </li>
-        )
-      })}
-      <li className="theme-button-container">
+    <div className="navigation-container">
+      <ul className="list">
+        {navPages.map((navPage) => {
+          const pageName = navPage.frontMatter?.title ?? navPage.name
+          return (
+            <li key={navPage.route}>
+              <Link href={navPage.route}>
+                <a
+                  className={`nav-link ${navPage.active ? 'nav-current' : ''}`}
+                  {...(navPage.active && { 'aria-current': 'page' })}
+                >
+                  {pageName}
+                </a>
+              </Link>
+            </li>
+          )
+        })}
+      </ul>
+      <div className="theme-button-container">
         <ThemeButton />
-      </li>
+      </div>
       <style jsx>{`
-        .container {
+        .navigation-container {
           display: flex;
           align-items: center;
+          overflow: hidden;
+        }
+        .list {
+          display: flex;
+          align-items: center;
+          overflow: auto;
+          padding: var(--spaces-sm);
         }
         .nav-current {
           color: var(--colors-accent);
@@ -52,7 +61,7 @@ const NavigationLinks = () => {
           margin-left: var(--spaces-md);
         }
       `}</style>
-    </ul>
+    </div>
   )
 }
 
