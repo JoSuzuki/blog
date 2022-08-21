@@ -47,6 +47,8 @@
   --spaces-md: 1rem;
   --spaces-lg: 2rem;
   --spaces-xl: 3rem;
+
+  --container-max-width: 65ch;
 }
 
 :root[data-theme='dark'] {
