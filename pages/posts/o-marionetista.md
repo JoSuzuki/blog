@@ -2,7 +2,7 @@
 date: 2022-05-28
 author: Jonathan Suzuki
 title: "O marionetista"
-description: "Quem controla quem"
+description: "De um lado a marionete, do outro o marionetista, mas são mesmo esses os papéis que eles estão performando no teatro da vida?"
 tags:
   - reflexões, redacted
 ---
@@ -13,7 +13,7 @@ import Redacted from '../../components/redacted/redacted.tsx'
 
 ## Parte 1 - Vidro quebrado
 
-Vou começar esse texto de onde ele deve começar, eu tô levemente triste. Provavelmente é um [sintoma de uma ressaca brava](https://www.youtube.com/watch?v=m76RXPJrYQg), mas quem nunca. Eu to levemente triste porque em algum momento eu tenho a impressão de que eu tava me suportando em cima de uma imagem de vidro que quebrou recentemente. Talvez tenha sido quando eu estive deitado no meio da calçada às 23:00 de uma sexta feira que eu tive a impressão de que essa imagem talvez estivesse quebrada? Talvez sim, talvez não haha. Vai estar bem mais pro não do que pro sim, porque naquela hora eu só pensava em como que daria pra voltar a vida.
+Vou começar esse texto de onde ele deve começar, eu tô levemente triste. Provavelmente é um [sintoma de uma ressaca brava](https://www.youtube.com/watch?v=m76RXPJrYQg), mas quem nunca. Eu to levemente triste porque em algum momento eu tenho a impressão de que eu tava me me apresentando num palco, em que o chão quebrou recentemente. Talvez tenha sido quando eu estive deitado no meio da calçada às 23:00 de uma sexta feira que eu tive a impressão de que esse palco estivesse levemente quebrado? Talvez sim, talvez não haha. Vai estar bem mais pro não do que pro sim, porque naquela hora eu só pensava em como que daria pra voltar a vida.
 
 ## Parte 2 - Duas imagens
 
