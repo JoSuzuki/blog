@@ -11,9 +11,9 @@ import Redacted from '../../components/redacted/redacted.tsx'
 
 # O marionetista
 
-## Parte 1 - Vidro quebrado
+## Parte 1 - Palco quebrado
 
-Vou começar esse texto de onde ele deve começar, eu tô levemente triste. Provavelmente é um [sintoma de uma ressaca brava](https://www.youtube.com/watch?v=m76RXPJrYQg), mas quem nunca. Eu to levemente triste porque em algum momento eu tenho a impressão de que eu tava me me apresentando num palco, em que o chão quebrou recentemente. Talvez tenha sido quando eu estive deitado no meio da calçada às 23:00 de uma sexta feira que eu tive a impressão de que esse palco estivesse levemente quebrado? Talvez sim, talvez não haha. Vai estar bem mais pro não do que pro sim, porque naquela hora eu só pensava em como que daria pra voltar a vida.
+Vou começar esse texto de onde ele deve começar, eu tô levemente triste. Provavelmente é um [sintoma de uma ressaca brava](https://www.youtube.com/watch?v=m76RXPJrYQg), mas quem nunca. Eu to levemente triste porque em algum momento eu tenho a impressão de que eu tava me me apresentando num palco, em que o chão quebrou recentemente. Talvez tenha sido quando eu estive deitado no meio da calçada às 23:00 de uma sexta feira que eu tive a impressão de que eu fiquei sem chão? Talvez sim, talvez não haha. Vai estar bem mais pro não do que pro sim, porque naquela hora eu só pensava em como que daria pra voltar a vida.
 
 ## Parte 2 - Duas imagens
 
