@@ -14,7 +14,7 @@ const Article = ({ children }: { children: ReactNode }) => {
         }
         @media screen and (min-width: 768px) {
           .container {
-            max-width: 65ch;
+            max-width: var(--container-max-width);
             line-height: 1.75;
             font-size: var(--font-sizes-md);
           }
