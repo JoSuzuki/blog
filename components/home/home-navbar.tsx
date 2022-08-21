@@ -17,7 +17,7 @@ const HomeNavbar = () => {
           align-items: center;
           justify-content: space-between;
           padding: var(--spaces-md) 0;
-          max-width: 90ch;
+          max-width: 65ch;
           margin-left: auto;
           margin-right: auto;
         }
