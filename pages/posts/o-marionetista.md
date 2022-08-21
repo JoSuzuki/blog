@@ -4,7 +4,8 @@ author: Jonathan Suzuki
 title: "O marionetista"
 description: "De um lado a marionete, do outro o marionetista, mas são mesmo esses os papéis que eles estão performando no teatro da vida?"
 tags:
-  - reflexões, redacted
+  - reflexões
+  - redacted
 ---
 
 import Redacted from '../../components/redacted/redacted.tsx'
