@@ -34,7 +34,7 @@ Voltando ao tipo 3:
 
 Pessoas do tipo 3 gostam do reconhecimento, porque sem o reconhecimento eles têm medo de serem ninguém, de não existir. E pra isso eles correm atrás daquilo que vai os fazer capazes, para que em seguida sejam reconhecidos. O role dos tipos 3 é que eles vão perseguir tanto essa imagem, tanto ser útil que em algum momento eles já não vão mais saber aquilo que eles realmente querem, não vão saber os seus reais interesses.
 
-## O melhor vício
+## O vício "bom"
 
 O resto desse texto foi inspirado nesse vídeo do Dr. K (Healthy Gamer GG), não precisa assistir eu vou reiterar as partes legais no meio do texto, mas se quiser beber da fonte tá na mão:
 
@@ -52,7 +52,7 @@ Só que isso é um "bom" vício, ele objetivamente melhora a nossa vida. Não so
 
 E é por isso que a Qulture era um lugar tão perigoso. Lá todo mundo tava comprometido em fazer aquele lugar melhor. Dava gosto de ir pro trabalho pq vc via pessoas muito boas fazendo coisas mais legais ainda, correr atrás era pra não atrasar o bonde. Esse ambiente (de música) trazia o melhor de nós e me fazia me sentir muito bem. Um vício que eu não sabia que eu tinha, um vício "bom". Agora que a minha boca de fumo faliu de onde eu vou tirar meu estoque? Tinha um supply ilimitado de objetivos de coisas para melhorar, não precisava nem pensar e o mais legal era que cada problema que a gnt resolvia, normalmente só traziam junto consigo mais dois problemas.
 
-Eu odeio essa coisa de sempre querer dar um reframe pras coisas que aconteceram de maneira positiva. Mas talvez o fim da Qulture tenha sido bom, a pior melhor coisa que poderia ter acontecido, isso balançou (e muito) a vida de quem tava lá. Uma parte de mim gosta de acreditar que esse foi um momento necessário para coisas melhores acontecerem, se a Qulture ainda existisse eu estaria fazendo uma viagem pra Europa em novembro? Provavelmente não. Se José não tivesse sido vendido para os egípcios, quem salvaria a sua família durante os anos de escassez?
+Eu odeio essa coisa de sempre querer dar um reframe pras coisas que aconteceram de maneira positiva. Mas talvez o fim da Qulture tenha sido bom, **a pior melhor coisa que poderia ter acontecido**, isso balançou (e muito) a vida de quem tava lá. Uma parte de mim gosta de acreditar que esse foi um momento necessário para coisas melhores acontecerem, se a Qulture ainda existisse eu estaria fazendo uma viagem pra Europa em novembro? Provavelmente não. Se José não tivesse sido vendido para os egípcios, quem salvaria a sua família durante os anos de escassez?
 
 Ainda não sei dizer se o resultado é mesmo net positive, a única certeza que eu tenho é que ela deu um bom motivo para repensar a vida. Para alguns foi conhecer novos ares, para outros uma oportunidade num país novo, para mim tem sido a descoberta de um novo dealer (eu mesmo rs).
 
