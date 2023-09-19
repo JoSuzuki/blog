@@ -39,7 +39,7 @@ Pessoas do tipo 3 gostam do reconhecimento, porque sem o reconhecimento eles tê
 O resto desse texto foi inspirado nesse vídeo do Dr. K (Healthy Gamer GG), não precisa assistir eu vou reiterar as partes legais no meio do texto, mas se quiser beber da fonte tá na mão:
 
 <VideoContainer>
-  <iframe width="560" height="315" src="https://www.youtube.com/watch?v=w5HhFDIoNEs" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/w5HhFDIoNEs?si=SJY45vHnDn-Iov5W" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
 </VideoContainer>
 
 Dizem que pra fugir de problemas internos, muitas vezes nós usamos de ações externas, tipo sei lá, tô triste, então vou beber. O meu vício, é o vício em self-improvement (crescimento pessoal? capacitação? qual é uma boa tradução pra isso?). Se eu to me sentindo mal internalmente por alguma coisa, então eu vou lá e vou atingir algum objetivo, vou melhorar em algum aspecto, pq isso vai me fazer sentir melhor. Vou ter orgulho de onde eu estou. Essa reflexão me pegou de calça curta, porque quando eu to meio perdido eu começo a criar esses objetivos etéreos que eu nem sei se quero tanto, mas já que tô sem nada para fazer vou lá e vou pegar e fazer isso. Vou melhorar, vou ser mais útil para alguém.
