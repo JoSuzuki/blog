@@ -44,6 +44,8 @@ async function generate() {
 
       const frontmatter = matter(content)
 
+      if(frontmatter.data.secret) return;
+
       const source = await serialize(frontmatter.content)
 
       feed.addItem({
