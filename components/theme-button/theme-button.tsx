@@ -4,6 +4,7 @@ import { useRedactedContext } from '../redacted/redacted'
 enum THEMES {
   light = 'light',
   dark = 'dark',
+  secret = 'secret',
 }
 
 const THEME_KEY = 'theme'
@@ -11,6 +12,7 @@ const THEME_KEY = 'theme'
 const themeMap = {
   [THEMES.light]: '☀️',
   [THEMES.dark]: '🌙',
+  [THEMES.secret]: '🌚',
 }
 
 const REVEAL_TIME = 2000
@@ -38,14 +40,21 @@ const ThemeButton = () => {
   }
 
   const toggleTheme = () => {
-    const newTheme = theme === THEMES.dark ? THEMES.light : THEMES.dark
+    let newTheme = theme === THEMES.dark ? THEMES.light : THEMES.dark;
+    if(reveal) {
+      const currentThemeIndex = Object.values(THEMES).indexOf(theme ?? THEMES.dark)
+      const newThemeIndex = (currentThemeIndex + 1) % Object.values(THEMES).length;
+      newTheme = Object.values(THEMES)[newThemeIndex]
+    }
     updateTheme(newTheme)
   }
 
   const startTimer = () => {
     timeoutRef.current = setTimeout(() => {
-      console.log('timeout');
       setReveal(!reveal)
+      if(!reveal) {
+        updateTheme(THEMES.secret)
+      }
       skipClickRef.current = true
     }, REVEAL_TIME)
   }

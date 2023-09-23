@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useState } from 'react'
 
-const REVEAL_KEY = 'redacted'
+export const REVEAL_KEY = 'redacted'
 
 export const RedactedContext = React.createContext<{
   reveal: boolean

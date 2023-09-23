@@ -51,6 +51,26 @@
   --container-max-width: 65ch;
 }
 
+:root[data-theme='secret'] {
+  --colors-secondary: #ff3164;
+  --colors-accent: #ec0f2d;
+  --colors-accent-background: #300300;
+  --colors-dimmed: #ce202e;
+  --colors-text: var(--colors-white);
+  --colors-background: #140005;
+  --colors-inline-code: #a11010;
+}
+
+/* :root[data-theme='secret'] {
+  --colors-secondary: #ffcf31;
+  --colors-accent: #ecb10f;
+  --colors-accent-background: #3f2401;
+  --colors-dimmed: #ce8820;
+  --colors-text: var(--colors-white);
+  --colors-background: #140f00;
+  --colors-inline-code: #a17b10;
+} */
+
 :root[data-theme='dark'] {
   --colors-secondary: #c25b84;
   --colors-accent: #7670db;

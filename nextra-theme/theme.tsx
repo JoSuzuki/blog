@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useLayoutEffect, useState } from 'react'
 import ReactDOMServer from 'react-dom/server'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
@@ -16,6 +16,7 @@ import traverse from '../utils/traverse'
 import getTitle from '../utils/get-title'
 import sortDate from '../utils/sort-date'
 import Comments from '../components/comments/comments'
+import { REVEAL_KEY, useRedactedContext } from '../components/redacted/redacted'
 
 export interface CurrentPage {
   filename: string
@@ -121,6 +122,7 @@ const Layout = ({ meta, title, children }: LayoutProps) => {
 const withLayout = (opts: Opts) => {
   // gather info for tag/posts pages
   let posts: Page[] = []
+  let secretPosts: Page[] = []
   let navPages: NavPage[] = []
   const type = opts.meta.type || 'post'
   const route = opts.route
@@ -141,6 +143,7 @@ const withLayout = (opts: Opts) => {
         navPages.push(page)
       }
     }
+    if (page.name === "404") return
     if (page.route.startsWith('/api/')) return
     if (page.children) return
     if (page.name.startsWith('_')) return
@@ -155,15 +158,37 @@ const withLayout = (opts: Opts) => {
         !page.frontMatter.type ||
         page.frontMatter.type === 'post')
     ) {
-      posts.push(page)
+      if(page.frontMatter?.secret) {
+        secretPosts.push(page)
+      } else {
+        posts.push(page)
+      }
     }
   })
   posts = posts.sort(sortDate)
   navPages = navPages.sort(sortDate)
 
   const ComponentWithLayout = (props: MDXFileChildren) => {
+    const [availablePosts, setAvailablePosts] = useState(posts);
+
+    const { reveal } = useRedactedContext()
+
+    useLayoutEffect(() => {
+      if(reveal) {
+        setAvailablePosts(posts.concat(secretPosts).sort(sortDate))
+      } else {
+        setAvailablePosts(posts)
+      }
+    }, [reveal, posts, secretPosts])
+
     const router = useRouter()
     const { query } = router
+
+    useLayoutEffect(() => {
+      if(opts.meta?.secret && !(reveal || JSON.parse(localStorage.getItem(REVEAL_KEY) as string))) {
+        window.location.href = "/404"
+      }
+    }, [opts, router, reveal])
 
     const type = opts.meta.type || 'post'
     const tagName = type === 'tag' ? query.tag : null
@@ -183,7 +208,7 @@ const withLayout = (opts: Opts) => {
     return (
       <PagesContext.Provider
         value={{
-          posts,
+          posts: availablePosts,
           navPages,
           currentPage: {
             filename: opts.filename,
