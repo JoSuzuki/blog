@@ -11,7 +11,7 @@ export default function Custom404() {
         <div className="container">
           <h1>404</h1>
           <h1>Vish parece que está página não existe</h1>
-          Talvez exista um easter egg nesse blog
+          PS: talvez exista um easter egg escondido nessas páginas 😉
           <CommonLink href="/">Voltar para home</CommonLink>
         </div>
       </Article>
