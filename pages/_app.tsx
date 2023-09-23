@@ -1,5 +1,6 @@
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
+import { Analytics } from '@vercel/analytics/react';
 
 import '../styles/reset.css'
 import '../styles/main.css'
@@ -44,6 +45,7 @@ export default function Nextra({ Component, pageProps }: AppProps) {
       </Head>
       <RedactedProvider>
         <Component {...pageProps} />
+        <Analytics />
       </RedactedProvider>
     </>
   )
