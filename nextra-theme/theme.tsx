@@ -8,15 +8,13 @@ import Article from '../components/article/article'
 
 import MDXTheme from '../components/mdx-theme/mdx-theme'
 import Navbar from '../components/navbar/navbar'
-import PostMeta from '../components/post-meta/post-meta'
-import PreviousNextPosts from '../components/previous-next-posts/previous-next-posts'
 import Footer from '../components/footer/footer'
 
 import traverse from '../utils/traverse'
 import getTitle from '../utils/get-title'
 import sortDate from '../utils/sort-date'
-import Comments from '../components/comments/comments'
-import { REVEAL_KEY, useRedactedContext } from '../components/redacted/redacted'
+import { useRedactedContext } from '../components/redacted/redacted'
+import Post from '../components/post/post'
 
 export interface CurrentPage {
   filename: string
@@ -65,26 +63,7 @@ const Layout = ({ meta, title, children }: LayoutProps) => {
   ) => {
     switch (type) {
       case 'post':
-        return (
-          <React.Fragment>
-            <Head>
-              {pageTitle}
-              <meta name="description" content={meta.description} />
-              <meta property="og:description" content={meta.description} />
-              <meta name="twitter:description" content={meta.description} />
-              <meta name="twitter:title" content={meta.title} />
-            </Head>
-            <Navbar />
-            <Article>
-              {titleNode}
-              <PostMeta />
-              <MDXTheme>{contentNodes}</MDXTheme>
-              <Comments />
-              <PreviousNextPosts />
-              <Footer />
-            </Article>
-          </React.Fragment>
-        )
+        return <Post meta={meta} pageTitle={pageTitle} contentNodes={contentNodes} titleNode={titleNode} />
       case 'customPage':
         return (
           <React.Fragment>
@@ -183,12 +162,6 @@ const withLayout = (opts: Opts) => {
 
     const router = useRouter()
     const { query } = router
-
-    useLayoutEffect(() => {
-      if(opts.meta?.secret && !(reveal || JSON.parse(localStorage.getItem(REVEAL_KEY) as string))) {
-        window.location.href = "/404"
-      }
-    }, [opts, router, reveal])
 
     const type = opts.meta.type || 'post'
     const tagName = type === 'tag' ? query.tag : null

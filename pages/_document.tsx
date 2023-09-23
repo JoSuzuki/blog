@@ -35,6 +35,17 @@ class MyDocument extends Document {
             dangerouslySetInnerHTML={{
               __html: `
             (function(){
+      const reveal = JSON.parse(localStorage.getItem('redacted'))
+      if (location.pathname === "/posts/endings" && !reveal) {
+        location.href = "/404"
+      }
+    })()`,
+            }}
+          ></script>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+            (function(){
       const savedTheme = localStorage.getItem('theme')
       if (savedTheme && savedTheme !== 'null') {
         document.documentElement.setAttribute('data-theme', savedTheme)
