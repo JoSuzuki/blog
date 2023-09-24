@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRedactedContext } from '../redacted/redacted'
 
+const SECRET_REDIRECT_KEY = 'secretRedirect';
+
 enum THEMES {
   light = 'light',
   dark = 'dark',
@@ -54,6 +56,11 @@ const ThemeButton = () => {
       setReveal(!reveal)
       if(!reveal) {
         updateTheme(THEMES.secret)
+        const secretRedirect =  localStorage.getItem(SECRET_REDIRECT_KEY)
+        if(secretRedirect && location.pathname === "/404") {
+          localStorage.removeItem(SECRET_REDIRECT_KEY);
+          location.href = secretRedirect;
+        }
       }
       skipClickRef.current = true
     }, REVEAL_TIME)

@@ -37,6 +37,7 @@ class MyDocument extends Document {
             (function(){
       const reveal = JSON.parse(localStorage.getItem('redacted'))
       if (location.pathname === "/posts/endings" && !reveal) {
+        localStorage.setItem('secretRedirect', location.pathname);
         location.href = "/404"
       }
     })()`,
