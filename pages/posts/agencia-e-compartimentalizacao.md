@@ -2,7 +2,7 @@
 date: 2024-03-24
 author: Jonathan Suzuki
 title: "Agência e compartimentalização"
-description: "Tempo"
+description: "Faz um tempo que eu tenho pensado em escrever sobre \"agency\", mas nunca sei exatamente sobre o que escrever ou sobre como explicar o conceito."
 tags:
   - reflexões
   - redacted
@@ -35,11 +35,11 @@ Eu acho esse exemplo maravilhoso. Ao invés de olhar o tempo, ser "restringido" 
 
 Esses dias eu estava na casa de uns <Redacted redacted="Jb e Lili">amigos</Redacted> e do nada a minha amiga começou a lavar a roupa de noite no meio de um dia de semana, algo que, querendo ou não, não se passava mais na minha cabeça (tudo bem que aqui existem algumas restrições de inverno/verão pra poder secar sem ficar cheiro e tals, mas não vamos nos ater a isso). Ela só foi lá e fez. Eu (antes de vivenciar esse acontecimento) olharia e falaria puts tem que esperar o final de semana chegar pra poder estender enquanto tá de dia.
 
-Esses são exemplos pequenos, mas acho que existem muitas mais situações em que a gente não contempla a possibilidade de se fazer algo, porque existe a limitação X ou a limitação Y.
+Esses são exemplos pequenos, mas acho que existem muitas mais situações em que a gente não contempla a possibilidade de se fazer algo, porque existe a limitação X ou a limitação Y. Só vou escrever quando tiver tudo pronto, quando eu tiver todas as referências, quando tiver lido aquele artigo.
 
-O legal também é ver pessoas com um bom nível de agência na vida. Você vê elas entrando em lugares e os transformando. Uma pessoa sozinha às vezes consegue transformar um sala toda.
+O legal também é ver pessoas com um bom nível de agência na vida. Você vê elas entrando em lugares e os transformando. Uma pessoa sozinha consegue transformar uma sala, consegue transformar todo um ambiente.
 
-Ultimamente eu tenho a impressão que a gente se prende muito as rotinas. A desculpa invisível de que não dá. Muitas das vezes eu tbm acho que isso vem de uma certa compartimentalização.
+Ultimamente eu tenho a impressão que a gente se prende muito as rotinas. As paredes invisíveis falando que não dá. Muitas das vezes eu tbm acho que isso vem de uma certa compartimentalização.
 
 ## Qual é a hora de se...
 
