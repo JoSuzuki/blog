@@ -48,6 +48,9 @@
   --spaces-lg: 2rem;
   --spaces-xl: 3rem;
 
+  --mobile-width: 480px;
+  --tablet-width: 768px;
+
   --container-max-width: 65ch;
 }
 

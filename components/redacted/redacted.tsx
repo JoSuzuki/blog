@@ -40,12 +40,13 @@ export const RedactedProvider = ({ children }: RedactedProviderProps) => {
 
 interface RedactedProps {
   redacted: string
-  children: string
+  children: string;
+  revealOverwrite?: boolean;
 }
 
-const Redacted = ({ children, redacted }: RedactedProps) => {
+const Redacted = ({ children, redacted, revealOverwrite }: RedactedProps) => {
   const { reveal } = useRedactedContext()
-  const finalText = reveal ? redacted : 'redacted'
+  const finalText = reveal || revealOverwrite ? redacted : 'redacted'
 
   return (
     <span tabIndex={0}>
@@ -66,9 +67,10 @@ const Redacted = ({ children, redacted }: RedactedProps) => {
           display: block;
           bottom: 0;
           right: 0;
-          transform: translateY(100%);
+          line-height: 1.15;
+          transform: translateY(calc(100% + var(--spaces-sm)));
           background-color: var(--colors-accent);
-          clip-path: polygon(99% 15%, 99% 15%, 99% 84%, 99% 84%);
+          clip-path: polygon(99% 0%, 99% 0%, 99% 100%, 99% 100%);
           transition: clip-path 275ms ease;
           padding: var(--spaces-xs) var(--spaces-sm);
           color: var(--colors-background);
@@ -78,11 +80,11 @@ const Redacted = ({ children, redacted }: RedactedProps) => {
         }
         span:focus-visible .popup {
           opacity: 1;
-          clip-path: polygon(1% 15%, 99% 15%, 99% 84%, 1% 84%);
+          clip-path: polygon(1% 0%, 99% 0%, 99% 100%, 1% 100%);
         }
         span:hover .popup {
           opacity: 1;
-          clip-path: polygon(1% 15%, 99% 15%, 99% 84%, 1% 84%);
+          clip-path: polygon(1% 0%, 99% 0%, 99% 100%, 1% 100%);
         }
       `}</style>
     </span>

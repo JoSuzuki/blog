@@ -1,4 +1,5 @@
 import React from 'react'
+import { useSessionContext } from '../session-provider/session-provider'
 
 interface InputProps {
   name: string
@@ -7,10 +8,11 @@ interface InputProps {
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ name, label }, ref) => {
+    const { session } = useSessionContext()
     return (
       <div>
         <label htmlFor={name}>{label}</label>
-        <input ref={ref} type="text" id={name} name={name} required></input>
+        <input ref={ref} type="text" id={name} name={name} defaultValue={session?.name} required></input>
         <style jsx>{`
           input,
           label {
