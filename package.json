@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "next",
     "build": "next build && node ./.next/server/gen-rss.js",
-    "start": "next start"
+    "start": "next start",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@mdx-js/react": "^1.6.18",
