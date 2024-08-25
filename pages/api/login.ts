@@ -1,10 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { OAuth2Client } from 'google-auth-library'
-import { getSession, Session } from '../../utils/iron-session'
+import { getSession, SessionAttributes } from '../../utils/iron-session'
 import prisma from '../../utils/prisma'
 
 interface ResponseData {
-  data: Omit<Session, 'save'> | null
+  data: SessionAttributes | null
   error?: string
 }
 
@@ -52,7 +52,7 @@ export default async (
           firstName: session.firstName,
         },
       })
-  } catch(e) {
-    return res.status(500).json({ data: null, error: e.message })
+  } catch(e: any) {
+    return res.status(500).json({ data: null, error: (e?.message as string) })
   }
 }

@@ -19,6 +19,7 @@ import styles from './mdx-theme.module.css'
 import CommonLink from '../common-link/common-link'
 import Redacted from '../redacted/redacted'
 import VideoContainer from '../video-container/video-container'
+import CenterImage from '../center-image/center-image'
 
 // Anchor links
 
@@ -352,6 +353,7 @@ const RSS_COMPONENTS = {
   Image: Image,
   Redacted: Redacted,
   VideoContainer: VideoContainer,
+  CenterImage: CenterImage,
 }
 
 export const COMPONENTS = {

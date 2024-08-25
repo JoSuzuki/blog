@@ -1,9 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { getSession, Session } from '../../utils/iron-session'
+import { getSession, SessionAttributes } from '../../utils/iron-session'
 
 interface ResponseData {
   data:
-    | Omit<Session, 'save'>
+    | SessionAttributes
     | null
   error?: string
 }
