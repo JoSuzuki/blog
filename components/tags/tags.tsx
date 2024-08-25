@@ -1,6 +1,5 @@
 import { useRouter } from 'next/dist/client/router'
 import Link from 'next/link'
-import { useLayoutEffect } from 'react';
 
 export const TagName = () => {
   const { tag } = useRouter().query

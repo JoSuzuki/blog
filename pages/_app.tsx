@@ -5,6 +5,7 @@ import { Analytics } from '@vercel/analytics/react';
 import '../styles/reset.css'
 import '../styles/main.css'
 import { RedactedProvider } from '../components/redacted/redacted'
+import { SessionProvider } from '../components/session-provider/session-provider';
 
 export default function Nextra({ Component, pageProps }: AppProps) {
   return (
@@ -43,10 +44,12 @@ export default function Nextra({ Component, pageProps }: AppProps) {
           crossOrigin="anonymous"
         />
       </Head>
-      <RedactedProvider>
-        <Component {...pageProps} />
-        <Analytics />
-      </RedactedProvider>
+      <SessionProvider>
+        <RedactedProvider>
+          <Component {...pageProps} />
+          <Analytics />
+        </RedactedProvider>
+      </SessionProvider>
     </>
   )
 }
