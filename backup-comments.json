@@ -1,0 +1,110 @@
+[
+  {
+    "id": "304597690730152516",
+    "collection": "comments",
+    "timestamp": "2021-07-20T01:50:44.500Z",
+    "name": "Rafael Freitas da Silva",
+    "comment": "😮🤯",
+    "route": "/posts/muito-im-provavel",
+    "createdAt": 1623372581615
+  },
+  {
+    "id": "304597841218634309",
+    "collection": "comments",
+    "timestamp": "2021-07-20T01:53:08.015Z",
+    "name": "Rafael Freitas da Silva",
+    "comment": "Como não tem likes vou mandar um comment aqui, achei bem massa :D Agora entendo como você se sente quando me vê jogando Smash kkkk Relacionei com várias coisas em desenvolvimento também!",
+    "route": "/posts/sobre-o-invisivel",
+    "createdAt": 1622476329977
+  },
+  {
+    "id": "304598084755653188",
+    "collection": "comments",
+    "timestamp": "2021-07-20T01:57:00.265Z",
+    "name": "RafaelFS",
+    "comment": "Hahah muito bom Achei muito boa a sacada da professora",
+    "route": "/posts/uma-experiencia-caricata-de-thinking-vs-feeling",
+    "createdAt": 1584928548405
+  },
+  {
+    "id": "321669918200169039",
+    "collection": "comments",
+    "timestamp": "2022-01-24T12:26:29.390Z",
+    "name": "Rafael Freitas",
+    "comment": "Famoso \"se eu não lembro não fiz\" xD\nBem profunda essa reflexão. Bem louco como realmente bater as versões de cada um de uma parada que você não lembra acaba refletindo bastante a visão que cada um tem da gente.",
+    "route": "/posts/minhas-memorias-nao-sao-minhas",
+    "createdAt": 1643027189278
+  },
+  {
+    "id": "349698136975868497",
+    "collection": "comments",
+    "timestamp": "2022-11-29T21:23:01.763Z",
+    "name": "Adf",
+    "comment": "que lixo de texto. gostei.",
+    "route": "/posts/lixo-atrai-lixo",
+    "createdAt": 1669756981701
+  },
+  {
+    "id": "366824552463860311",
+    "collection": "comments",
+    "timestamp": "2023-06-06T22:20:04.557Z",
+    "name": "Pri Fenner",
+    "comment": "Caraca! Muito boa a reflexão!!! 👏🏻👏🏻👏🏻👏🏻👏🏻",
+    "route": "/posts/minhas-memorias-nao-sao-minhas",
+    "createdAt": 1686090004258
+  },
+  {
+    "id": "367905229043139160",
+    "collection": "comments",
+    "timestamp": "2023-06-18T20:36:58.190Z",
+    "name": "Pri Fenner",
+    "comment": "Muito bom e muito real…(acho q já se passaram mais 4 anos desde que escreveu esse…mas acho que o ponto é esse…a vida é cíclica…e provavelmente o texto vai fazer sentido sentido daqui mais 4 anos…😜)\n\nP.s.: Juro que to amando seus textos, rs! 🙃",
+    "route": "/posts/nada-dura-pra-sempre",
+    "createdAt": 1687120617518
+  },
+  {
+    "id": "376410156775244376",
+    "collection": "comments",
+    "timestamp": "2023-09-20T17:39:08.980Z",
+    "name": "Edileuza",
+    "comment": "Gostei, concordo e discordo de alguns pontos. Falaremos sobre isto em algum momento.",
+    "route": "/posts/a-pior-melhor-coisa-que-poderia-ter-acontecido",
+    "createdAt": 1695231548929
+  },
+  {
+    "id": "376416355727966807",
+    "collection": "comments",
+    "timestamp": "2023-09-20T19:17:40.815Z",
+    "name": "Arnaldo Antunes",
+    "comment": "Não conhecia o enneagrama, só os arquétipos.\nGosto da sua escrita livre. parece um fluxo de pensamento do jack kerouac.\neu não sei o que quero pra mim ou o que quero pra mim parece inalcançável demais para querer.\nNunca li a bíblia mas tenho vontade de ler o livro de João.\n\"Agora que a minha boca de fumo faliu de onde eu vou tirar meu estoque?\"\nobrigado pelas risadas e pelas reflexões.",
+    "route": "/posts/a-pior-melhor-coisa-que-poderia-ter-acontecido",
+    "createdAt": 1695237460683
+  },
+  {
+    "id": "376705423406793303",
+    "collection": "comments",
+    "timestamp": "2023-09-23T23:52:17.150Z",
+    "name": "Jo",
+    "comment": "> Gostei, concordo e discordo de alguns pontos. Falaremos sobre isto em algum momento.\n\nFalaremos sim haha, pra quem não sabe a Edileuza é minha psicóloga kkkk",
+    "route": "/posts/a-pior-melhor-coisa-que-poderia-ter-acontecido",
+    "createdAt": 1695513137139
+  },
+  {
+    "id": "390216665955041879",
+    "collection": "comments",
+    "timestamp": "2024-02-20T03:07:42.160Z",
+    "name": "Silas Caetano",
+    "comment": "Sensacional. Curti muito seu estilo de escrita e as reflexões que parecem ser simples, mas que, olhando de uma perspectiva melhor, são, na verdade, muito rebuscadas!",
+    "route": "/posts/a-pior-melhor-coisa-que-poderia-ter-acontecido",
+    "createdAt": 1708398462134
+  },
+  {
+    "id": "413128678595101267",
+    "collection": "comments",
+    "timestamp": "2024-10-30T00:44:20.190Z",
+    "name": "Pedro Oscar",
+    "comment": "Cara, que bom foi dar uma olhada nas coisas que você ta fazendo do nada e achar esse blog. Reflexões muito boas, acho que eu também sofro com elas (todo mundo será? kkkk)\nFoda essa ideia de rotina, sempre enxerguei como um mecanismo de defesa pro cérebro, pra não ter que pensar nas coisas que tem que fazer todo dia. Mas como todo mecanismo de defesa também é uma prisão...\nEnfim, talvez a gente só consiga ter agência desse jeito se a gente vivesse em uma sociedade que permitisse esse tipo de agência? Talvez voltada pra esse tipo de agência? Não sei... o trabalho aliena muito e quase todas as estruturas dele são feitas para suprimir a agência em nome da eficiência...\n\nP.S. Saudades de jogar RPG",
+    "route": "/posts/agencia-e-compartimentalizacao",
+    "createdAt": 1730249060035
+  }
+]
