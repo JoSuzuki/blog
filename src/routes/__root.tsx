@@ -84,7 +84,7 @@ export const Route = createRootRoute({
       },
       {
         rel: 'alternate',
-        type: 'application/json',
+        type: 'application/feed+json',
         title: 'JSON Feed',
         href: '/feed.json',
       },
