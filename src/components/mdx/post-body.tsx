@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   getLoadedPostBody,
@@ -21,6 +21,18 @@ const lazyBody = (slug: string) => {
   return body
 }
 
+// The component type is picked once per mount. Picking it on every render
+// would swap the lazy wrapper for the resolved component after the chunk
+// arrives, and React would unmount and remount the whole body (reloading
+// iframes, losing focus and state). `key={slug}` gives a new mount, and so a
+// new pick, when the post changes.
+function MountedBody({ slug }: { slug: string }) {
+  const [Body] = useState<PostBodyComponent>(
+    () => getLoadedPostBody(slug) ?? lazyBody(slug),
+  )
+  return <Body components={mdxComponents} />
+}
+
 /** Renders a post's compiled MDX with the shared components map. */
 export default function PostBody({
   slug,
@@ -29,12 +41,10 @@ export default function PostBody({
   slug: string
   afterTitle?: ReactNode
 }) {
-  const Loaded: PostBodyComponent | undefined = getLoadedPostBody(slug)
-  const Body = Loaded ?? lazyBody(slug)
   return (
     <AfterTitleContext value={afterTitle}>
       <Suspense fallback={null}>
-        <Body components={mdxComponents} />
+        <MountedBody key={slug} slug={slug} />
       </Suspense>
     </AfterTitleContext>
   )
