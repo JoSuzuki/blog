@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { useSessionContext } from '~/components/session-provider/session-provider'
-import { login } from '~/lib/auth/functions'
+import { login } from '~/lib/auth/login'
 import { renderGoogleSignInButton } from '~/lib/auth/google-identity'
 
 // The offset-shadow look the legacy Login button had (a translate on hover and

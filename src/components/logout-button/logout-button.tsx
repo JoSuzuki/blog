@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { sessionButtonClass } from '~/components/login-button/login-button'
 import Redacted from '~/components/redacted/redacted'
 import { useSessionContext } from '~/components/session-provider/session-provider'
-import { logout } from '~/lib/auth/functions'
+import { logout } from '~/lib/auth/logout'
 
 // The legacy site only greeted the logged-in reader and had no way to log
 // out. The greeting is kept as it was; the Sair (log out) button clears the session

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { getComments } from '~/lib/comments/functions'
+import type { CommentView } from '~/lib/comments/comment'
+import { getComments } from '~/lib/comments/get-comments'
 import { subscribeToPost } from '~/lib/realtime/post-socket'
-import type { CommentView } from '~/lib/comments/comments.server'
 import CommentForm from './comment-form'
 
 const formatDate = (time: number) => {

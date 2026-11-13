@@ -60,6 +60,34 @@ export const createRateLimiter = ({
   }
 }
 
+type RateLimiter = ReturnType<typeof createRateLimiter>
+
+const limiters = new Map<string, RateLimiter>()
+
+/**
+ * Counts one attempt by the request's client (see getClientKey) against the
+ * limit called `name`, and says whether it is allowed. This is what actions
+ * call. Each name has its own limiter, created with these options on first
+ * use and kept in this module for the life of the process, so the caller
+ * holds no state of its own.
+ */
+export const takeRateLimit = (
+  name: string,
+  request: Request,
+  {
+    limit,
+    windowMs,
+    maxKeys = 5000,
+  }: Pick<RateLimitOptions, 'limit' | 'windowMs'> & { maxKeys?: number },
+): RateLimitResult => {
+  let limiter = limiters.get(name)
+  if (!limiter) {
+    limiter = createRateLimiter({ limit, windowMs, maxKeys })
+    limiters.set(name, limiter)
+  }
+  return limiter.take(getClientKey(request))
+}
+
 /**
  * The address to rate limit on. The site is served behind one proxy (Fly),
  * which sets `Fly-Client-IP` itself, so a visitor cannot choose it. Otherwise

@@ -1,4 +1,4 @@
-import type { IOServer } from './socket-events'
+import type { IOServer } from './events'
 
 // server.js stores the socket.io server here when it creates it. This must be
 // a globalThis slot, not a module variable: app code runs inside Vite's module

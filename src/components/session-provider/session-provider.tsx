@@ -1,6 +1,7 @@
 import { createContext, useContext, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { SessionState, SessionUser } from '~/lib/auth/types'
+import type { SessionState } from '~/lib/auth/get-session'
+import type { SessionUser } from '~/lib/auth/session-user'
 
 // The logged-in user, for components. The initial value comes from the root
 // route's loader, which reads the session cookie on the server during the page

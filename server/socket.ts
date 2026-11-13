@@ -1,14 +1,14 @@
 import type { ExtendedError } from 'socket.io'
-import { getPosts } from '../src/content/posts'
-import { readSessionFromCookieHeader } from '../src/lib/auth/session-cookie.server'
-import { getSiteOrigin } from '../src/lib/site'
+import { isPostRoute } from '../src/content/posts'
+import { readSessionFromCookieHeader } from '../src/lib/auth/session.server'
+import { MAX_POST_ROOMS_PER_SOCKET, postRoom } from '../src/lib/realtime/events'
 import type {
   ClientToServerEvents,
   IOServer,
   IOSocket,
   RoomAck,
-} from '../src/lib/socket-events'
-import { MAX_POST_ROOMS_PER_SOCKET, postRoom } from '../src/lib/socket-rooms'
+} from '../src/lib/realtime/events'
+import { getSiteOrigin } from '../src/lib/site'
 
 type Middleware = (
   socket: IOSocket,
@@ -68,9 +68,6 @@ export const isAllowedOrigin = (
 const logName = (name: string | undefined) =>
   // eslint-disable-next-line no-control-regex
   (name ?? '').replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 60) || 'anonymous'
-
-const isKnownRoute = (route: string) =>
-  getPosts({ includeSecret: true }).some((post) => post.route === route)
 
 const joinedPostRooms = (socket: IOSocket) =>
   [...socket.rooms].filter((room) => room.startsWith('post:'))
@@ -144,7 +141,7 @@ export function registerSocketHandlers(io: IOServer): () => void {
     if (typeof route !== 'string' || route.length > 200) {
       return { ok: false, reason: 'invalid' }
     }
-    if (!isKnownRoute(route)) return { ok: false, reason: 'unknown_post' }
+    if (!isPostRoute(route)) return { ok: false, reason: 'unknown_post' }
     const room = postRoom(route)
     if (socket.rooms.has(room)) return { ok: true }
     if (joinedPostRooms(socket).length >= MAX_POST_ROOMS_PER_SOCKET) {

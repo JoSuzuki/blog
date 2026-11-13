@@ -4,7 +4,7 @@ import appCss from '~/app.css?url'
 import NotFound from '~/components/not-found/not-found'
 import { RedactedProvider } from '~/components/redacted/redacted'
 import { SessionProvider } from '~/components/session-provider/session-provider'
-import { getSession } from '~/lib/auth/functions'
+import { getSession } from '~/lib/auth/get-session'
 
 const meta = {
   title: 'JoSuzuki',

@@ -4,13 +4,13 @@ import Button from '~/components/button/button'
 import Input from '~/components/input/input'
 import { useSessionContext } from '~/components/session-provider/session-provider'
 import TextArea from '~/components/text-area/text-area'
-import { createComment } from '~/lib/comments/functions'
 import {
   COMMENT_MAX_LENGTH,
   HONEYPOT_FIELD,
   NAME_MAX_LENGTH,
-} from '~/lib/comments/limits'
-import type { CommentView } from '~/lib/comments/comments.server'
+} from '~/lib/comments/comment'
+import type { CommentView } from '~/lib/comments/comment'
+import { createComment } from '~/lib/comments/create-comment'
 
 interface CommentFormProps {
   route: string

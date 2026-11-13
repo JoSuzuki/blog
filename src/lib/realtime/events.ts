@@ -1,10 +1,17 @@
-// Event map shared by the socket.io server (`server/socket.ts`), server-side
-// app code (`getIO()` in `~/lib/io.server`) and browser clients. Type-only:
-// importing it adds nothing to any bundle.
+// The socket.io protocol: the event map and the room names, shared by the
+// socket.io server (`server/socket.ts`), server-side app code (`getIO()` in
+// `./io.server`) and the browser client (`./post-socket`, which imports only
+// the types).
 
 import type { Server, Socket } from 'socket.io'
-import type { SessionUser } from '~/lib/auth/types'
-import type { CommentView } from '~/lib/comments/comments.server'
+import type { SessionUser } from '~/lib/auth/session-user'
+import type { CommentView } from '~/lib/comments/comment'
+
+/** The socket.io room that receives a post's live events. */
+export const postRoom = (route: string) => `post:${route}`
+
+/** At most this many post rooms per socket (a page needs one, a navigation briefly two). */
+export const MAX_POST_ROOMS_PER_SOCKET = 3
 
 /** Sent to a post's room when a comment has been stored. */
 export interface CommentCreatedPayload {

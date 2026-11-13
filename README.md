@@ -17,13 +17,40 @@ content/posts/   the posts (one .mdx file per post; the file name is the URL slu
 src/routes/      file-based routes, pages and feeds
 src/components/  UI components (Tailwind utilities; tokens in src/app.css)
 src/content/     post collection, frontmatter schema, MDX Vite plugins
-src/lib/         server code: comments, auth, feeds, socket helpers, Prisma client
+src/lib/         actions (server functions) and what they share; see below
 server/          socket.io handlers (rooms, handshake checks)
 server.js        Express + socket.io + Vite (dev) or the build (production)
 prisma/          schema, migrations, seed (reads backup-comments.json, backup-hits.json)
 public/          fonts, images, favicon
 Dockerfile, fly.toml, .github/workflows/fly-deploy.yml   deployment
 ```
+
+### `src/lib`: one action per file
+
+Everything the browser can ask the server to do is a server function, and each one is a single file
+named after it, holding the whole flow from validation to the response:
+
+```
+src/lib/comments/create-comment.ts   validate, honeypot, rate limit, store, broadcast, email
+src/lib/comments/get-comments.ts
+src/lib/hits/register-hit.ts
+src/lib/auth/login.ts                validate, rate limit, verify the Google token, record the user, set the session
+src/lib/auth/get-session.ts
+src/lib/auth/logout.ts
+```
+
+Only what more than one flow uses is a module of its own, and those are `.server.ts` files:
+`rate-limit.server.ts`, `db.server.ts`, `auth/session.server.ts` (the session cookie, also read by
+the socket handshake), `auth/google.server.ts` (ID token verification), `realtime/io.server.ts`
+(`getIO()`), `feeds/feeds.server.ts` (the three feed routes). `comments/comment.ts`,
+`auth/session-user.ts` and `realtime/events.ts` are the types and constants shared with the browser.
+
+An action file is imported by components, so it is compiled for the browser too: the compiler
+replaces the handler with a request and removes what only the handler used. For that to hold, use
+`.server` imports only inside the handler or in functions it calls, never at module level (for
+example, no `const limiter = createRateLimiter(...)` at the top of an action; `takeRateLimit` keeps
+the limiters instead). TanStack Start's import protection checks this: the build fails, and `npm run
+dev` warns, if a `.server` module would reach the browser.
 
 ## Local development
 

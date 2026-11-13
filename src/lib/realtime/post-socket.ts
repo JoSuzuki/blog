@@ -1,10 +1,10 @@
 import { io } from 'socket.io-client'
 import type { Socket } from 'socket.io-client'
-import type { CommentCreatedPayload } from '~/lib/socket-events'
 import type {
   ClientToServerEvents,
+  CommentCreatedPayload,
   ServerToClientEvents,
-} from '~/lib/socket-events'
+} from './events'
 
 // The page's one socket.io connection. Nothing here runs on import: the
 // connection is created by the first `subscribeToPost` call (from an effect,
