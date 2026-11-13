@@ -1,9 +1,8 @@
 import type { ComponentType } from 'react'
 import type { MDXProps } from 'mdx/types'
-import { z } from 'zod'
-import { postFrontmatterSchema } from './post-schema.ts'
+import type { PostFrontmatter } from './post-schema.ts'
 
-export type PostMeta = z.infer<typeof postFrontmatterSchema> & {
+export type PostMeta = PostFrontmatter & {
   /** File name without extension; the URL is `/posts/<slug>`. */
   slug: string
   route: `/posts/${string}`
@@ -12,10 +11,10 @@ export type PostMeta = z.infer<typeof postFrontmatterSchema> & {
 export type PostBody = ComponentType<MDXProps>
 
 // Frontmatter only (see `mdxFrontmatterModule`): importing it does not pull in
-// any post body. Validation also runs in the Vite plugin, which is what fails
-// the build; parsing again here types the data and names the file if it ever
-// disagrees.
-const metaModules = import.meta.glob<unknown>('/content/posts/*.mdx', {
+// any post body. The data was validated by zod in that Vite plugin, which
+// fails the build on bad frontmatter, so zod is not bundled for the browser
+// (it probes `Function('')`, which a strict CSP reports).
+const metaModules = import.meta.glob<PostFrontmatter>('/content/posts/*.mdx', {
   query: '?meta',
   import: 'default',
   eager: true,
@@ -32,15 +31,9 @@ const byDateDescending = (a: PostMeta, b: PostMeta) =>
   a.date === b.date ? a.slug.localeCompare(b.slug) : a.date < b.date ? 1 : -1
 
 const allPosts: PostMeta[] = Object.entries(metaModules)
-  .map(([path, raw]) => {
-    const parsed = postFrontmatterSchema.safeParse(raw)
-    if (!parsed.success) {
-      throw new Error(
-        `${path}: invalid frontmatter\n${z.prettifyError(parsed.error)}`,
-      )
-    }
+  .map(([path, frontmatter]): PostMeta => {
     const slug = slugOf(path)
-    return { ...parsed.data, slug, route: `/posts/${slug}` } as PostMeta
+    return { ...frontmatter, slug, route: `/posts/${slug}` }
   })
   .sort(byDateDescending)
 
