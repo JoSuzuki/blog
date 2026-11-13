@@ -8,7 +8,12 @@
 // from server/app.ts. In development server.js loads server/socket.ts through
 // Vite directly instead, so it can reload it on change.
 import handler from '@tanstack/react-start/server-entry'
+import { reportSessionConfig } from './lib/auth/session-cookie.server'
 
 export { registerSocketHandlers } from '../server/socket'
+
+// One warning at startup if sessions cannot work (no usable
+// IRON_SESSION_SECRET). The site still runs, logged out for everyone.
+reportSessionConfig()
 
 export default handler
