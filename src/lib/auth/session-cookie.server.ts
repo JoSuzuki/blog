@@ -8,7 +8,7 @@ import type { SessionUser } from './types'
 //
 // This module must not depend on a TanStack request context (no imports from
 // @tanstack/react-start/server), because it is also used where there is none:
-// the socket.io handshake (step 8) calls readSessionFromCookieHeader with the
+// the socket.io handshake calls readSessionFromCookieHeader with the
 // raw header of the upgrade request. The request-bound helpers (read the
 // current request's session, set or clear the cookie on the response) are in
 // session.server.ts and are built on this.

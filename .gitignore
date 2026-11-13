@@ -26,9 +26,5 @@ npm-debug.log*
 .env.test.local
 .env.production.local
 
-# vercel
-.vercel
-
-
 # generated Prisma client (npm run postinstall / prisma generate)
 /src/generated/
