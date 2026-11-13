@@ -1,0 +1,297 @@
+@import 'tailwindcss';
+
+@font-face {
+  font-family: 'Inter var';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: block;
+  src: url(/fonts/Inter-roman.latin.var.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Inter var';
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: block;
+  src: url(/fonts/Inter-italic.latin.var.woff2) format('woff2');
+  font-named-instance: 'Italic';
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/space-grotesk.latin.var.woff2) format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF,
+    U+FFFD;
+}
+
+/*
+ * The design tokens live in the custom properties declared in `@layer base`
+ * below (`--colors-*`, `--spaces-*`, `--font-sizes-*`, ...). This block only
+ * gives them Tailwind names, so `var(--colors-accent)` is `text-accent`,
+ * `var(--spaces-md)` is `p-md`, `var(--font-sizes-lg)` is `text-lg`, and so on.
+ * Tailwind's own palette, type scale and container sizes are removed so that a
+ * name like `md` or `lg` always means the blog's token.
+ */
+@theme inline {
+  --color-*: initial;
+  --color-white: var(--colors-white);
+  --color-black: var(--colors-black);
+  --color-selection: var(--colors-selection);
+  --color-purple: var(--colors-purple);
+  --color-purple-background: var(--colors-purple-background);
+  --color-secondary: var(--colors-secondary);
+  --color-accent: var(--colors-accent);
+  --color-accent-background: var(--colors-accent-background);
+  --color-dimmed: var(--colors-dimmed);
+  --color-text: var(--colors-text);
+  --color-background: var(--colors-background);
+  --color-inline-code: var(--colors-inline-code);
+
+  --text-*: initial;
+  --text-xs: var(--font-sizes-xs);
+  --text-sm: var(--font-sizes-sm);
+  --text-md: var(--font-sizes-md);
+  --text-lg: var(--font-sizes-lg);
+
+  --spacing-xs: var(--spaces-xs);
+  --spacing-sm: var(--spaces-sm);
+  --spacing-md: var(--spaces-md);
+  --spacing-lg: var(--spaces-lg);
+  --spacing-xl: var(--spaces-xl);
+
+  --container-*: initial;
+  --container-container: var(--container-max-width);
+}
+
+/* Media queries cannot read custom properties, so these hold the values. */
+@theme {
+  --breakpoint-*: initial;
+  --breakpoint-mobile: 480px;
+  --breakpoint-tablet: 768px;
+
+  --font-sans:
+    'Inter var', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-grotesk: 'Space Grotesk', sans-serif;
+  --font-mono:
+    SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
+}
+
+/*
+ * Tailwind 4 only applies `hover:` on devices that can hover. The site's
+ * styles were written as plain `:hover`, which touch browsers also apply after
+ * a tap (the Redacted popup relies on it), so keep that meaning.
+ */
+@custom-variant hover (&:hover);
+
+/*
+ * Weight is set through the variable font's `wght` axis rather than
+ * `font-weight`, and the axis setting is inherited, so `font-bold` alone does
+ * not change how Inter renders.
+ */
+@utility wght-semibold {
+  font-variation-settings: var(--font-weights-semibold);
+}
+@utility wght-bold {
+  font-variation-settings: var(--font-weights-bold);
+}
+
+/* The offset accent shadow that lifts on hover and flattens when pressed. */
+@utility pressable {
+  position: relative;
+  box-shadow: 1px 1px 0 0 var(--colors-accent);
+  &:hover {
+    top: -1px;
+    left: -1px;
+    box-shadow: 2px 2px 0 0 var(--colors-accent);
+  }
+  &:active {
+    top: 1px;
+    left: 1px;
+    box-shadow: none;
+  }
+}
+
+@layer base {
+  :root {
+    --colors-white: white;
+    --colors-black: black;
+    --colors-selection: #3297fd;
+    --colors-purple: #432a79;
+    --colors-purple-background: #ebe2ff;
+
+    --font-sizes-xs: 1rem;
+    --font-sizes-sm: 1.125rem;
+    --font-sizes-md: 1.25rem;
+    --font-sizes-lg: 2.25rem;
+
+    --font-weights-semibold: 'wght' 600;
+    --font-weights-bold: 'wght' 850;
+
+    --spaces-xs: 0.25rem;
+    --spaces-sm: 0.5rem;
+    --spaces-md: 1rem;
+    --spaces-lg: 2rem;
+    --spaces-xl: 3rem;
+
+    --container-max-width: 65ch;
+  }
+
+  :root[data-theme='secret'] {
+    --colors-secondary: #ff3164;
+    --colors-accent: #ec0f2d;
+    --colors-accent-background: #300300;
+    --colors-dimmed: #ce202e;
+    --colors-text: rgb(255, 247, 238);
+    --colors-background: #140005;
+    --colors-inline-code: #a11010;
+  }
+
+  :root[data-theme='dark'] {
+    --colors-secondary: #c25b84;
+    --colors-accent: #7670db;
+    --colors-accent-background: #150044;
+    --colors-dimmed: #522ba9;
+    --colors-text: var(--colors-white);
+    --colors-background: #170440;
+    --colors-inline-code: #4842b3;
+  }
+
+  :root[data-theme='light'] {
+    --colors-secondary: #b34270;
+    --colors-accent: #432a79;
+    --colors-accent-background: #ebe2ff;
+    --colors-dimmed: #bbd1e2;
+    --colors-text: var(--colors-black);
+    --colors-background: #e9f1f7;
+    --colors-inline-code: #cae8ff;
+  }
+
+  *::selection {
+    color: white;
+    background-color: var(--colors-selection);
+  }
+
+  body {
+    color: var(--colors-text);
+    background-color: var(--colors-background);
+    transition:
+      color 0.16s ease-out,
+      background-color 0.16s ease-out;
+
+    padding-left: 1rem;
+    padding-right: 1rem;
+
+    font-size: var(--font-sizes-md);
+
+    -webkit-font-smoothing: subpixel-antialiased;
+    font-feature-settings:
+      'case' 1,
+      'cpsp' 1,
+      'dlig' 1,
+      'cv01' 1,
+      'cv02',
+      'cv03' 1,
+      'cv04' 1;
+    font-variation-settings: 'wght' 450;
+    font-variant: common-ligatures contextual;
+    letter-spacing: -0.02em;
+  }
+
+  @media screen and (min-resolution: 1.5dppx) {
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  }
+
+  /*
+   * Everything from here on restores what the old reset did differently from
+   * Tailwind's preflight.
+   */
+
+  /* Headings kept the browser's bold; preflight makes them inherit. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: bold;
+  }
+  h1 {
+    font-size: 2em;
+    font-variation-settings: 'wght' 850;
+  }
+  h2 {
+    font-size: 1.85rem;
+    font-variation-settings: 'wght' 750;
+  }
+  h3 {
+    font-size: 1.55rem;
+    font-variation-settings: 'wght' 650;
+  }
+  h4 {
+    font-size: 1.45rem;
+    font-variation-settings: 'wght' 650;
+  }
+  h5 {
+    font-size: 1.35rem;
+    font-variation-settings: 'wght' 650;
+  }
+  h6 {
+    font-size: 1.25rem;
+    font-variation-settings: 'wght' 650;
+  }
+  b,
+  strong {
+    font-variation-settings: 'wght' 650;
+  }
+
+  /*
+   * Form controls took only the family, size, line height and colour from the
+   * page; weight, axis settings, font features and letter spacing stayed at
+   * the browser's defaults. Preflight makes them inherit all of those.
+   */
+  button,
+  input,
+  optgroup,
+  select,
+  textarea {
+    font-style: normal;
+    font-weight: 400;
+    font-variant: normal;
+    font-feature-settings: normal;
+    font-variation-settings: normal;
+    letter-spacing: normal;
+  }
+
+  /* Code inherited the page's settings; preflight resets them. */
+  code,
+  kbd,
+  samp,
+  pre {
+    font-feature-settings: inherit;
+    font-variation-settings: inherit;
+  }
+
+  button,
+  [role='button'] {
+    cursor: pointer;
+  }
+
+  button:focus-visible {
+    outline: 1px dotted;
+    outline: 5px auto -webkit-focus-ring-color;
+    outline-offset: 2px;
+  }
+
+  details summary {
+    cursor: pointer;
+  }
+}
