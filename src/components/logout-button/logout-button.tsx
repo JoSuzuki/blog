@@ -1,21 +1,23 @@
+import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { sessionButtonClass } from '~/components/login-button/login-button'
 import Redacted from '~/components/redacted/redacted'
-import { useSessionContext } from '~/components/session-provider/session-provider'
 import { logout } from '~/lib/auth/logout'
+import { useSession } from '~/lib/auth/use-session'
 
 // The legacy site only greeted the logged-in reader and had no way to log
-// out. The greeting is kept as it was; the Sair (log out) button clears the session
-// cookie on the server and then the session here.
+// out. The greeting is kept as it was; the Sair (log out) button clears the
+// session cookie on the server and then runs the loaders again.
 const LogoutButton = () => {
-  const { session, setSession } = useSessionContext()
+  const router = useRouter()
+  const { user } = useSession()
   const [pending, setPending] = useState(false)
 
   const handleLogout = async () => {
     setPending(true)
     try {
       await logout()
-      setSession(null)
+      await router.invalidate()
     } catch (error) {
       console.error('Logout failed:', error)
     } finally {
@@ -34,7 +36,7 @@ const LogoutButton = () => {
         <Redacted
           revealOverwrite={true}
           redacted="Não tem nada de especial que dá pra fazer logado ainda :)"
-        >{`${session?.firstName}`}</Redacted>
+        >{`${user?.firstName}`}</Redacted>
         !
       </div>
       <button

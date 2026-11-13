@@ -25,6 +25,27 @@ public/          fonts, images, favicon
 Dockerfile, fly.toml, .github/workflows/fly-deploy.yml   deployment
 ```
 
+### Loaders and actions
+
+For someone coming from Remix or React Router 7:
+
+- **Loader.** A route's `loader` provides its data and the component reads it with
+  `Route.useLoaderData()`. Unlike in Remix it is not server-only: it runs on the server for the
+  first page and in the browser on client-side navigations, so anything that needs the server goes
+  through a server function. The root route loads the session (`useSession()` reads it anywhere);
+  `/posts/$slug` loads the post and its comments.
+- **Action.** There is no `action` export. A mutation is a server function called from the
+  component (`createComment`, `login`, `logout`), followed by `router.invalidate()`, which runs the
+  loaders again. That is the revalidation Remix does by itself after an action. A live comment
+  arriving over socket.io does the same.
+- Not loader data: the post lists (static content bundled with the app, filtered in the browser by
+  the reveal flag) and the view counter (counting is a write, done from an effect so that
+  server rendering and crawlers do not count).
+
+A server function called by a loader runs inside the page's own request during server rendering,
+so a status it sets becomes the page's status. That is why `getComments` reports an unreachable
+database as data, and why the post loader gives comments two seconds before rendering without them.
+
 ### `src/lib`: one action per file
 
 Everything the browser can ask the server to do is a server function, and each one is a single file

@@ -1,7 +1,8 @@
+import { useRouter } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
-import { useSessionContext } from '~/components/session-provider/session-provider'
-import { login } from '~/lib/auth/login'
 import { renderGoogleSignInButton } from '~/lib/auth/google-identity'
+import { login } from '~/lib/auth/login'
+import { useSession } from '~/lib/auth/use-session'
 
 // The offset-shadow look the legacy Login button had (a translate on hover and
 // press, unlike the `pressable` utility, which moves with top/left).
@@ -19,7 +20,8 @@ const LoginButton = () => {
   const googleButtonRef = useRef<HTMLDivElement>(null)
   const rendered = useRef(false)
   const [error, setError] = useState<string | null>(null)
-  const { setSession, googleClientId } = useSessionContext()
+  const router = useRouter()
+  const { googleClientId } = useSession()
 
   const handleCredential = async (credential: string) => {
     setError(null)
@@ -27,7 +29,9 @@ const LoginButton = () => {
       const result = await login({ data: { credential } })
       if (result.ok) {
         dialogRef.current?.close()
-        setSession(result.user)
+        // The cookie is set: run the loaders again so the page is rendered
+        // for the reader who just logged in.
+        await router.invalidate()
       } else {
         setError(LOGIN_FAILED)
       }

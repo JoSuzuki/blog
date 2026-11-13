@@ -2,19 +2,19 @@ import { useRef, useState } from 'react'
 import type { FormEventHandler } from 'react'
 import Button from '~/components/button/button'
 import Input from '~/components/input/input'
-import { useSessionContext } from '~/components/session-provider/session-provider'
 import TextArea from '~/components/text-area/text-area'
+import { useSession } from '~/lib/auth/use-session'
 import {
   COMMENT_MAX_LENGTH,
   HONEYPOT_FIELD,
   NAME_MAX_LENGTH,
 } from '~/lib/comments/comment'
-import type { CommentView } from '~/lib/comments/comment'
 import { createComment } from '~/lib/comments/create-comment'
 
 interface CommentFormProps {
   route: string
-  onCreated: (comment: CommentView) => void
+  /** Called after the comment was stored, to load the list again. */
+  onCreated: () => Promise<void>
 }
 
 const CommentForm = ({ route, onCreated }: CommentFormProps) => {
@@ -23,7 +23,7 @@ const CommentForm = ({ route, onCreated }: CommentFormProps) => {
   const sending = useRef(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { session } = useSessionContext()
+  const { user } = useSession()
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault()
@@ -43,7 +43,7 @@ const CommentForm = ({ route, onCreated }: CommentFormProps) => {
       })
       if (result.ok) {
         formRef.current?.reset()
-        onCreated(result.comment)
+        await onCreated()
       } else {
         setError(result.message)
       }
@@ -62,7 +62,7 @@ const CommentForm = ({ route, onCreated }: CommentFormProps) => {
         name="name"
         label="Nome"
         maxLength={NAME_MAX_LENGTH}
-        defaultValue={session?.name}
+        defaultValue={user?.name}
       />
       <TextArea
         name="comment"
