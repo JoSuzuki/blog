@@ -1,5 +1,11 @@
 {
-  "include": ["server.js", "vite.config.ts", "src/content/vite-plugins.ts", "src/content/rehype-heading-slugs.ts", "src/content/post-schema.ts"],
+  "include": [
+    "server.js",
+    "vite.config.ts",
+    "src/content/vite-plugins.ts",
+    "src/content/rehype-heading-slugs.ts",
+    "src/content/post-schema.ts"
+  ],
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2022"],

@@ -67,8 +67,7 @@ export const isAllowedOrigin = (
 // Control characters would let a name forge log lines.
 const logName = (name: string | undefined) =>
   // eslint-disable-next-line no-control-regex
-  (name ?? '').replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 60) ||
-  'anonymous'
+  (name ?? '').replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 60) || 'anonymous'
 
 const isKnownRoute = (route: string) =>
   getPosts({ includeSecret: true }).some((post) => post.route === route)
