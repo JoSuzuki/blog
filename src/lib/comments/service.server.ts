@@ -1,6 +1,7 @@
 import { setResponseStatus } from '@tanstack/react-start/server'
 import { z } from 'zod'
 import { getPosts } from '~/content/posts'
+import { broadcastComment } from './broadcast.server'
 import { incrementHits, insertComment, listComments } from './comments.server'
 import type { CommentView } from './comments.server'
 import { COMMENT_MAX_LENGTH, HONEYPOT_FIELD, NAME_MAX_LENGTH } from './limits'
@@ -179,8 +180,7 @@ export const createCommentAction = async (
     }
   }
 
-  // Step 8: broadcast `created` over socket.io here (getIO() from
-  // ~/lib/io.server), to the room for `route`.
+  broadcastComment(route, created)
 
   notifyComment({ route, name, comment })
 
