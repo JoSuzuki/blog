@@ -11,18 +11,20 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id    Int    @id @default(autoincrement())
-  name  String
-  email String @unique
-  googleId String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                    Int                   @id @default(autoincrement())
+  name                  String
+  email                 String                @unique
+  googleId              String?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  createdSantoriniRooms SantoriniRoom[]
+  santoriniRoomPlayers  SantoriniRoomPlayer[]
 
   @@index([email])
 }
@@ -46,4 +48,43 @@ model Comment {
 model HitCounter {
   route String @id
   hits  Int    @default(0)
+}
+
+// A table of Santorini (the two-player board game under /games). A room is
+// WAITING until its two players are in and one of them starts the game.
+// `gameState` is the whole game as JSON (the GameState type in
+// src/lib/santorini/game.ts); null until the game starts. `updatedAt` doubles
+// as the version every move checks, so two requests cannot both write.
+model SantoriniRoom {
+  id        Int                   @id @default(autoincrement())
+  roomCode  String                @unique
+  creator   User                  @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  creatorId Int
+  status    SantoriniRoomStatus   @default(WAITING)
+  gameState Json?
+  players   SantoriniRoomPlayer[]
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+
+  // The rooms list shows the WAITING ones.
+  @@index([status])
+}
+
+enum SantoriniRoomStatus {
+  WAITING
+  PLAYING
+  FINISHED
+}
+
+// A seat in a room. Its id is the `playerId` used inside the game state.
+model SantoriniRoomPlayer {
+  id     Int           @id @default(autoincrement())
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+  room   SantoriniRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId Int
+  winner Boolean       @default(false)
+
+  @@unique([roomId, userId])
+  @@index([userId])
 }

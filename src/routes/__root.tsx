@@ -3,8 +3,8 @@ import type { ReactNode } from 'react'
 import appCss from '~/app.css?url'
 import NotFound from '~/components/not-found/not-found'
 import { RedactedProvider } from '~/components/redacted/redacted'
-import { SessionProvider } from '~/components/session-provider/session-provider'
-import { getSession } from '~/lib/auth/functions'
+import { getSession } from '~/lib/auth/get-session'
+import type { SessionState } from '~/lib/auth/get-session'
 
 const meta = {
   title: 'JoSuzuki',
@@ -44,14 +44,15 @@ const themeScript = `
 export const Route = createRootRoute({
   // The session is resolved on the server during the page request (a cookie
   // unseal, no database) and sent to the client with the page, so the top bar
-  // renders the right button from the first paint. It runs once per document:
-  // client-side navigations keep it, and login/logout update the provider.
-  loader: async () => {
+  // renders the right button from the first paint. Components read it with
+  // useSession(). It runs once per document (client-side navigations keep
+  // it) and again when login or logout reload the loaders.
+  loader: async (): Promise<SessionState> => {
     try {
       return await getSession()
     } catch (error) {
       console.error('Reading the session failed:', error)
-      return undefined
+      return { user: null, googleClientId: '' }
     }
   },
   staleTime: Infinity,
@@ -112,7 +113,6 @@ export const Route = createRootRoute({
 })
 
 function RootDocument({ children }: { children: ReactNode }) {
-  const sessionState = Route.useLoaderData()
   return (
     // The theme script sets data-theme on <html> before React hydrates it.
     <html lang="pt" suppressHydrationWarning>
@@ -120,9 +120,7 @@ function RootDocument({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <SessionProvider initial={sessionState}>
-          <RedactedProvider>{children}</RedactedProvider>
-        </SessionProvider>
+        <RedactedProvider>{children}</RedactedProvider>
         <Scripts />
       </body>
     </html>

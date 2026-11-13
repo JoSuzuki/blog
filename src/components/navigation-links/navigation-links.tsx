@@ -2,12 +2,14 @@ import { Link } from '@tanstack/react-router'
 
 // The legacy theme collected these from the pages whose frontmatter type was
 // `page`, `posts` or `customPage`, newest `date` first. Home is active only on
-// `/`; Posts is active on `/posts` and on every post. TanStack's Link works
+// `/`; Posts is active on `/posts` and on every post, and Games (new on this
+// site) on `/games` and everything under it. TanStack's Link works
 // that out from `activeOptions` and marks the active one with
 // `aria-current="page"`, as the legacy markup did.
 const NAV_PAGES = [
   { to: '/', title: 'Home', exact: true },
   { to: '/posts', title: 'Posts', exact: false },
+  { to: '/games', title: 'Games', exact: false },
 ] as const
 
 const linkClassName =

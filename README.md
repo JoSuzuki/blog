@@ -14,16 +14,112 @@ server, stored in an iron-session sealed cookie), which only pre-fills the comme
 
 ```
 content/posts/   the posts (one .mdx file per post; the file name is the URL slug)
-src/routes/      file-based routes, pages and feeds
+src/routes/      file-based routes, pages and feeds, with flat file names (`posts.$slug.tsx` is `/posts/$slug`)
 src/components/  UI components (Tailwind utilities; tokens in src/app.css)
 src/content/     post collection, frontmatter schema, MDX Vite plugins
-src/lib/         server code: comments, auth, feeds, socket helpers, Prisma client
+src/lib/         actions (server functions) and what they share; see below
 server/          socket.io handlers (rooms, handshake checks)
 server.js        Express + socket.io + Vite (dev) or the build (production)
 prisma/          schema, migrations, seed (reads backup-comments.json, backup-hits.json)
 public/          fonts, images, favicon
 Dockerfile, fly.toml, .github/workflows/fly-deploy.yml   deployment
 ```
+
+### Loaders and actions
+
+For someone coming from Remix or React Router 7:
+
+- **Loader.** A route's `loader` provides its data and the component reads it with
+  `Route.useLoaderData()`. Unlike in Remix it is not server-only: it runs on the server for the
+  first page and in the browser on client-side navigations, so anything that needs the server goes
+  through a server function. The root route loads the session (`useSession()` reads it anywhere);
+  `/posts/$slug` loads the post and its comments.
+- **Action.** There is no `action` export. A mutation is a server function called from the
+  component (`createComment`, `login`, `logout`), followed by a reload of the loaders. That is the
+  revalidation Remix does by itself after an action. A live comment arriving over socket.io does
+  the same.
+- **Reloading** goes through `useReload()` (`src/lib/use-reload.ts`), not `router.invalidate()`
+  directly: reloads are queued and each waits for its loaders, because two started together
+  discard each other's results.
+- **Where latency matters** (the moves of a game) the action is a socket event instead, and its
+  result is pushed rather than reloaded. See Games below.
+- Not loader data: the post lists (static content bundled with the app, filtered in the browser by
+  the reveal flag) and the view counter (counting is a write, done from an effect so that
+  server rendering and crawlers do not count).
+
+A server function called by a loader runs inside the page's own request during server rendering,
+so a status it sets becomes the page's status. That is why `getComments` reports an unreachable
+database as data, and why the post loader gives comments two seconds before rendering without them.
+
+### `src/lib`: one action per file
+
+Everything the browser can ask the server to do is a server function, and each one is a single file
+named after it, holding the whole flow from validation to the response:
+
+```
+src/lib/comments/create-comment.ts   validate, honeypot, rate limit, store, broadcast, email
+src/lib/comments/get-comments.ts
+src/lib/hits/register-hit.ts
+src/lib/santorini/create-room.ts     and five more, see Games below
+src/lib/auth/login.ts                validate, rate limit, verify the Google token, record the user, set the session
+src/lib/auth/get-session.ts
+src/lib/auth/logout.ts
+```
+
+Only what more than one flow uses is a module of its own, and those are `.server.ts` files:
+`rate-limit.server.ts`, `db.server.ts`, `auth/session.server.ts` (the session cookie, also read by
+the socket handshake), `auth/current-user.server.ts` (the logged-in reader's `User` row),
+`auth/google.server.ts` (ID token verification), `realtime/io.server.ts` (`getIO()`),
+`santorini/room.server.ts`, `feeds/feeds.server.ts` (the three feed routes). `comments/comment.ts`,
+`auth/session-user.ts`, `santorini/room.ts`, `santorini/game.ts` and `realtime/events.ts` are the
+types, constants and rules shared with the browser.
+
+An action file is imported by components, so it is compiled for the browser too: the compiler
+replaces the handler with a request and removes what only the handler used. For that to hold, use
+`.server` imports only inside the handler or in functions it calls, never at module level (for
+example, no `const limiter = createRateLimiter(...)` at the top of an action; `takeRateLimit` keeps
+the limiters instead). TanStack Start's import protection checks this: the build fails, and `npm run
+dev` warns, if a `.server` module would reach the browser.
+
+### Games: Santorini
+
+`/games` lists the games; the first is Santorini, a two-player board game ported from mazeps. A
+reader has to be logged in to play, since a seat in a room belongs to a `User`.
+
+```
+/games                       the list of games
+/games/santorini             rooms waiting for a second player; create or join one
+/games/santorini/$roomCode   one page for the room's whole life: lobby, board, result
+```
+
+- **Rules** are pure functions in `src/lib/santorini/game.ts`, used by the server to decide what
+  is legal and by the board to show what can be clicked. A turn is a list of pending steps
+  (select, move, build) that can be undone until it is committed.
+- **A room's life is server functions**, one per file: `create-room`, `join-room`, `leave-room`,
+  `start-game`, and the loaders' `get-rooms` and `get-room`. After one of them the server emits
+  `santorini:changed` to the room's channel (and to `lobby` when the list changes) with no data in
+  it; the pages answer by running their loader again, which is where permissions are checked.
+- **The game itself is played over the socket**, for latency: a click sends `santorini:action`,
+  `santorini:commit`, `santorini:undo` or `santorini:resign`, the server answers through the ack,
+  and the new state is pushed to both players as `santorini:game`. Each event is still one file
+  (`play-action.server.ts`, `commit-turn.server.ts`, `undo-turn.server.ts`, `resign.server.ts`):
+  validate, apply the rules, write, send. `server/socket.ts` only checks who is sending and calls
+  them. A move takes about 9 ms from one player's socket to the other's on a local machine, nearly
+  all of it the database read and write.
+- **Who gets a game's state**: every socket of a logged-in reader joins a room of its own
+  (`user:<id>`) at the handshake, and updates are sent to the two players' rooms, so nobody else
+  can receive them and a player's second tab stays in step. Every write checks the room's
+  `updatedAt`, which doubles as the `version` a page uses to keep the newer of pushed state and
+  loader data.
+- **Identity on the socket** comes from the session cookie at the handshake, so login and logout
+  reconnect it (`reconnectSocket`).
+- What the room functions and game events share (finding the reader's seat, the guarded write,
+  sending) is in `room.server.ts`.
+- **The board** (`src/components/santorini/board.tsx`) is three.js through react-three-fiber. It
+  is a chunk of its own (about 970 KB), fetched only by a page that shows a board and never
+  rendered on the server, which is why those packages are `devDependencies`.
+- **Data**: `SantoriniRoom` and `SantoriniRoomPlayer` in `prisma/schema.prisma`. The game state is
+  one JSON column.
 
 ## Local development
 

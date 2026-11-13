@@ -38,6 +38,7 @@ const allPosts: PostMeta[] = Object.entries(metaModules)
   .sort(byDateDescending)
 
 const bySlug = new Map(allPosts.map((post) => [post.slug, post]))
+const routes = new Set<string>(allPosts.map((post) => post.route))
 
 export interface PostFilter {
   /** Include posts marked `secret: true`. Default false. */
@@ -52,6 +53,9 @@ export const getPosts = (filter?: PostFilter): PostMeta[] => visible(filter)
 
 /** One post's metadata, secret or not; undefined for an unknown slug. */
 export const getPost = (slug: string): PostMeta | undefined => bySlug.get(slug)
+
+/** Whether `route` is the route of a post (`/posts/<slug>`), secret or not. */
+export const isPostRoute = (route: string): boolean => routes.has(route)
 
 /**
  * The older (`previous`) and newer (`next`) neighbours of a post within the

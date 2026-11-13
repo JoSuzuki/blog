@@ -1,10 +1,10 @@
 import LoginButton from '~/components/login-button/login-button'
 import LogoutButton from '~/components/logout-button/logout-button'
-import { useSessionContext } from '~/components/session-provider/session-provider'
+import { useSession } from '~/lib/auth/use-session'
 
 const SessionButtons = () => {
-  const { session } = useSessionContext()
-  return session ? <LogoutButton /> : <LoginButton />
+  const { user } = useSession()
+  return user ? <LogoutButton /> : <LoginButton />
 }
 
 export default SessionButtons

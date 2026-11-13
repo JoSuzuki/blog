@@ -12,7 +12,7 @@ import { NodeRequest, sendNodeResponse } from 'srvx/node'
 const BUILD_PATH = './dist/server/server.js'
 const SERVER_ENTRY = '/src/server.ts'
 const SOCKET_MODULE = '/server/socket.ts'
-// Where app code finds the socket.io server (see src/lib/io.server.ts).
+// Where app code finds the socket.io server (see src/lib/realtime/io.server.ts).
 const IO_GLOBAL_KEY = '__blogSocketIO'
 
 const DEVELOPMENT = process.env.NODE_ENV === 'development'

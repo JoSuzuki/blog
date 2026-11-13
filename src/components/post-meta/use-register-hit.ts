@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { registerHit } from '~/lib/comments/functions'
+import { registerHit } from '~/lib/hits/register-hit'
 
 /**
  * Counts a page view and returns the route's new total (null until known, and
