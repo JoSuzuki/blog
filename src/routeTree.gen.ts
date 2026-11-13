@@ -13,7 +13,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AtomDotxmlRouteImport } from './routes/atom[.]xml'
 import { Route as FeedDotjsonRouteImport } from './routes/feed[.]json'
 import { Route as FeedDotxmlRouteImport } from './routes/feed[.]xml'
-import { Route as DevSocketRouteImport } from './routes/dev/socket'
 import { Route as PostsIndexRouteImport } from './routes/posts/index'
 import { Route as PostsSlugRouteImport } from './routes/posts/$slug'
 import { Route as TagsTagRouteImport } from './routes/tags/$tag'
@@ -38,11 +37,6 @@ const FeedDotxmlRoute = FeedDotxmlRouteImport.update({
   path: '/feed.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DevSocketRoute = DevSocketRouteImport.update({
-  id: '/dev/socket',
-  path: '/dev/socket',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PostsIndexRoute = PostsIndexRouteImport.update({
   id: '/posts/',
   path: '/posts/',
@@ -64,7 +58,6 @@ export interface FileRoutesByFullPath {
   '/atom.xml': typeof AtomDotxmlRoute
   '/feed.json': typeof FeedDotjsonRoute
   '/feed.xml': typeof FeedDotxmlRoute
-  '/dev/socket': typeof DevSocketRoute
   '/posts/$slug': typeof PostsSlugRoute
   '/tags/$tag': typeof TagsTagRoute
   '/posts/': typeof PostsIndexRoute
@@ -74,7 +67,6 @@ export interface FileRoutesByTo {
   '/atom.xml': typeof AtomDotxmlRoute
   '/feed.json': typeof FeedDotjsonRoute
   '/feed.xml': typeof FeedDotxmlRoute
-  '/dev/socket': typeof DevSocketRoute
   '/posts/$slug': typeof PostsSlugRoute
   '/tags/$tag': typeof TagsTagRoute
   '/posts': typeof PostsIndexRoute
@@ -85,7 +77,6 @@ export interface FileRoutesById {
   '/atom.xml': typeof AtomDotxmlRoute
   '/feed.json': typeof FeedDotjsonRoute
   '/feed.xml': typeof FeedDotxmlRoute
-  '/dev/socket': typeof DevSocketRoute
   '/posts/$slug': typeof PostsSlugRoute
   '/tags/$tag': typeof TagsTagRoute
   '/posts/': typeof PostsIndexRoute
@@ -97,7 +88,6 @@ export interface FileRouteTypes {
     | '/atom.xml'
     | '/feed.json'
     | '/feed.xml'
-    | '/dev/socket'
     | '/posts/$slug'
     | '/tags/$tag'
     | '/posts/'
@@ -107,7 +97,6 @@ export interface FileRouteTypes {
     | '/atom.xml'
     | '/feed.json'
     | '/feed.xml'
-    | '/dev/socket'
     | '/posts/$slug'
     | '/tags/$tag'
     | '/posts'
@@ -117,7 +106,6 @@ export interface FileRouteTypes {
     | '/atom.xml'
     | '/feed.json'
     | '/feed.xml'
-    | '/dev/socket'
     | '/posts/$slug'
     | '/tags/$tag'
     | '/posts/'
@@ -128,7 +116,6 @@ export interface RootRouteChildren {
   AtomDotxmlRoute: typeof AtomDotxmlRoute
   FeedDotjsonRoute: typeof FeedDotjsonRoute
   FeedDotxmlRoute: typeof FeedDotxmlRoute
-  DevSocketRoute: typeof DevSocketRoute
   PostsSlugRoute: typeof PostsSlugRoute
   TagsTagRoute: typeof TagsTagRoute
   PostsIndexRoute: typeof PostsIndexRoute
@@ -164,13 +151,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeedDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dev/socket': {
-      id: '/dev/socket'
-      path: '/dev/socket'
-      fullPath: '/dev/socket'
-      preLoaderRoute: typeof DevSocketRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/posts/': {
       id: '/posts/'
       path: '/posts'
@@ -200,7 +180,6 @@ const rootRouteChildren: RootRouteChildren = {
   AtomDotxmlRoute: AtomDotxmlRoute,
   FeedDotjsonRoute: FeedDotjsonRoute,
   FeedDotxmlRoute: FeedDotxmlRoute,
-  DevSocketRoute: DevSocketRoute,
   PostsSlugRoute: PostsSlugRoute,
   TagsTagRoute: TagsTagRoute,
   PostsIndexRoute: PostsIndexRoute,

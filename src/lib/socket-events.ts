@@ -3,39 +3,44 @@
 // importing it adds nothing to any bundle.
 
 import type { Server, Socket } from 'socket.io'
+import type { SessionUser } from '~/lib/auth/types'
+import type { CommentView } from '~/lib/comments/comments.server'
 
-export type HelloPayload = {
-  message: string
-  serverTime: string
+/** Sent to a post's room when a comment has been stored. */
+export interface CommentCreatedPayload {
+  /** The post's route, for example `/posts/potential`. */
+  route: string
+  comment: CommentView
 }
 
-export type PingAck = {
-  message: string
-  serverTime: string
-  received: unknown
-}
-
-export type DevBroadcastPayload = {
-  message: string
-  serverTime: string
-}
+/** Answer to `post:join` and `post:leave`. */
+export type RoomAck =
+  | { ok: true }
+  | { ok: false; reason: 'invalid' | 'unknown_post' | 'too_many_rooms' }
 
 export interface ServerToClientEvents {
-  /** Sent to each socket right after it connects. */
-  hello: (payload: HelloPayload) => void
-  /** Emitted to everyone by the `/dev/socket` server function (temporary). */
-  'dev:broadcast': (payload: DevBroadcastPayload) => void
+  /** A comment was posted on a post this socket has joined. */
+  'comment:created': (payload: CommentCreatedPayload) => void
 }
 
+/**
+ * The only things a client can say. Nothing here is relayed to other clients:
+ * comments reach the room only through the `createComment` server function.
+ */
 export interface ClientToServerEvents {
-  /** Round trip check: the server answers through the acknowledgement. */
-  ping: (payload: unknown, ack: (response: PingAck) => void) => void
+  /** Starts receiving `comment:created` for a post. Idempotent. */
+  'post:join': (route: string, ack?: (response: RoomAck) => void) => void
+  /** Stops receiving them. */
+  'post:leave': (route: string, ack?: (response: RoomAck) => void) => void
 }
 
 export interface InterServerEvents {}
 
-// Per-socket data, filled by handshake middleware (the session user, later).
-export interface SocketData {}
+// Per-socket data, filled by the handshake middleware in server/socket.ts.
+export interface SocketData {
+  /** The signed-in reader from the session cookie, or null for a visitor. */
+  user: SessionUser | null
+}
 
 /** The typed socket.io server (`getIO()` returns it). */
 export type IOServer = Server<

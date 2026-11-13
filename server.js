@@ -66,16 +66,6 @@ app.use((req, res, next) => {
 
 app.use(compression())
 
-// Temporary developer pages: never indexed (the routes also say so in <meta>).
-// Remove together with src/routes/dev/socket.tsx.
-app.use((req, res, next) => {
-  const pathname = req.path.toLowerCase()
-  if (pathname === '/dev' || pathname.startsWith('/dev/')) {
-    res.setHeader('X-Robots-Tag', 'noindex, nofollow')
-  }
-  next()
-})
-
 // YouTube embeds refuse to play without a Referer, which helmet's default
 // `no-referrer` would strip. Google Identity Services' popup needs
 // `same-origin-allow-popups`.
