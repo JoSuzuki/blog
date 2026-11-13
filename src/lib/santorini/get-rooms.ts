@@ -32,8 +32,12 @@ export const getRooms = createServerFn({ method: 'GET' }).handler(
           take: 50,
           select: {
             roomCode: true,
-            creator: { select: { name: true } },
-            _count: { select: { players: true } },
+            // In the order they sat down. A waiting room always has someone
+            // in it: it is deleted when its last player leaves.
+            players: {
+              orderBy: { id: 'asc' },
+              select: { user: { select: { name: true } } },
+            },
           },
         }),
       ])
@@ -42,8 +46,8 @@ export const getRooms = createServerFn({ method: 'GET' }).handler(
         activeRoomCode,
         rooms: rooms.map((room) => ({
           roomCode: room.roomCode,
-          creatorName: toDisplayName(room.creator.name),
-          playerCount: room._count.players,
+          hostName: toDisplayName(room.players[0]?.user.name ?? ''),
+          playerCount: room.players.length,
         })),
       }
     } catch (error) {

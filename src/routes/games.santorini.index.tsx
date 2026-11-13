@@ -104,7 +104,7 @@ function Rooms({ rooms }: RoomsProps) {
             >
               <span className="text-accent wght-bold">{room.roomCode}</span>
               <span>
-                de {room.creatorName} - {room.playerCount}/{ROOM_SIZE}
+                de {room.hostName} - {room.playerCount}/{ROOM_SIZE}
               </span>
               <Button
                 type="button"

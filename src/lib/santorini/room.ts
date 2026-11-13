@@ -26,7 +26,8 @@ export interface RoomView {
 /** A room in the list of rooms waiting for players. */
 export interface RoomSummary {
   roomCode: string
-  creatorName: string
+  /** Whoever has been in the room the longest (its creator, unless they left). */
+  hostName: string
   playerCount: number
 }
 
