@@ -1,50 +1,82 @@
 {
   "name": "portfolio",
   "version": "1.0.0",
-  "main": "index.js",
+  "private": true,
   "license": "MIT",
-  "scripts": {
-    "dev": "next",
-    "build": "next build && node ./.next/server/gen-rss.js",
-    "start": "next start",
-    "postinstall": "prisma generate"
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
   },
-  "dependencies": {
-    "@mdx-js/react": "^1.6.18",
-    "@prisma/client": "5.18.0",
-    "@sendgrid/mail": "^7.4.5",
-    "@tailwindcss/typography": "^0.2.0",
-    "@vercel/analytics": "^1.0.2",
-    "faunadb": "^4.3.0",
-    "feed": "^4.2.2",
-    "github-slugger": "^1.4.0",
-    "google-auth-library": "^9.14.0",
-    "gray-matter": "^4.0.2",
-    "iron-session": "^8.0.3",
-    "next": "^11.1.3",
-    "next-mdx-remote": "^3.0.4",
-    "nextra": "^0.4.4",
-    "prism-react-renderer": "^1.1.1",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development node --env-file-if-exists=.env server.js",
+    "build": "vite build",
+    "start": "cross-env NODE_ENV=production node --env-file-if-exists=.env server.js",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
+    "postinstall": "prisma generate",
+    "db:up": "docker compose up -d",
+    "db:migrate": "prisma migrate deploy",
+    "db:seed": "prisma db seed"
   },
   "prettier": {
     "arrowParens": "always",
     "singleQuote": true,
     "tabWidth": 2,
     "trailingComma": "all",
-    "semi": false
+    "semi": false,
+    "plugins": [
+      "prettier-plugin-tailwindcss"
+    ],
+    "tailwindStylesheet": "./src/app.css"
+  },
+  "prisma": {
+    "seed": "tsx --env-file-if-exists=.env prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^6.19.3",
+    "@prisma/client": "^6.19.3",
+    "@sendgrid/mail": "^8.1.6",
+    "@tanstack/react-router": "^1.170.46",
+    "@tanstack/react-start": "^1.169.5",
+    "compression": "^1.8.2",
+    "cookie": "^2.0.2",
+    "express": "^5.3.0",
+    "feed": "^4.2.2",
+    "google-auth-library": "^11.3.4",
+    "helmet": "^8.3.0",
+    "iron-session": "^9.1.0",
+    "morgan": "^1.12.1",
+    "prism-react-renderer": "^2.4.1",
+    "prisma": "^6.19.3",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "socket.io": "^4.8.4",
+    "socket.io-client": "^4.8.4",
+    "srvx": "^1.0.8",
+    "tsx": "^4.23.15",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@types/github-slugger": "^1.3.0",
-    "@types/mdx-js__react": "^1.5.4",
-    "@types/node": "^16.3.1",
-    "@types/react": "^17.0.14",
-    "@types/react-dom": "^17.0.9",
-    "microbundle": "^0.12.4",
-    "postcss": "^8.2.8",
-    "prisma": "^5.18.0",
-    "tailwindcss": "^1.8.10",
-    "typescript": "^5.5.4"
+    "@mdx-js/rollup": "^3.1.1",
+    "@tailwindcss/vite": "^4.3.5",
+    "@types/compression": "^1.8.1",
+    "@types/express": "^5.0.6",
+    "@types/hast": "^3.0.5",
+    "@types/mdx": "^2.0.14",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "cross-env": "^10.1.0",
+    "github-slugger": "^2.0.0",
+    "prettier": "^3.10.1",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "remark-frontmatter": "^5.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-mdx-frontmatter": "^6.0.0",
+    "tailwindcss": "^4.3.5",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "yaml": "^2.9.1"
   }
 }

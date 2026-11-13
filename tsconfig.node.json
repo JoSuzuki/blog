@@ -1,0 +1,25 @@
+{
+  "include": [
+    "server.js",
+    "vite.config.ts",
+    "src/content/vite-plugins.ts",
+    "src/content/rehype-heading-slugs.ts",
+    "src/content/post-schema.ts"
+  ],
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "allowJs": true,
+    "checkJs": true,
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  }
+}

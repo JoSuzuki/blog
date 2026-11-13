@@ -1,0 +1,19 @@
+# Local Postgres for development. Host port 5433 and the `blog-` names keep it
+# clear of mazeps's database (5432) and volumes.
+name: blog-dev
+
+services:
+  blog-db:
+    image: postgres:15-alpine
+    container_name: blog-dev-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: blog
+    ports:
+      - '5433:5432'
+    volumes:
+      - blog_dev_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  blog_dev_postgres_data:
