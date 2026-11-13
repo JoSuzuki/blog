@@ -59,6 +59,12 @@ const handleWithStart = async (serverEntry, req, res) => {
 app.set('trust proxy', true)
 app.disable('x-powered-by')
 
+// Liveness for the platform's health check: answered before the HTTPS redirect
+// and every other middleware, and it does not touch the database.
+app.get('/healthz', (req, res) => {
+  res.set('Cache-Control', 'no-store').type('text/plain').send('ok')
+})
+
 app.use((req, res, next) => {
   res.locals.cspNonce = crypto.randomBytes(16).toString('base64')
   next()
