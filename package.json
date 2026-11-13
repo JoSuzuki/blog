@@ -5,10 +5,14 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development node server.js",
+    "dev": "cross-env NODE_ENV=development node --env-file-if-exists=.env server.js",
     "build": "vite build",
-    "start": "cross-env NODE_ENV=production node server.js",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json"
+    "start": "cross-env NODE_ENV=production node --env-file-if-exists=.env server.js",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
+    "postinstall": "prisma generate",
+    "db:up": "docker compose up -d",
+    "db:migrate": "prisma migrate deploy",
+    "db:seed": "prisma db seed"
   },
   "prettier": {
     "arrowParens": "always",
@@ -21,8 +25,14 @@
     ],
     "tailwindStylesheet": "./src/app.css"
   },
+  "prisma": {
+    "seed": "tsx --env-file-if-exists=.env prisma/seed.ts"
+  },
   "dependencies": {
     "@mdx-js/rollup": "^3.1.1",
+    "@prisma/adapter-pg": "^6.19.3",
+    "@prisma/client": "^6.19.3",
+    "@sendgrid/mail": "^8.1.6",
     "@tanstack/react-router": "^1.170.46",
     "@tanstack/react-start": "^1.169.5",
     "compression": "^1.8.2",
@@ -57,7 +67,9 @@
     "cross-env": "^10.1.0",
     "prettier": "^3.10.1",
     "prettier-plugin-tailwindcss": "^0.8.1",
+    "prisma": "^6.19.3",
     "tailwindcss": "^4.3.5",
+    "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vite": "^8.3.8"
   }

@@ -5,12 +5,15 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client"
+  output     = "../src/generated/prisma"
+  engineType = "client"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -22,4 +25,25 @@ model User {
   updatedAt DateTime @updatedAt
 
   @@index([email])
+}
+
+// A reader's comment on a post. `route` is the post's route (`/posts/<slug>`).
+// `faunaId` is the id the comment had in the FaunaDB backup it was imported
+// from (null for comments written on the site), so the import can be repeated.
+model Comment {
+  id        Int      @id @default(autoincrement())
+  route     String
+  name      String
+  comment   String
+  createdAt DateTime @default(now())
+  faunaId   String?  @unique
+
+  // Listing a post's comments, oldest first.
+  @@index([route, createdAt])
+}
+
+// One page-view counter per route.
+model HitCounter {
+  route String @id
+  hits  Int    @default(0)
 }
