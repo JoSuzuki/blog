@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import type { FormEventHandler } from 'react'
 import Button from '~/components/button/button'
 import Input from '~/components/input/input'
+import { useSessionContext } from '~/components/session-provider/session-provider'
 import TextArea from '~/components/text-area/text-area'
 import { createComment } from '~/lib/comments/functions'
 import {
@@ -22,6 +23,7 @@ const CommentForm = ({ route, onCreated }: CommentFormProps) => {
   const sending = useRef(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { session } = useSessionContext()
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault()
@@ -55,7 +57,13 @@ const CommentForm = ({ route, onCreated }: CommentFormProps) => {
 
   return (
     <form ref={formRef} onSubmit={handleSubmit}>
-      <Input name="name" label="Nome" maxLength={NAME_MAX_LENGTH} />
+      {/* As on the legacy site, the name starts as the logged-in reader's. */}
+      <Input
+        name="name"
+        label="Nome"
+        maxLength={NAME_MAX_LENGTH}
+        defaultValue={session?.name}
+      />
       <TextArea
         name="comment"
         label="Comentário"
