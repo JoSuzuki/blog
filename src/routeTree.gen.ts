@@ -13,9 +13,12 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AtomDotxmlRouteImport } from './routes/atom[.]xml'
 import { Route as FeedDotjsonRouteImport } from './routes/feed[.]json'
 import { Route as FeedDotxmlRouteImport } from './routes/feed[.]xml'
+import { Route as GamesIndexRouteImport } from './routes/games.index'
 import { Route as PostsIndexRouteImport } from './routes/posts.index'
 import { Route as PostsSlugRouteImport } from './routes/posts.$slug'
 import { Route as TagsTagRouteImport } from './routes/tags.$tag'
+import { Route as GamesSantoriniIndexRouteImport } from './routes/games.santorini.index'
+import { Route as GamesSantoriniRoomCodeRouteImport } from './routes/games.santorini.$roomCode'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -37,6 +40,11 @@ const FeedDotxmlRoute = FeedDotxmlRouteImport.update({
   path: '/feed.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GamesIndexRoute = GamesIndexRouteImport.update({
+  id: '/games/',
+  path: '/games/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PostsIndexRoute = PostsIndexRouteImport.update({
   id: '/posts/',
   path: '/posts/',
@@ -52,6 +60,16 @@ const TagsTagRoute = TagsTagRouteImport.update({
   path: '/tags/$tag',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GamesSantoriniIndexRoute = GamesSantoriniIndexRouteImport.update({
+  id: '/games/santorini/',
+  path: '/games/santorini/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GamesSantoriniRoomCodeRoute = GamesSantoriniRoomCodeRouteImport.update({
+  id: '/games/santorini/$roomCode',
+  path: '/games/santorini/$roomCode',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -60,7 +78,10 @@ export interface FileRoutesByFullPath {
   '/feed.xml': typeof FeedDotxmlRoute
   '/posts/$slug': typeof PostsSlugRoute
   '/tags/$tag': typeof TagsTagRoute
+  '/games/': typeof GamesIndexRoute
   '/posts/': typeof PostsIndexRoute
+  '/games/santorini/$roomCode': typeof GamesSantoriniRoomCodeRoute
+  '/games/santorini/': typeof GamesSantoriniIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -69,7 +90,10 @@ export interface FileRoutesByTo {
   '/feed.xml': typeof FeedDotxmlRoute
   '/posts/$slug': typeof PostsSlugRoute
   '/tags/$tag': typeof TagsTagRoute
+  '/games': typeof GamesIndexRoute
   '/posts': typeof PostsIndexRoute
+  '/games/santorini/$roomCode': typeof GamesSantoriniRoomCodeRoute
+  '/games/santorini': typeof GamesSantoriniIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -79,7 +103,10 @@ export interface FileRoutesById {
   '/feed.xml': typeof FeedDotxmlRoute
   '/posts/$slug': typeof PostsSlugRoute
   '/tags/$tag': typeof TagsTagRoute
+  '/games/': typeof GamesIndexRoute
   '/posts/': typeof PostsIndexRoute
+  '/games/santorini/$roomCode': typeof GamesSantoriniRoomCodeRoute
+  '/games/santorini/': typeof GamesSantoriniIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -90,7 +117,10 @@ export interface FileRouteTypes {
     | '/feed.xml'
     | '/posts/$slug'
     | '/tags/$tag'
+    | '/games/'
     | '/posts/'
+    | '/games/santorini/$roomCode'
+    | '/games/santorini/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -99,7 +129,10 @@ export interface FileRouteTypes {
     | '/feed.xml'
     | '/posts/$slug'
     | '/tags/$tag'
+    | '/games'
     | '/posts'
+    | '/games/santorini/$roomCode'
+    | '/games/santorini'
   id:
     | '__root__'
     | '/'
@@ -108,7 +141,10 @@ export interface FileRouteTypes {
     | '/feed.xml'
     | '/posts/$slug'
     | '/tags/$tag'
+    | '/games/'
     | '/posts/'
+    | '/games/santorini/$roomCode'
+    | '/games/santorini/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -118,7 +154,10 @@ export interface RootRouteChildren {
   FeedDotxmlRoute: typeof FeedDotxmlRoute
   PostsSlugRoute: typeof PostsSlugRoute
   TagsTagRoute: typeof TagsTagRoute
+  GamesIndexRoute: typeof GamesIndexRoute
   PostsIndexRoute: typeof PostsIndexRoute
+  GamesSantoriniRoomCodeRoute: typeof GamesSantoriniRoomCodeRoute
+  GamesSantoriniIndexRoute: typeof GamesSantoriniIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -151,6 +190,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeedDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/games/': {
+      id: '/games/'
+      path: '/games'
+      fullPath: '/games/'
+      preLoaderRoute: typeof GamesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/posts/': {
       id: '/posts/'
       path: '/posts'
@@ -172,6 +218,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TagsTagRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/games/santorini/': {
+      id: '/games/santorini/'
+      path: '/games/santorini'
+      fullPath: '/games/santorini/'
+      preLoaderRoute: typeof GamesSantoriniIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/games/santorini/$roomCode': {
+      id: '/games/santorini/$roomCode'
+      path: '/games/santorini/$roomCode'
+      fullPath: '/games/santorini/$roomCode'
+      preLoaderRoute: typeof GamesSantoriniRoomCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -182,7 +242,10 @@ const rootRouteChildren: RootRouteChildren = {
   FeedDotxmlRoute: FeedDotxmlRoute,
   PostsSlugRoute: PostsSlugRoute,
   TagsTagRoute: TagsTagRoute,
+  GamesIndexRoute: GamesIndexRoute,
   PostsIndexRoute: PostsIndexRoute,
+  GamesSantoriniRoomCodeRoute: GamesSantoriniRoomCodeRoute,
+  GamesSantoriniIndexRoute: GamesSantoriniIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

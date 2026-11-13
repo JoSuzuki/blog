@@ -55,6 +55,7 @@ named after it, holding the whole flow from validation to the response:
 src/lib/comments/create-comment.ts   validate, honeypot, rate limit, store, broadcast, email
 src/lib/comments/get-comments.ts
 src/lib/hits/register-hit.ts
+src/lib/santorini/play-action.ts     and nine more, see Games below
 src/lib/auth/login.ts                validate, rate limit, verify the Google token, record the user, set the session
 src/lib/auth/get-session.ts
 src/lib/auth/logout.ts
@@ -62,9 +63,11 @@ src/lib/auth/logout.ts
 
 Only what more than one flow uses is a module of its own, and those are `.server.ts` files:
 `rate-limit.server.ts`, `db.server.ts`, `auth/session.server.ts` (the session cookie, also read by
-the socket handshake), `auth/google.server.ts` (ID token verification), `realtime/io.server.ts`
-(`getIO()`), `feeds/feeds.server.ts` (the three feed routes). `comments/comment.ts`,
-`auth/session-user.ts` and `realtime/events.ts` are the types and constants shared with the browser.
+the socket handshake), `auth/current-user.server.ts` (the logged-in reader's `User` row),
+`auth/google.server.ts` (ID token verification), `realtime/io.server.ts` (`getIO()`),
+`santorini/room.server.ts`, `feeds/feeds.server.ts` (the three feed routes). `comments/comment.ts`,
+`auth/session-user.ts`, `santorini/room.ts`, `santorini/game.ts` and `realtime/events.ts` are the
+types, constants and rules shared with the browser.
 
 An action file is imported by components, so it is compiled for the browser too: the compiler
 replaces the handler with a request and removes what only the handler used. For that to hold, use
@@ -72,6 +75,33 @@ replaces the handler with a request and removes what only the handler used. For 
 example, no `const limiter = createRateLimiter(...)` at the top of an action; `takeRateLimit` keeps
 the limiters instead). TanStack Start's import protection checks this: the build fails, and `npm run
 dev` warns, if a `.server` module would reach the browser.
+
+### Games: Santorini
+
+`/games` lists the games; the first is Santorini, a two-player board game ported from mazeps. A
+reader has to be logged in to play, since a seat in a room belongs to a `User`.
+
+```
+/games                       the list of games
+/games/santorini             rooms waiting for a second player; create or join one
+/games/santorini/$roomCode   one page for the room's whole life: lobby, board, result
+```
+
+- **Rules** are pure functions in `src/lib/santorini/game.ts`, used by the server to decide what
+  is legal and by the board to show what can be clicked. A turn is a list of pending steps
+  (select, move, build) that can be undone until it is committed.
+- **Actions** follow the one-file rule: `create-room`, `join-room`, `leave-room`, `start-game`,
+  `play-action`, `commit-turn`, `undo-turn`, `resign`, and the loaders' `get-rooms` and `get-room`.
+  What they share (finding the reader's seat, the guarded write, announcing a change) is in
+  `room.server.ts`. Every write checks the room's `updatedAt`, so two requests cannot both win.
+- **Live updates** use the same socket.io connection as comments. After a change the server emits
+  `santorini:changed` to the room's channel (and to `lobby` when the list changes) with no data in
+  it; the pages answer by running their loader again, which is where permissions are checked.
+- **The board** (`src/components/santorini/board.tsx`) is three.js through react-three-fiber. It
+  is a chunk of its own (about 970 KB), fetched only by a page that shows a board and never
+  rendered on the server, which is why those packages are `devDependencies`.
+- **Data**: `SantoriniRoom` and `SantoriniRoomPlayer` in `prisma/schema.prisma`. The game state is
+  one JSON column.
 
 ## Local development
 
