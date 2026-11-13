@@ -13,9 +13,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AtomDotxmlRouteImport } from './routes/atom[.]xml'
 import { Route as FeedDotjsonRouteImport } from './routes/feed[.]json'
 import { Route as FeedDotxmlRouteImport } from './routes/feed[.]xml'
-import { Route as PostsIndexRouteImport } from './routes/posts/index'
-import { Route as PostsSlugRouteImport } from './routes/posts/$slug'
-import { Route as TagsTagRouteImport } from './routes/tags/$tag'
+import { Route as PostsIndexRouteImport } from './routes/posts.index'
+import { Route as PostsSlugRouteImport } from './routes/posts.$slug'
+import { Route as TagsTagRouteImport } from './routes/tags.$tag'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',

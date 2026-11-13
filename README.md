@@ -14,7 +14,7 @@ server, stored in an iron-session sealed cookie), which only pre-fills the comme
 
 ```
 content/posts/   the posts (one .mdx file per post; the file name is the URL slug)
-src/routes/      file-based routes, pages and feeds
+src/routes/      file-based routes, pages and feeds, with flat file names (`posts.$slug.tsx` is `/posts/$slug`)
 src/components/  UI components (Tailwind utilities; tokens in src/app.css)
 src/content/     post collection, frontmatter schema, MDX Vite plugins
 src/lib/         actions (server functions) and what they share; see below
