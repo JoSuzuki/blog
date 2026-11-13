@@ -1,4 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
+import { getCurrentUser } from '~/lib/auth/current-user.server'
 import { prisma } from '~/lib/db.server'
 import type { RoomActionError } from './room'
 import { announce, findSeat, refuse, refused } from './room.server'
@@ -6,13 +7,13 @@ import { announce, findSeat, refuse, refused } from './room.server'
 /**
  * Gets the reader up from a room that is still waiting. The room is deleted
  * when its last player leaves. Once the game has started the way out is
- * `resign`.
+ * resigning.
  */
 export const leaveRoom = createServerFn({ method: 'POST' })
   .validator((data: { roomCode: string }) => data)
   .handler(async ({ data }): Promise<{ ok: true } | RoomActionError> => {
     // 1. The reader's seat in the room.
-    const seat = await findSeat(data)
+    const seat = await findSeat(await getCurrentUser(), data?.roomCode)
     if ('ok' in seat) return refused(seat)
     if (seat.room.status !== 'WAITING') {
       return refused(

@@ -63,6 +63,7 @@ function Room({ room }: { room: RoomView }) {
   if (room.myPlayerId === null) return null
   return (
     <SantoriniGame
+      key={room.roomCode}
       room={room}
       gameState={room.gameState}
       playerId={room.myPlayerId}

@@ -21,6 +21,8 @@ export interface RoomView {
   myPlayerId: number | null
   /** Null until the game starts. */
   gameState: GameState | null
+  /** Grows with every write to the room (see SantoriniGameUpdate). */
+  version: number
 }
 
 /** A room in the list of rooms waiting for players. */
@@ -39,6 +41,12 @@ export const ROOM_CODE_PATTERN = /^[A-Z0-9]{6}$/
 /** Why a room action was refused; `message` is ready to show. */
 export interface RoomActionError {
   ok: false
-  error: 'login' | 'not_found' | 'invalid' | 'conflict' | 'rate_limited'
+  error:
+    | 'login'
+    | 'not_found'
+    | 'invalid'
+    | 'conflict'
+    | 'rate_limited'
+    | 'unavailable'
   message: string
 }

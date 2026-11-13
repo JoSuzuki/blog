@@ -1,8 +1,15 @@
 import { ClientOnly } from '@tanstack/react-router'
-import { Suspense, lazy, useMemo } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import Button from '~/components/button/button'
 import CommonLink from '~/components/common-link/common-link'
-import { commitTurn } from '~/lib/santorini/commit-turn'
+import type { SantoriniGameUpdate } from '~/lib/realtime/events'
+import {
+  commitTurn,
+  playAction,
+  resign,
+  subscribeToGames,
+  undoTurn,
+} from '~/lib/realtime/santorini-socket'
 import { applyTurnActions, getNextActionType } from '~/lib/santorini/game'
 import type {
   ActionType,
@@ -10,12 +17,9 @@ import type {
   Position,
   Worker,
 } from '~/lib/santorini/game'
-import { playAction } from '~/lib/santorini/play-action'
-import { resign } from '~/lib/santorini/resign'
 import type { RoomView } from '~/lib/santorini/room'
-import { undoTurn } from '~/lib/santorini/undo-turn'
 import { ActionError } from './notices'
-import { useRoomAction } from './use-room-actions'
+import { useReloadSantorini, useRoomAction } from './use-room-actions'
 
 // three.js is large: the board is its own chunk, fetched only on this page
 // and only in the browser.
@@ -30,37 +34,66 @@ const TURN_HINTS: Record<ActionType, string> = {
 }
 
 interface SantoriniGameProps {
+  /** The room as the loader read it. */
   room: RoomView
   gameState: GameState
   /** The viewer's seat. */
   playerId: number
 }
 
-/** A game being played, or its final position once it is over. */
-const SantoriniGame = ({ room, gameState, playerId }: SantoriniGameProps) => {
-  const { run, pending, error } = useRoomAction()
+/**
+ * A game being played, or its final position once it is over.
+ *
+ * The game is played over the socket: a click sends an event, and every new
+ * state is pushed to both players. The loader's room is where the page
+ * starts from (and comes back to after a reconnection); from then on the
+ * newer of the two, by `version`, is what is shown.
+ */
+const SantoriniGame = (props: SantoriniGameProps) => {
+  const { room, playerId } = props
   const { roomCode } = room
-  const playing = room.status === 'PLAYING'
+  const { run, pending, error } = useRoomAction({ reload: false })
+  const reload = useReloadSantorini()
+
+  const [pushed, setPushed] = useState<SantoriniGameUpdate | null>(null)
+  useEffect(
+    () =>
+      subscribeToGames((update) => {
+        if (update.roomCode !== roomCode) return
+        setPushed((current) =>
+          current && current.version >= update.version ? current : update,
+        )
+        // The end of the game changes more than the board (who won, which
+        // rooms the reader is in): let the loaders catch up.
+        if (update.status === 'FINISHED') void reload()
+      }),
+    [roomCode, reload],
+  )
+  const live = pushed && pushed.version > room.version ? pushed : null
+
+  const gameState = live?.gameState ?? props.gameState
+  const playing = (live?.status ?? room.status) === 'PLAYING'
+  const winnerId = live
+    ? live.winnerId
+    : (room.players.find((player) => player.winner)?.id ?? null)
   const myTurn = gameState.currentTurn.playerId === playerId
   const nextActionType = playing ? getNextActionType(gameState, playerId) : null
   // The board shows the turn's pending steps as if they were played.
   const board = useMemo(() => applyTurnActions(gameState), [gameState])
 
   const opponent = room.players.find((player) => player.id !== playerId)
-  const winner = room.players.find((player) => player.winner)
+  const winner = room.players.find((player) => player.id === winnerId)
 
   const play = (tile: Position) => {
     if (!nextActionType || nextActionType === 'commit_actions') return
-    void run(() =>
-      playAction({ data: { roomCode, type: nextActionType, tile } }),
-    )
+    void run(() => playAction(roomCode, { type: nextActionType, tile }))
   }
   const handleWorkerClick = (worker: Worker) => {
     if (worker.playerId === playerId) play(worker.position)
   }
   const handleResign = () => {
     if (!window.confirm('Desistir da partida? O outro jogador vence.')) return
-    void run(() => resign({ data: { roomCode } }))
+    void run(() => resign(roomCode))
   }
 
   const status = !playing
@@ -110,7 +143,7 @@ const SantoriniGame = ({ room, gameState, playerId }: SantoriniGameProps) => {
           <Button
             type="button"
             disabled={pending}
-            onClick={() => void run(() => commitTurn({ data: { roomCode } }))}
+            onClick={() => void run(() => commitTurn(roomCode))}
           >
             Confirmar jogada
           </Button>
@@ -119,7 +152,7 @@ const SantoriniGame = ({ room, gameState, playerId }: SantoriniGameProps) => {
           <Button
             type="button"
             disabled={pending}
-            onClick={() => void run(() => undoTurn({ data: { roomCode } }))}
+            onClick={() => void run(() => undoTurn(roomCode))}
           >
             Desfazer jogada
           </Button>

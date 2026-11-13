@@ -1,4 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
+import { getCurrentUser } from '~/lib/auth/current-user.server'
 import { prisma } from '~/lib/db.server'
 import { createGameState } from './game'
 import { ROOM_SIZE } from './room'
@@ -19,7 +20,7 @@ export const startGame = createServerFn({ method: 'POST' })
   .validator((data: { roomCode: string }) => data)
   .handler(async ({ data }): Promise<{ ok: true } | RoomActionError> => {
     // 1. The reader's seat in the room.
-    const seat = await findSeat(data)
+    const seat = await findSeat(await getCurrentUser(), data?.roomCode)
     if ('ok' in seat) return refused(seat)
     const { room } = seat
 

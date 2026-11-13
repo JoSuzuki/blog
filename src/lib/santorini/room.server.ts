@@ -1,17 +1,20 @@
 import { setResponseStatus } from '@tanstack/react-start/server'
 import { z } from 'zod'
-import { getCurrentUser } from '~/lib/auth/current-user.server'
 import type { CurrentUser } from '~/lib/auth/current-user.server'
 import { prisma } from '~/lib/db.server'
-import { santoriniRoom } from '~/lib/realtime/events'
+import { santoriniRoom, userRoom } from '~/lib/realtime/events'
+import type { SantoriniGameUpdate } from '~/lib/realtime/events'
 import { getIO } from '~/lib/realtime/io.server'
 import type { GameState } from './game'
 import { ROOM_CODE_PATTERN } from './room'
 import type { RoomActionError, RoomView } from './room'
 
-// What the Santorini actions share: finding the room for the reader making
-// the request, turning a row into what the page gets, writing a move without
-// overwriting someone else's, and telling the other browsers.
+// What the Santorini actions share: finding the room and the seat of the
+// reader who is acting, turning a row into what the page gets, writing a move
+// without overwriting someone else's, and telling the other browsers. Used
+// both by server functions (the room's life: open, join, leave, start) and by
+// the socket's game events (the moves), so nothing here reads the request:
+// the caller says who the reader is.
 
 export const roomCodeSchema = z.string().regex(ROOM_CODE_PATTERN)
 
@@ -26,12 +29,13 @@ const REFUSAL_STATUS = {
   invalid: 400,
   conflict: 409,
   rate_limited: 429,
+  unavailable: 503,
 } as const
 
 /**
- * Answers a mutation with a refusal and the matching HTTP status. Not for
- * the functions loaders call: during server rendering those run inside the
- * page's request, where the status would become the page's.
+ * Answers a server function with a refusal and the matching HTTP status. Not
+ * for the functions loaders call: during server rendering those run inside
+ * the page's request, where the status would become the page's.
  */
 export const refused = (refusal: RoomActionError): RoomActionError => {
   setResponseStatus(REFUSAL_STATUS[refusal.error])
@@ -73,7 +77,10 @@ export type RoomRow = NonNullable<Awaited<ReturnType<typeof findRoom>>>
 export const toDisplayName = (name: string) =>
   name.trim().split(/\s+/)[0] || name
 
-export const toRoomView = (room: RoomRow, user: CurrentUser): RoomView => ({
+export const toRoomView = (
+  room: RoomRow,
+  user: Pick<CurrentUser, 'id'>,
+): RoomView => ({
   roomCode: room.roomCode,
   status: room.status,
   players: room.players.map((player) => ({
@@ -83,6 +90,7 @@ export const toRoomView = (room: RoomRow, user: CurrentUser): RoomView => ({
   })),
   myPlayerId: room.players.find((p) => p.userId === user.id)?.id ?? null,
   gameState: room.gameState as GameState | null,
+  version: room.updatedAt.getTime(),
 })
 
 /** The room a reader is sitting in that has not finished, if any. */
@@ -100,7 +108,6 @@ export const findActiveRoomCode = async (
 }
 
 export interface Seat {
-  user: CurrentUser
   room: RoomRow
   /** The reader's seat in the room. */
   playerId: number
@@ -109,21 +116,20 @@ export interface Seat {
 }
 
 /**
- * The room `input` names and the seat of the reader making the request, or
- * the refusal to answer with: not logged in, no such room, not sitting in it.
+ * The room called `roomCode` and the seat `user` has in it, or the refusal
+ * to answer with: not logged in, no such room, not sitting in it.
  */
 export const findSeat = async (
-  input: unknown,
+  user: Pick<CurrentUser, 'id'> | null,
+  roomCode: unknown,
 ): Promise<Seat | RoomActionError> => {
-  const parsed = z.object({ roomCode: roomCodeSchema }).safeParse(input)
-  if (!parsed.success) return ROOM_NOT_FOUND
-  const user = await getCurrentUser()
   if (!user) return LOGIN_REQUIRED
-  const room = await findRoom(parsed.data.roomCode)
+  const code = roomCodeSchema.safeParse(roomCode)
+  if (!code.success) return ROOM_NOT_FOUND
+  const room = await findRoom(code.data)
   const playerId = room?.players.find((p) => p.userId === user.id)?.id
   if (!room || playerId === undefined) return ROOM_NOT_FOUND
   return {
-    user,
     room,
     playerId,
     opponentId: room.players.find((p) => p.id !== playerId)?.id,
@@ -132,11 +138,12 @@ export const findSeat = async (
 
 /** A seat in a room whose game is being played, with the game. */
 export const findSeatInGame = async (
-  input: unknown,
+  user: Pick<CurrentUser, 'id'> | null,
+  roomCode: unknown,
 ): Promise<
   (Seat & { gameState: GameState; opponentId: number }) | RoomActionError
 > => {
-  const seat = await findSeat(input)
+  const seat = await findSeat(user, roomCode)
   if ('ok' in seat) return seat
   const gameState = seat.room.gameState as GameState | null
   if (
@@ -150,22 +157,27 @@ export const findSeatInGame = async (
 }
 
 /**
- * Writes the game back to the room it was read from, unless the room was
- * written in between (two clicks in a row, both players at once): then
- * nothing is written and the answer is false. With `winnerId` the game is
- * over and that seat is marked as the winner.
+ * Writes the game back to the room it was read from and returns what to
+ * send the players, unless the room was written in between (two clicks in a
+ * row, both players at once): then nothing is written and the answer is
+ * null. With `winnerId` the game is over and that seat is marked as the
+ * winner.
  */
 export const saveGame = async (
   room: RoomRow,
   gameState: GameState,
   winnerId?: number,
-): Promise<boolean> =>
-  prisma.$transaction(async (tx) => {
+): Promise<SantoriniGameUpdate | null> => {
+  // `updatedAt` is the room's version: always later than the one read.
+  const version = Math.max(Date.now(), room.updatedAt.getTime() + 1)
+  const status = winnerId === undefined ? 'PLAYING' : 'FINISHED'
+  const saved = await prisma.$transaction(async (tx) => {
     const { count } = await tx.santoriniRoom.updateMany({
       where: { id: room.id, updatedAt: room.updatedAt, status: 'PLAYING' },
       data: {
         gameState: gameState as object,
-        ...(winnerId === undefined ? {} : { status: 'FINISHED' as const }),
+        status,
+        updatedAt: new Date(version),
       },
     })
     if (count === 0) return false
@@ -177,11 +189,39 @@ export const saveGame = async (
     }
     return true
   })
+  if (!saved) return null
+  return {
+    roomCode: room.roomCode,
+    status,
+    gameState,
+    winnerId: winnerId ?? null,
+    version,
+  }
+}
+
+/**
+ * Pushes a game's new state to its two players, in every tab they have
+ * open, and to nobody else. Never throws: a player who misses it gets the
+ * state from the loader the next time their socket connects.
+ */
+export const sendToPlayers = (room: RoomRow, update: SantoriniGameUpdate) => {
+  try {
+    getIO()
+      .to(room.players.map((player) => userRoom(player.userId)))
+      .emit('santorini:game', update)
+  } catch (error) {
+    if (globalThis.__blogSocketIO) {
+      console.error('Sending a Santorini game update failed:', error)
+    }
+  }
+}
 
 /**
  * Tells the browsers showing a room (and, with `lobby`, the list of rooms)
- * that it changed, so they load it again. The event carries no data. Never
- * throws: without a socket.io server the pages are just not live.
+ * that it changed, so they load it again. This is for the room's life
+ * (opened, joined, left, started), which anyone looking at the list may
+ * hear about, so the event carries no data. Never throws: without a
+ * socket.io server the pages are just not live.
  */
 export const announce = (roomCode: string | null, lobby = false) => {
   try {

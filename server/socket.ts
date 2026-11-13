@@ -1,19 +1,27 @@
 import type { ExtendedError } from 'socket.io'
 import { isPostRoute } from '../src/content/posts'
+import { findOrCreateUser } from '../src/lib/auth/current-user.server'
 import { readSessionFromCookieHeader } from '../src/lib/auth/session.server'
+import { createRateLimiter } from '../src/lib/rate-limit.server'
 import {
   MAX_POST_ROOMS_PER_SOCKET,
   MAX_SANTORINI_ROOMS_PER_SOCKET,
   postRoom,
   santoriniRoom,
+  userRoom,
 } from '../src/lib/realtime/events'
 import type {
   ClientToServerEvents,
   IOServer,
   IOSocket,
   RoomAck,
+  SantoriniAck,
 } from '../src/lib/realtime/events'
+import { commitTurn } from '../src/lib/santorini/commit-turn.server'
+import { playAction } from '../src/lib/santorini/play-action.server'
+import { resign } from '../src/lib/santorini/resign.server'
 import { ROOM_CODE_PATTERN } from '../src/lib/santorini/room'
+import { undoTurn } from '../src/lib/santorini/undo-turn.server'
 import { getSiteOrigin } from '../src/lib/site'
 
 type Middleware = (
@@ -75,6 +83,33 @@ const logName = (name: string | undefined) =>
   // eslint-disable-next-line no-control-regex
   (name ?? '').replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 60) || 'anonymous'
 
+/**
+ * Finds the `User` row of the socket's reader and puts the socket in that
+ * reader's room, which is how game updates reach a player. Done once per
+ * socket: at the handshake, or on the first game event if the database was
+ * unreachable then. Null for a visitor; throws if the database is down.
+ */
+const identify = async (socket: IOSocket): Promise<number | null> => {
+  // `== null`: a socket that connected before a dev reload has no field yet.
+  if (socket.data.userId != null || !socket.data.user) {
+    return socket.data.userId ?? null
+  }
+  const { id } = await findOrCreateUser(socket.data.user)
+  socket.data.userId = id
+  void socket.join(userRoom(id))
+  return id
+}
+
+/**
+ * Game events per reader: 40 in 10 seconds. A turn is four of them, so this
+ * is far above play and only stops a client that sends them in a loop.
+ */
+const gameEventLimiter = createRateLimiter({
+  limit: 40,
+  windowMs: 10_000,
+  maxKeys: 5000,
+})
+
 const joinedPostRooms = (socket: IOSocket) =>
   [...socket.rooms].filter((room) => room.startsWith('post:'))
 
@@ -112,19 +147,22 @@ export function registerSocketHandlers(io: IOServer): () => void {
   })
 
   // 2. Read the session from the handshake's Cookie header. Visitors without
-  // a (valid) session connect as anonymous: nothing here requires login.
+  // a (valid) session connect as anonymous: only the game events need a
+  // reader. A logged-in reader is identified here (one indexed query), so
+  // that the socket is in their room before any game update is sent; if the
+  // database is down the socket still connects and is identified later.
   use((socket, next) => {
-    readSessionFromCookieHeader(socket.handshake.headers.cookie).then(
-      (user) => {
+    socket.data.user = null
+    socket.data.userId = null
+    readSessionFromCookieHeader(socket.handshake.headers.cookie)
+      .then((user) => {
         socket.data.user = user
-        next()
-      },
-      // readSessionFromCookieHeader never rejects; belt and braces.
-      () => {
-        socket.data.user = null
-        next()
-      },
-    )
+        return identify(socket)
+      })
+      .catch((error: unknown) => {
+        console.error('[socket] could not identify a reader:', error)
+      })
+      .then(() => next())
   })
 
   const listen = <E extends keyof ClientToServerEvents>(
@@ -189,6 +227,45 @@ export function registerSocketHandlers(io: IOServer): () => void {
     return { ok: true }
   }
 
+  // A Santorini game event: only a logged-in reader may send one, and every
+  // one is answered. What the event does, and to whom the result is sent,
+  // is in the action's own module under src/lib/santorini.
+  const play = (
+    socket: IOSocket,
+    ack: unknown,
+    action: (userId: number) => Promise<SantoriniAck>,
+  ) => {
+    const answer = (response: SantoriniAck) => {
+      if (typeof ack === 'function') ack(response)
+    }
+    identify(socket)
+      .then((userId) => {
+        if (userId === null) {
+          return {
+            ok: false,
+            error: 'login',
+            message: 'Faça login para jogar.',
+          } as const
+        }
+        if (!gameEventLimiter.take(String(userId)).allowed) {
+          return {
+            ok: false,
+            error: 'rate_limited',
+            message: 'Jogadas demais em pouco tempo. Espere um instante.',
+          } as const
+        }
+        return action(userId)
+      })
+      .then(answer, (error: unknown) => {
+        console.error('[socket] a Santorini game event failed:', error)
+        answer({
+          ok: false,
+          error: 'unavailable',
+          message: 'Não foi possível fazer a jogada agora. Tente de novo.',
+        })
+      })
+  }
+
   const onConnection = (socket: IOSocket, announce = true) => {
     socketCleanups.set(socket, [])
     const onDisconnect = () => socketCleanups.delete(socket)
@@ -214,6 +291,18 @@ export function registerSocketHandlers(io: IOServer): () => void {
     })
     listen(socket, 'santorini:leave', (channel, ack) => {
       reply(ack, leaveSantoriniRoom(socket, channel))
+    })
+    listen(socket, 'santorini:action', (roomCode, action, ack) => {
+      play(socket, ack, (userId) => playAction(userId, roomCode, action))
+    })
+    listen(socket, 'santorini:commit', (roomCode, ack) => {
+      play(socket, ack, (userId) => commitTurn(userId, roomCode))
+    })
+    listen(socket, 'santorini:undo', (roomCode, ack) => {
+      play(socket, ack, (userId) => undoTurn(userId, roomCode))
+    })
+    listen(socket, 'santorini:resign', (roomCode, ack) => {
+      play(socket, ack, (userId) => resign(userId, roomCode))
     })
   }
 
