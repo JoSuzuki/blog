@@ -4,10 +4,11 @@ interface InputProps {
   name: string
   label: string
   defaultValue?: string
+  maxLength?: number
   ref?: Ref<HTMLInputElement>
 }
 
-const Input = ({ name, label, defaultValue, ref }: InputProps) => {
+const Input = ({ name, label, defaultValue, maxLength, ref }: InputProps) => {
   return (
     <div>
       <label htmlFor={name} className="block">
@@ -19,6 +20,7 @@ const Input = ({ name, label, defaultValue, ref }: InputProps) => {
         id={name}
         name={name}
         defaultValue={defaultValue}
+        maxLength={maxLength}
         required
         className="mb-sm block w-full border border-accent bg-transparent"
       />

@@ -3,10 +3,11 @@ import type { Ref } from 'react'
 interface TextAreaProps {
   name: string
   label: string
+  maxLength?: number
   ref?: Ref<HTMLTextAreaElement>
 }
 
-const TextArea = ({ name, label, ref }: TextAreaProps) => {
+const TextArea = ({ name, label, maxLength, ref }: TextAreaProps) => {
   return (
     <div>
       <label htmlFor={name} className="block">
@@ -16,6 +17,7 @@ const TextArea = ({ name, label, ref }: TextAreaProps) => {
         ref={ref}
         id={name}
         name={name}
+        maxLength={maxLength}
         required
         className="mb-sm block w-full border border-accent bg-transparent"
       />
