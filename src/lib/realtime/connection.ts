@@ -45,6 +45,16 @@ export const acquireSocket = (): ClientSocket => {
   return socket
 }
 
+/**
+ * Connects again if there is a connection. The server reads the session
+ * cookie once, at the handshake, so this is what follows a login or logout:
+ * the new connection carries the new identity, and the 'connect' listeners
+ * join their rooms again.
+ */
+export const reconnectSocket = () => {
+  if (socket) socket.disconnect().connect()
+}
+
 export const releaseSocket = () => {
   users -= 1
   if (users > 0) return

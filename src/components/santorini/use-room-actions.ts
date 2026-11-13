@@ -1,22 +1,13 @@
-import { useRouter } from '@tanstack/react-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { subscribeToSantorini } from '~/lib/realtime/santorini-socket'
 import type { RoomActionError } from '~/lib/santorini/room'
+import { useReload } from '~/lib/use-reload'
 
 /**
  * Runs the Santorini loaders again. The pages show loader data only, so this
  * is what follows every action and every change someone else made.
  */
-export const useReloadSantorini = () => {
-  const router = useRouter()
-  return useCallback(
-    () =>
-      router.invalidate({
-        filter: (match) => match.routeId.startsWith('/games/santorini'),
-      }),
-    [router],
-  )
-}
+export const useReloadSantorini = () => useReload('/games/santorini')
 
 /**
  * Keeps a Santorini page live: its loader runs again whenever the channel
@@ -35,12 +26,16 @@ export const useLiveSantorini = (channel: string) => {
 type ActionResult = { ok: true } | RoomActionError
 
 /**
- * Runs room actions one at a time (a click while one is in flight is
- * dropped), keeps the last refusal's message for the page to show, and runs
- * the loaders again afterwards. `run` resolves to the action's result, or to
- * null when it was dropped or failed to reach the server.
+ * Runs actions one at a time (a click while one is in flight is dropped)
+ * and keeps the last refusal's message for the page to show. `run` resolves
+ * to the action's result, or to null when it was dropped or failed to reach
+ * the server.
+ *
+ * By default the loaders run again afterwards, which is what a server
+ * function about a room's life needs. A game move over the socket passes
+ * `reload: false`: its result is pushed to the page as `santorini:game`.
  */
-export const useRoomAction = () => {
+export const useRoomAction = ({ reload: reloadAfter = true } = {}) => {
   const reload = useReloadSantorini()
   const running = useRef(false)
   const [pending, setPending] = useState(false)
@@ -55,7 +50,7 @@ export const useRoomAction = () => {
       try {
         const result = await action()
         if (!result.ok) setError(result.message)
-        await reload()
+        if (reloadAfter) await reload()
         return result
       } catch {
         setError('Não foi possível falar com o servidor. Tente de novo.')
@@ -65,7 +60,7 @@ export const useRoomAction = () => {
         setPending(false)
       }
     },
-    [reload],
+    [reload, reloadAfter],
   )
 
   return { run, pending, error }

@@ -46,7 +46,7 @@ export const Route = createRootRoute({
   // unseal, no database) and sent to the client with the page, so the top bar
   // renders the right button from the first paint. Components read it with
   // useSession(). It runs once per document (client-side navigations keep
-  // it) and again when login or logout call router.invalidate().
+  // it) and again when login or logout reload the loaders.
   loader: async (): Promise<SessionState> => {
     try {
       return await getSession()

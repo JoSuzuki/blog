@@ -1,7 +1,7 @@
-import { useRouter } from '@tanstack/react-router'
-import { useCallback, useEffect } from 'react'
+import { useEffect } from 'react'
 import type { CommentView } from '~/lib/comments/comment'
 import { subscribeToPost } from '~/lib/realtime/post-socket'
+import { useReload } from '~/lib/use-reload'
 import CommentForm from './comment-form'
 
 // The list is rendered on the server as well, so the day shown must not
@@ -32,15 +32,7 @@ interface CommentsProps {
  * someone else did, the socket reconnected) the loader runs again.
  */
 const Comments = ({ route, comments }: CommentsProps) => {
-  const router = useRouter()
-
-  const reload = useCallback(
-    () =>
-      router.invalidate({
-        filter: (match) => match.routeId === '/posts/$slug',
-      }),
-    [router],
-  )
+  const reload = useReload('/posts/$slug')
 
   // Live comments. Without a socket (blocked, server down) this does nothing
   // and the list is as fresh as the last page load.
