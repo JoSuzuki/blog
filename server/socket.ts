@@ -1,13 +1,19 @@
 import type { ExtendedError } from 'socket.io'
 import { isPostRoute } from '../src/content/posts'
 import { readSessionFromCookieHeader } from '../src/lib/auth/session.server'
-import { MAX_POST_ROOMS_PER_SOCKET, postRoom } from '../src/lib/realtime/events'
+import {
+  MAX_POST_ROOMS_PER_SOCKET,
+  MAX_SANTORINI_ROOMS_PER_SOCKET,
+  postRoom,
+  santoriniRoom,
+} from '../src/lib/realtime/events'
 import type {
   ClientToServerEvents,
   IOServer,
   IOSocket,
   RoomAck,
 } from '../src/lib/realtime/events'
+import { ROOM_CODE_PATTERN } from '../src/lib/santorini/room'
 import { getSiteOrigin } from '../src/lib/site'
 
 type Middleware = (
@@ -159,6 +165,30 @@ export function registerSocketHandlers(io: IOServer): () => void {
     return { ok: true }
   }
 
+  // Santorini channels carry no data (see SantoriniChangedPayload), so anyone
+  // may listen; what a reader may see is decided by the loaders.
+  const isSantoriniChannel = (channel: unknown): channel is string =>
+    typeof channel === 'string' &&
+    (channel === 'lobby' || ROOM_CODE_PATTERN.test(channel))
+
+  const joinSantoriniRoom = (socket: IOSocket, channel: unknown): RoomAck => {
+    if (!isSantoriniChannel(channel)) return { ok: false, reason: 'invalid' }
+    const room = santoriniRoom(channel)
+    if (socket.rooms.has(room)) return { ok: true }
+    const joined = [...socket.rooms].filter((r) => r.startsWith('santorini:'))
+    if (joined.length >= MAX_SANTORINI_ROOMS_PER_SOCKET) {
+      return { ok: false, reason: 'too_many_rooms' }
+    }
+    void socket.join(room)
+    return { ok: true }
+  }
+
+  const leaveSantoriniRoom = (socket: IOSocket, channel: unknown): RoomAck => {
+    if (!isSantoriniChannel(channel)) return { ok: false, reason: 'invalid' }
+    void socket.leave(santoriniRoom(channel))
+    return { ok: true }
+  }
+
   const onConnection = (socket: IOSocket, announce = true) => {
     socketCleanups.set(socket, [])
     const onDisconnect = () => socketCleanups.delete(socket)
@@ -178,6 +208,12 @@ export function registerSocketHandlers(io: IOServer): () => void {
     })
     listen(socket, 'post:leave', (route, ack) => {
       reply(ack, leavePostRoom(socket, route))
+    })
+    listen(socket, 'santorini:join', (channel, ack) => {
+      reply(ack, joinSantoriniRoom(socket, channel))
+    })
+    listen(socket, 'santorini:leave', (channel, ack) => {
+      reply(ack, leaveSantoriniRoom(socket, channel))
     })
   }
 
