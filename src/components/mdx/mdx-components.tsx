@@ -87,9 +87,18 @@ const Code = ({
   )
 }
 
+// Also used by the hand-written home page, whose legacy version was MDX.
+export const MdxH2 = heading('h2')
+export const MdxP = (props: ComponentProps<'p'>) => (
+  <p {...props} className="my-md" />
+)
+export const MdxHr = (props: ComponentProps<'hr'>) => (
+  <hr {...props} className="mt-xl mb-lg border-accent" />
+)
+
 export const mdxComponents: MDXComponents = {
   h1: H1,
-  h2: heading('h2'),
+  h2: MdxH2,
   h3: heading('h3'),
   h4: heading('h4'),
   h5: heading('h5'),
@@ -97,14 +106,14 @@ export const mdxComponents: MDXComponents = {
   a: (({ href = '', ...props }: ComponentProps<'a'>) => (
     <CommonLink href={href} {...props} />
   )) as MDXComponents['a'],
-  p: (props) => <p {...props} className="my-md" />,
+  p: MdxP,
   blockquote: (props) => (
     <blockquote
       {...props}
       className="border-l-[length:var(--spaces-xs)] border-solid border-secondary pl-md"
     />
   ),
-  hr: (props) => <hr {...props} className="mt-xl mb-lg border-accent" />,
+  hr: MdxHr,
   ul: (props) => (
     <ul
       {...props}

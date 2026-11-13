@@ -82,6 +82,43 @@
     monospace;
 }
 
+/* The home page's name animation: a typing caret, then Suzuki gets selected. */
+@theme {
+  --animate-blink-caret: blink-caret 4.5s step-end forwards;
+  --animate-selected: selected 1.5s step-start 4.5s forwards;
+
+  @keyframes blink-caret {
+    from {
+      border-color: transparent;
+    }
+    15% {
+      border-color: var(--colors-text);
+    }
+    30% {
+      border-color: transparent;
+    }
+    44% {
+      border-color: var(--colors-text);
+    }
+    to {
+      border-right: none 0px;
+    }
+  }
+
+  @keyframes selected {
+    from {
+    }
+    50% {
+      background-color: var(--colors-selection);
+      color: var(--colors-white);
+    }
+    to {
+      color: var(--colors-accent);
+      background-color: initial;
+    }
+  }
+}
+
 /*
  * Tailwind 4 only applies `hover:` on devices that can hover. The site's
  * styles were written as plain `:hover`, which touch browsers also apply after
