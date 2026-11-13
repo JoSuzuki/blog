@@ -1,6 +1,7 @@
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import appCss from '~/app.css?url'
+import NotFound from '~/components/not-found/not-found'
 import { RedactedProvider } from '~/components/redacted/redacted'
 
 const meta = {
@@ -91,6 +92,7 @@ export const Route = createRootRoute({
     scripts: [{ children: secretRedirectScript }, { children: themeScript }],
   }),
   shellComponent: RootDocument,
+  notFoundComponent: NotFound,
 })
 
 function RootDocument({ children }: { children: ReactNode }) {

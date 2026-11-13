@@ -1,6 +1,10 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import Article from '~/components/article/article'
+import Footer from '~/components/footer/footer'
 import PostBody from '~/components/mdx/post-body'
+import Navbar from '~/components/navbar/navbar'
+import PostMeta from '~/components/post-meta/post-meta'
+import PreviousNextPosts from '~/components/previous-next-posts/previous-next-posts'
 import { getPost, loadPostBody } from '~/content/posts'
 
 export const Route = createFileRoute('/posts/$slug')({
@@ -27,11 +31,25 @@ export const Route = createFileRoute('/posts/$slug')({
   component: Post,
 })
 
+// The legacy components/post/post.tsx layout.
 function Post() {
   const { slug } = Route.useParams()
+  // The loader has already thrown notFound() for unknown slugs.
+  const post = getPost(slug)!
   return (
-    <Article>
-      <PostBody slug={slug} />
-    </Article>
+    <>
+      <Navbar />
+      <Article>
+        <PostBody slug={slug} afterTitle={<PostMeta post={post} />} />
+        {/*
+          Step 6 mounts the comments block here, between the body and the
+          previous/next links (legacy <Comments /> from
+          components/comments/comments.tsx). The hit counter goes inside
+          PostMeta (see the comment there).
+        */}
+        <PreviousNextPosts slug={slug} />
+        <Footer />
+      </Article>
+    </>
   )
 }
