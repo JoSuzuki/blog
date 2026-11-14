@@ -1,0 +1,12 @@
+.git
+.github
+.tanstack
+.env*
+node_modules
+dist
+src/generated
+docker-compose.yml
+Dockerfile
+.dockerignore
+README.md
+*.log
