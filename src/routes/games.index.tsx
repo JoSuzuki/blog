@@ -10,7 +10,7 @@ const GAMES = [
     name: 'Santorini',
     description:
       'Jogo de estratégia abstrata inspirado na mitologia grega. Construa e suba em torres para alcançar o terceiro nível.',
-    details: '2 jogadores - ~15 min - online',
+    details: '2 jogadores - 15 min - online',
   },
 ] as const
 

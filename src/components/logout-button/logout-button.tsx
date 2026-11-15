@@ -37,7 +37,7 @@ const LogoutButton = () => {
         Hey,{' '}
         <Redacted
           revealOverwrite={true}
-          redacted="Não tem nada de especial que dá pra fazer logado ainda :)"
+          redacted="Agora dá pra jogar joguinhos logado :)"
         >{`${user?.firstName}`}</Redacted>
         !
       </div>
