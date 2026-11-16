@@ -121,6 +121,74 @@ reader has to be logged in to play, since a seat in a room belongs to a `User`.
 - **Data**: `SantoriniRoom` and `SantoriniRoomPlayer` in `prisma/schema.prisma`. The game state is
   one JSON column.
 
+### Games: the quiz
+
+A private party game for a group of friends: a screenshot of an old conversation is shown with the
+names hidden, everyone picks on their phone who wrote each message, then the original is revealed
+and scores are kept. Only readers with the role `SQUALI` or `ADMIN` (set on `/users`) can see any
+of it; to everyone else its pages, images and socket events answer as if they did not exist. The
+screenshots and the answers are not in this repository: they live in the database only.
+
+```
+/games/quem-disse                            the players' page (phones)
+/games/quem-disse/telao                      the shared screen and the host's controls (admins)
+/games/quem-disse/imagem/$printId/$kind      the images; kind is censurada or original
+```
+
+- **Playing.** An admin opens `/games/quem-disse/telao` (on the TV), chooses how many prints
+  (blank: all; always in print order) and starts. Players open `/games/quem-disse`; the page follows the game by
+  itself. For each print a player picks a person per slot ("Pessoa A", "Pessoa B", ...) from the
+  fixed list in `src/lib/quiz/quiz.ts` and may change it until the host clicks Revelar. The reveal
+  shows the original, the answers, everybody's picks and the scores (one point per right slot);
+  Próximo print moves on, and after the last one (or Encerrar jogo) the final scores stay up. One
+  game at a time. A player counts as taking part from their first pick.
+- **Everything in a game is a socket event** (`quiz:guess`, and the host's `quiz:start`,
+  `quiz:reveal`, `quiz:next`, `quiz:end`), one file each under `src/lib/quiz`, answered by an ack.
+  The reader's role is read from the database for every event; the host's need `ADMIN`.
+- **State is in the database** (`QuizGame`: the order, the position, the phase), so the host or a
+  player can reload, or join late, and land where the game is, with their own picks restored. Each
+  change pushes the whole public state (`quiz:state`) to the `user:<id>` rooms of whoever may play
+  at that moment, so there is no room to remain in after a role is taken away. `version` grows
+  with every write and a page keeps the newer of the pushed state and its loader data.
+- **What a browser can learn before a reveal**: which print is on screen and who has answered.
+  The answers and other people's picks are only put in the state once the game says the print is
+  revealed. A guess and the reveal both write the game row first, so they cannot cross: after the
+  reveal a guess is refused.
+- **Images** are served only by the image route (`src/lib/quiz/image.server.ts`), from the bytes in
+  `QuizPrintImage`: the censored one once the newest game has reached the print, the original once
+  that game has revealed it, otherwise 404. Starting a new game hides every original again. All
+  answers are `Cache-Control: private, no-store`, and the two images have different addresses.
+- **Data**: `QuizPrint` (size, slots with the answer), `QuizPrintImage` (the bytes, in a table of
+  their own so that no other query can select them), `QuizGame`, `QuizGuess`.
+
+**Loading the prints.** `scripts/upload-quiz-prints.ts` reads a manifest (its shape is described at
+the top of the script), the directory of censored images (`<id>.png`) and the directory of
+originals, and upserts them by manifest id into the database `DATABASE_URL` points at. Only prints
+marked `reviewed` whose slots all have a person from the game's list are uploaded; the rest are
+listed with the reason. Run it again whenever the manifest or an image changes. The private
+material is kept in `quiz-private/`, which is ignored by git and Docker.
+
+```sh
+# what would be uploaded, without touching the database
+npm run quiz:upload -- --manifest quiz-private/manifest.json --censored quiz-private/censored \
+  --originals '<the directory with the original screenshots>' --dry-run
+
+# local database (.env); --include-proposed also takes prints not reviewed yet, for testing
+npm run quiz:upload -- --manifest quiz-private/manifest.json --censored quiz-private/censored \
+  --originals '<originals>' --include-proposed
+
+# production: deploy first (the release command creates the tables), then run it from this
+# checkout with the production connection string. A variable set in the shell wins over .env,
+# and a database that is not on this machine needs --allow-remote. With Fly Postgres, open a
+# tunnel first (`fly proxy 15432:5432 -a <pg-app>`) and use localhost:15432 in the URL.
+DATABASE_URL='postgres://<user>:<password>@<host>:<port>/<database>' \
+  npm run quiz:upload -- --manifest quiz-private/manifest.json --censored quiz-private/censored \
+  --originals '<originals>' --allow-remote
+```
+
+A print removed from the manifest, or marked `excluded` later, is not deleted by the script:
+delete its `QuizPrint` row by hand (`DELETE FROM "QuizPrint" WHERE "externalId" = '<id>'`).
+
 ## Local development
 
 Needs Node 22.13 or later (developed on 24) and Docker for Postgres.

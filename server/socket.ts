@@ -1,7 +1,16 @@
 import type { ExtendedError } from 'socket.io'
 import { isPostRoute } from '../src/content/posts'
 import { findOrCreateUser } from '../src/lib/auth/current-user.server'
+import type { CurrentUser } from '../src/lib/auth/current-user.server'
+import { canPlayQuiz } from '../src/lib/auth/roles'
 import { readSessionFromCookieHeader } from '../src/lib/auth/session.server'
+import { endGame } from '../src/lib/quiz/end-game.server'
+import { nextPrint } from '../src/lib/quiz/next-print.server'
+import type { QuizAck } from '../src/lib/quiz/quiz'
+import { QUIZ_NOT_FOUND } from '../src/lib/quiz/quiz.server'
+import { revealPrint } from '../src/lib/quiz/reveal-print.server'
+import { startGame } from '../src/lib/quiz/start-game.server'
+import { submitGuess } from '../src/lib/quiz/submit-guess.server'
 import { createRateLimiter } from '../src/lib/rate-limit.server'
 import {
   MAX_POST_ROOMS_PER_SOCKET,
@@ -266,6 +275,43 @@ export function registerSocketHandlers(io: IOServer): () => void {
       })
   }
 
+  // A quiz event. Who the socket is comes from its handshake, but what they
+  // may do does not: the reader's row, and so their role, is read from the
+  // database for every event, and the event's module gets that reader. To
+  // someone who may not play, the quiz does not exist. What the event does is
+  // in its own module under src/lib/quiz (the host's events check for an
+  // admin there).
+  const quiz = (
+    socket: IOSocket,
+    ack: unknown,
+    action: (user: CurrentUser) => Promise<QuizAck>,
+  ) => {
+    const answer = (response: QuizAck) => {
+      if (typeof ack === 'function') ack(response)
+    }
+    const session = socket.data.user
+    Promise.resolve(session ? findOrCreateUser(session) : null)
+      .then((user) => {
+        if (!user || !canPlayQuiz(user.role)) return QUIZ_NOT_FOUND
+        if (!gameEventLimiter.take(String(user.id)).allowed) {
+          return {
+            ok: false,
+            error: 'rate_limited',
+            message: 'Cliques demais em pouco tempo. Espere um instante.',
+          } as const
+        }
+        return action(user)
+      })
+      .then(answer, (error: unknown) => {
+        console.error('[socket] a quiz event failed:', error)
+        answer({
+          ok: false,
+          error: 'unavailable',
+          message: 'Não foi possível fazer isso agora. Tente de novo.',
+        })
+      })
+  }
+
   const onConnection = (socket: IOSocket, announce = true) => {
     socketCleanups.set(socket, [])
     const onDisconnect = () => socketCleanups.delete(socket)
@@ -303,6 +349,21 @@ export function registerSocketHandlers(io: IOServer): () => void {
     })
     listen(socket, 'santorini:resign', (roomCode, ack) => {
       play(socket, ack, (userId) => resign(userId, roomCode))
+    })
+    listen(socket, 'quiz:guess', (input, ack) => {
+      quiz(socket, ack, (user) => submitGuess(user, input))
+    })
+    listen(socket, 'quiz:start', (input, ack) => {
+      quiz(socket, ack, (user) => startGame(user, input))
+    })
+    listen(socket, 'quiz:reveal', (input, ack) => {
+      quiz(socket, ack, (user) => revealPrint(user, input))
+    })
+    listen(socket, 'quiz:next', (input, ack) => {
+      quiz(socket, ack, (user) => nextPrint(user, input))
+    })
+    listen(socket, 'quiz:end', (input, ack) => {
+      quiz(socket, ack, (user) => endGame(user, input))
     })
   }
 

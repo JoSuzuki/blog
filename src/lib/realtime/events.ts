@@ -1,11 +1,19 @@
 // The socket.io protocol: the event map and the room names, shared by the
 // socket.io server (`server/socket.ts`), server-side app code (`getIO()` in
-// `./io.server`) and the browser clients (`./post-socket` and
-// `./santorini-socket`, which import only the types).
+// `./io.server`) and the browser clients (`./post-socket`,
+// `./santorini-socket` and `./quiz-socket`, which import only the types).
 
 import type { Server, Socket } from 'socket.io'
 import type { SessionUser } from '~/lib/auth/session-user'
 import type { CommentView } from '~/lib/comments/comment'
+import type {
+  QuizAck,
+  QuizGuessInput,
+  QuizHostInput,
+  QuizMyGuesses,
+  QuizStartInput,
+  QuizState,
+} from '~/lib/quiz/quiz'
 import type { ActionType, GameState, Position } from '~/lib/santorini/game'
 import type { RoomActionError } from '~/lib/santorini/room'
 
@@ -82,15 +90,23 @@ export interface ServerToClientEvents {
   'santorini:changed': (payload: SantoriniChangedPayload) => void
   /** A move was played in a game this reader is a player of. */
   'santorini:game': (update: SantoriniGameUpdate) => void
+  /**
+   * The quiz changed (a guess, a reveal, the next print...). Sent to the
+   * rooms of the readers who may play, and to nobody else.
+   */
+  'quiz:state': (state: QuizState) => void
+  /** This reader's own picks for the print on screen, to their tabs only. */
+  'quiz:mine': (mine: QuizMyGuesses) => void
 }
 
 /**
  * What a client can say. The join and leave events only choose which rooms
  * it listens to. The Santorini game events are the moves of a game: they are
  * answered through the ack and, when they change the game, followed by a
- * `santorini:game` to both players. Nothing a client sends is relayed as it
- * is. Everything else (comments, opening and joining rooms) goes through
- * server functions.
+ * `santorini:game` to both players. The quiz events work the same way, with
+ * `quiz:state` as the push; the reader's role is read from the database for
+ * each one. Nothing a client sends is relayed as it is. Everything else
+ * (comments, opening and joining rooms) goes through server functions.
  */
 export interface ClientToServerEvents {
   /** Starts receiving `comment:created` for a post. Idempotent. */
@@ -124,6 +140,28 @@ export interface ClientToServerEvents {
   'santorini:resign': (
     roomCode: string,
     ack: (response: SantoriniAck) => void,
+  ) => void
+  /** Picks who a slot of the print on screen is (until the reveal). */
+  'quiz:guess': (
+    input: QuizGuessInput,
+    ack: (response: QuizAck) => void,
+  ) => void
+  /** Host: starts a game. */
+  'quiz:start': (
+    input: QuizStartInput,
+    ack: (response: QuizAck) => void,
+  ) => void
+  /** Host: reveals the print on screen and locks its guesses. */
+  'quiz:reveal': (
+    input: QuizHostInput,
+    ack: (response: QuizAck) => void,
+  ) => void
+  /** Host: moves on to the next print, or to the end after the last. */
+  'quiz:next': (input: QuizHostInput, ack: (response: QuizAck) => void) => void
+  /** Host: ends the game. */
+  'quiz:end': (
+    input: Pick<QuizHostInput, 'gameId'>,
+    ack: (response: QuizAck) => void,
   ) => void
 }
 

@@ -28,3 +28,6 @@ npm-debug.log*
 
 # generated Prisma client (npm run postinstall / prisma generate)
 /src/generated/
+
+# private quiz material (prints, answers, censoring work files): never commit
+/quiz-private/

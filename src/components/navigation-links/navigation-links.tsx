@@ -1,4 +1,6 @@
 import { Link } from '@tanstack/react-router'
+import { isAdmin } from '~/lib/auth/roles'
+import { useSession } from '~/lib/auth/use-session'
 
 // The legacy theme collected these from the pages whose frontmatter type was
 // `page`, `posts` or `customPage`, newest `date` first. Home is active only on
@@ -11,6 +13,10 @@ const NAV_PAGES = [
   { to: '/posts', title: 'Posts', exact: false },
   { to: '/games', title: 'Games', exact: false },
 ] as const
+
+// Only admins see this one. Hiding it is a convenience, not the protection:
+// the page's server functions check the role themselves.
+const USERS_PAGE = { to: '/users', title: 'Users', exact: false } as const
 
 const linkClassName =
   'cursor-pointer wght-semibold ' +
@@ -26,10 +32,12 @@ interface NavigationLinksProps {
 }
 
 const NavigationLinks = ({ links = true }: NavigationLinksProps) => {
+  const { role } = useSession()
+  const pages = isAdmin(role) ? [...NAV_PAGES, USERS_PAGE] : NAV_PAGES
   return (
     <ul className="flex items-center gap-x-md overflow-auto py-sm">
       {links &&
-        NAV_PAGES.map((page) => (
+        pages.map((page) => (
           <li key={page.to}>
             <Link
               to={page.to}

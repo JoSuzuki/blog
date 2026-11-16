@@ -43,8 +43,9 @@ const themeScript = `
 
 export const Route = createRootRoute({
   // The session is resolved on the server during the page request (a cookie
-  // unseal, no database) and sent to the client with the page, so the top bar
-  // renders the right button from the first paint. Components read it with
+  // unseal, plus one indexed query for a logged-in reader's role) and sent to
+  // the client with the page, so the top bar renders the right button from
+  // the first paint. Components read it with
   // useSession(). It runs once per document (client-side navigations keep
   // it) and again when login or logout reload the loaders.
   loader: async (): Promise<SessionState> => {
@@ -52,7 +53,7 @@ export const Route = createRootRoute({
       return await getSession()
     } catch (error) {
       console.error('Reading the session failed:', error)
-      return { user: null, googleClientId: '' }
+      return { user: null, role: null, googleClientId: '' }
     }
   },
   staleTime: Infinity,

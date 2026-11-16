@@ -13,12 +13,16 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AtomDotxmlRouteImport } from './routes/atom[.]xml'
 import { Route as FeedDotjsonRouteImport } from './routes/feed[.]json'
 import { Route as FeedDotxmlRouteImport } from './routes/feed[.]xml'
+import { Route as UsersRouteImport } from './routes/users'
 import { Route as GamesIndexRouteImport } from './routes/games.index'
 import { Route as PostsIndexRouteImport } from './routes/posts.index'
 import { Route as PostsSlugRouteImport } from './routes/posts.$slug'
 import { Route as TagsTagRouteImport } from './routes/tags.$tag'
+import { Route as GamesQuemDisseIndexRouteImport } from './routes/games.quem-disse.index'
+import { Route as GamesQuemDisseTelaoRouteImport } from './routes/games.quem-disse.telao'
 import { Route as GamesSantoriniIndexRouteImport } from './routes/games.santorini.index'
 import { Route as GamesSantoriniRoomCodeRouteImport } from './routes/games.santorini.$roomCode'
+import { Route as GamesQuemDisseImagemPrintIdKindRouteImport } from './routes/games.quem-disse.imagem.$printId.$kind'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -38,6 +42,11 @@ const FeedDotjsonRoute = FeedDotjsonRouteImport.update({
 const FeedDotxmlRoute = FeedDotxmlRouteImport.update({
   id: '/feed.xml',
   path: '/feed.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UsersRoute = UsersRouteImport.update({
+  id: '/users',
+  path: '/users',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GamesIndexRoute = GamesIndexRouteImport.update({
@@ -60,6 +69,16 @@ const TagsTagRoute = TagsTagRouteImport.update({
   path: '/tags/$tag',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GamesQuemDisseIndexRoute = GamesQuemDisseIndexRouteImport.update({
+  id: '/games/quem-disse/',
+  path: '/games/quem-disse/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GamesQuemDisseTelaoRoute = GamesQuemDisseTelaoRouteImport.update({
+  id: '/games/quem-disse/telao',
+  path: '/games/quem-disse/telao',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GamesSantoriniIndexRoute = GamesSantoriniIndexRouteImport.update({
   id: '/games/santorini/',
   path: '/games/santorini/',
@@ -70,30 +89,44 @@ const GamesSantoriniRoomCodeRoute = GamesSantoriniRoomCodeRouteImport.update({
   path: '/games/santorini/$roomCode',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GamesQuemDisseImagemPrintIdKindRoute =
+  GamesQuemDisseImagemPrintIdKindRouteImport.update({
+    id: '/games/quem-disse/imagem/$printId/$kind',
+    path: '/games/quem-disse/imagem/$printId/$kind',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/atom.xml': typeof AtomDotxmlRoute
   '/feed.json': typeof FeedDotjsonRoute
   '/feed.xml': typeof FeedDotxmlRoute
+  '/users': typeof UsersRoute
   '/posts/$slug': typeof PostsSlugRoute
   '/tags/$tag': typeof TagsTagRoute
   '/games/': typeof GamesIndexRoute
   '/posts/': typeof PostsIndexRoute
+  '/games/quem-disse/telao': typeof GamesQuemDisseTelaoRoute
   '/games/santorini/$roomCode': typeof GamesSantoriniRoomCodeRoute
+  '/games/quem-disse/': typeof GamesQuemDisseIndexRoute
   '/games/santorini/': typeof GamesSantoriniIndexRoute
+  '/games/quem-disse/imagem/$printId/$kind': typeof GamesQuemDisseImagemPrintIdKindRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/atom.xml': typeof AtomDotxmlRoute
   '/feed.json': typeof FeedDotjsonRoute
   '/feed.xml': typeof FeedDotxmlRoute
+  '/users': typeof UsersRoute
   '/posts/$slug': typeof PostsSlugRoute
   '/tags/$tag': typeof TagsTagRoute
   '/games': typeof GamesIndexRoute
   '/posts': typeof PostsIndexRoute
+  '/games/quem-disse/telao': typeof GamesQuemDisseTelaoRoute
   '/games/santorini/$roomCode': typeof GamesSantoriniRoomCodeRoute
+  '/games/quem-disse': typeof GamesQuemDisseIndexRoute
   '/games/santorini': typeof GamesSantoriniIndexRoute
+  '/games/quem-disse/imagem/$printId/$kind': typeof GamesQuemDisseImagemPrintIdKindRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -101,12 +134,16 @@ export interface FileRoutesById {
   '/atom.xml': typeof AtomDotxmlRoute
   '/feed.json': typeof FeedDotjsonRoute
   '/feed.xml': typeof FeedDotxmlRoute
+  '/users': typeof UsersRoute
   '/posts/$slug': typeof PostsSlugRoute
   '/tags/$tag': typeof TagsTagRoute
   '/games/': typeof GamesIndexRoute
   '/posts/': typeof PostsIndexRoute
+  '/games/quem-disse/telao': typeof GamesQuemDisseTelaoRoute
   '/games/santorini/$roomCode': typeof GamesSantoriniRoomCodeRoute
+  '/games/quem-disse/': typeof GamesQuemDisseIndexRoute
   '/games/santorini/': typeof GamesSantoriniIndexRoute
+  '/games/quem-disse/imagem/$printId/$kind': typeof GamesQuemDisseImagemPrintIdKindRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -115,36 +152,48 @@ export interface FileRouteTypes {
     | '/atom.xml'
     | '/feed.json'
     | '/feed.xml'
+    | '/users'
     | '/posts/$slug'
     | '/tags/$tag'
     | '/games/'
     | '/posts/'
+    | '/games/quem-disse/telao'
     | '/games/santorini/$roomCode'
+    | '/games/quem-disse/'
     | '/games/santorini/'
+    | '/games/quem-disse/imagem/$printId/$kind'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/atom.xml'
     | '/feed.json'
     | '/feed.xml'
+    | '/users'
     | '/posts/$slug'
     | '/tags/$tag'
     | '/games'
     | '/posts'
+    | '/games/quem-disse/telao'
     | '/games/santorini/$roomCode'
+    | '/games/quem-disse'
     | '/games/santorini'
+    | '/games/quem-disse/imagem/$printId/$kind'
   id:
     | '__root__'
     | '/'
     | '/atom.xml'
     | '/feed.json'
     | '/feed.xml'
+    | '/users'
     | '/posts/$slug'
     | '/tags/$tag'
     | '/games/'
     | '/posts/'
+    | '/games/quem-disse/telao'
     | '/games/santorini/$roomCode'
+    | '/games/quem-disse/'
     | '/games/santorini/'
+    | '/games/quem-disse/imagem/$printId/$kind'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -152,12 +201,16 @@ export interface RootRouteChildren {
   AtomDotxmlRoute: typeof AtomDotxmlRoute
   FeedDotjsonRoute: typeof FeedDotjsonRoute
   FeedDotxmlRoute: typeof FeedDotxmlRoute
+  UsersRoute: typeof UsersRoute
   PostsSlugRoute: typeof PostsSlugRoute
   TagsTagRoute: typeof TagsTagRoute
   GamesIndexRoute: typeof GamesIndexRoute
   PostsIndexRoute: typeof PostsIndexRoute
+  GamesQuemDisseTelaoRoute: typeof GamesQuemDisseTelaoRoute
   GamesSantoriniRoomCodeRoute: typeof GamesSantoriniRoomCodeRoute
+  GamesQuemDisseIndexRoute: typeof GamesQuemDisseIndexRoute
   GamesSantoriniIndexRoute: typeof GamesSantoriniIndexRoute
+  GamesQuemDisseImagemPrintIdKindRoute: typeof GamesQuemDisseImagemPrintIdKindRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -190,6 +243,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeedDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/users': {
+      id: '/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof UsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/games/': {
       id: '/games/'
       path: '/games'
@@ -218,6 +278,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TagsTagRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/games/quem-disse/': {
+      id: '/games/quem-disse/'
+      path: '/games/quem-disse'
+      fullPath: '/games/quem-disse/'
+      preLoaderRoute: typeof GamesQuemDisseIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/games/quem-disse/telao': {
+      id: '/games/quem-disse/telao'
+      path: '/games/quem-disse/telao'
+      fullPath: '/games/quem-disse/telao'
+      preLoaderRoute: typeof GamesQuemDisseTelaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/games/santorini/': {
       id: '/games/santorini/'
       path: '/games/santorini'
@@ -232,6 +306,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GamesSantoriniRoomCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/games/quem-disse/imagem/$printId/$kind': {
+      id: '/games/quem-disse/imagem/$printId/$kind'
+      path: '/games/quem-disse/imagem/$printId/$kind'
+      fullPath: '/games/quem-disse/imagem/$printId/$kind'
+      preLoaderRoute: typeof GamesQuemDisseImagemPrintIdKindRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -240,12 +321,16 @@ const rootRouteChildren: RootRouteChildren = {
   AtomDotxmlRoute: AtomDotxmlRoute,
   FeedDotjsonRoute: FeedDotjsonRoute,
   FeedDotxmlRoute: FeedDotxmlRoute,
+  UsersRoute: UsersRoute,
   PostsSlugRoute: PostsSlugRoute,
   TagsTagRoute: TagsTagRoute,
   GamesIndexRoute: GamesIndexRoute,
   PostsIndexRoute: PostsIndexRoute,
+  GamesQuemDisseTelaoRoute: GamesQuemDisseTelaoRoute,
   GamesSantoriniRoomCodeRoute: GamesSantoriniRoomCodeRoute,
+  GamesQuemDisseIndexRoute: GamesQuemDisseIndexRoute,
   GamesSantoriniIndexRoute: GamesSantoriniIndexRoute,
+  GamesQuemDisseImagemPrintIdKindRoute: GamesQuemDisseImagemPrintIdKindRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
