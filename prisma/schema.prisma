@@ -16,17 +16,29 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// `role` decides what a reader may do beyond the public site (see
+// src/lib/auth/roles.ts). Nothing in the code grants ADMIN: the first one is
+// set by hand in the database, the rest from the /users page.
 model User {
   id                    Int                   @id @default(autoincrement())
   name                  String
   email                 String                @unique
   googleId              String?
+  role                  Role                  @default(USER)
   createdAt             DateTime              @default(now())
   updatedAt             DateTime              @updatedAt
   createdSantoriniRooms SantoriniRoom[]
   santoriniRoomPlayers  SantoriniRoomPlayer[]
+  hostedQuizGames       QuizGame[]
+  quizGuesses           QuizGuess[]
 
   @@index([email])
+}
+
+enum Role {
+  USER
+  SQUALI
+  ADMIN
 }
 
 // A reader's comment on a post. `route` is the post's route (`/posts/<slug>`).
@@ -87,4 +99,80 @@ model SantoriniRoomPlayer {
 
   @@unique([roomId, userId])
   @@index([userId])
+}
+
+// The private quiz under /games (src/lib/quiz): a censored screenshot is
+// shown, everyone guesses who wrote the messages, the original is revealed.
+// Only readers whose role passes `canPlayQuiz` ever get any of this.
+//
+// A print is one screenshot. `externalId` is its id in the manifest the upload
+// script reads (scripts/upload-quiz-prints.ts), so uploading again updates the
+// row. `slots` is `[{ "label": "A", "person": "..." }]`: the censored image
+// says "Pessoa A", and `person` is the answer. The answers never leave the
+// server before the print is revealed in a game.
+model QuizPrint {
+  id         Int             @id @default(autoincrement())
+  externalId String          @unique
+  width      Int
+  height     Int
+  slots      Json
+  image      QuizPrintImage?
+  guesses    QuizGuess[]
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+}
+
+// The bytes of a print, in a table of their own so that no query on
+// QuizPrint can select them by accident. Read only by the image route.
+model QuizPrintImage {
+  print    QuizPrint @relation(fields: [printId], references: [id], onDelete: Cascade)
+  printId  Int       @id
+  censored Bytes
+  original Bytes
+}
+
+// A game: `printIds` is the shuffled order, `position` the index of the print
+// on screen, `revealedCount` how many prints from the start of the order have
+// been revealed (position, or position + 1 once the current one is). The
+// newest row is "the game"; there is at most one that is not FINISHED.
+// `version` grows with every write, guesses included, and is what the pages
+// use to keep the newer of two states.
+model QuizGame {
+  id            Int         @id @default(autoincrement())
+  host          User        @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  hostId        Int
+  phase         QuizPhase   @default(GUESSING)
+  printIds      Int[]
+  position      Int         @default(0)
+  revealedCount Int         @default(0)
+  version       Int         @default(1)
+  guesses       QuizGuess[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+enum QuizPhase {
+  GUESSING
+  REVEALED
+  FINISHED
+}
+
+// Who a player thinks a slot of a print is. Can be changed until the print is
+// revealed; the reveal fills `correct`, and a player's score is the number of
+// their correct guesses in the game.
+model QuizGuess {
+  id      Int       @id @default(autoincrement())
+  game    QuizGame  @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  gameId  Int
+  print   QuizPrint @relation(fields: [printId], references: [id], onDelete: Cascade)
+  printId Int
+  slot    String
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId  Int
+  person  String
+  correct Boolean   @default(false)
+
+  @@unique([gameId, printId, slot, userId])
+  @@index([userId])
+  @@index([printId])
 }

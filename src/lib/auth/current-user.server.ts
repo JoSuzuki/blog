@@ -1,11 +1,14 @@
 import { prisma } from '~/lib/db.server'
 import { readSession } from './session.server'
+import type { Role } from './roles'
 import type { SessionUser } from './session-user'
 
 export interface CurrentUser {
   /** The `User` row's id. */
   id: number
   name: string
+  /** As stored now: read from the row on every call, never from the cookie. */
+  role: Role
 }
 
 /**
@@ -19,7 +22,7 @@ export interface CurrentUser {
 export const findOrCreateUser = async (
   session: SessionUser,
 ): Promise<CurrentUser> => {
-  const select = { id: true, name: true } as const
+  const select = { id: true, name: true, role: true } as const
   return (
     (await prisma.user.findUnique({
       where: { email: session.email },

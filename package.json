@@ -15,7 +15,8 @@
     "postinstall": "prisma generate",
     "db:up": "docker compose up -d",
     "db:migrate": "prisma migrate deploy",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "quiz:upload": "tsx --env-file-if-exists=.env scripts/upload-quiz-prints.ts"
   },
   "prettier": {
     "arrowParens": "always",
