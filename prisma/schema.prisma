@@ -5,15 +5,14 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider   = "prisma-client"
-  output     = "../src/generated/prisma"
-  engineType = "client"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
+// The connection URLs are in prisma.config.ts (for the CLI) and in
+// src/lib/db.server.ts (for the app).
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
 // `role` decides what a reader may do beyond the public site (see

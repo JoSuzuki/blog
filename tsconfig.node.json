@@ -2,6 +2,7 @@
   "include": [
     "server.js",
     "vite.config.ts",
+    "prisma.config.ts",
     "src/content/vite-plugins.ts",
     "src/content/rehype-heading-slugs.ts",
     "src/content/post-schema.ts"

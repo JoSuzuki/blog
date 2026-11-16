@@ -21,6 +21,7 @@ src/lib/         actions (server functions) and what they share; see below
 server/          socket.io handlers (rooms, handshake checks)
 server.js        Express + socket.io + Vite (dev) or the build (production)
 prisma/          schema, migrations, seed (reads backup-comments.json, backup-hits.json)
+prisma.config.ts the Prisma CLI's settings: schema path, seed command, connection URL
 public/          fonts, images, favicon
 Dockerfile, fly.toml, .github/workflows/fly-deploy.yml   deployment
 ```
@@ -241,24 +242,24 @@ bundle. Do not put anything in a secret post that must stay private.
 Set in `.env` locally (git-ignored, read by `npm run dev`, `npm start` and the Prisma CLI), as Fly
 secrets or `fly.toml` `[env]` in production.
 
-| Variable                                                       | If missing                                                                                                                                                                                        |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`                                                 | Comments and counters do not work; the rest of the site stays up. Required by `prisma migrate deploy` and the seed.                                                                               |
-| `DIRECT_URL`                                                   | `prisma migrate deploy` and `db seed` fail (the schema declares it). Same value as `DATABASE_URL` unless a pooler is in front. Not read by the running app.                                       |
-| `SITE_URL`                                                     | Defaults to `https://josuzuki.me`. Must equal the public origin: it is used in the feeds and in the socket.io origin check (other origins are refused, so no live comments).                      |
-| `IRON_SESSION_SECRET`                                          | 32 characters or more. Without it (or if shorter) everyone is logged out, sign-in does nothing useful, and a warning is logged at startup. Use the old site's value so existing sessions survive. |
-| `GOOGLE_CLIENT_ID`                                             | Defaults to the site's existing client id. Set only to use another one.                                                                                                                           |
-| `SENDGRID_API_KEY`, `COMMENT_NOTIFY_TO`, `COMMENT_NOTIFY_FROM` | All three are needed to email a notification for each comment; otherwise no email is sent.                                                                                                        |
-| `COMMENT_RATE_LIMIT_MAX`, `COMMENT_RATE_LIMIT_WINDOW_SECONDS`  | 5 comments per client address per 600 seconds. The limiter is in memory, so it assumes one machine.                                                                                               |
-| `PORT`                                                         | 3000.                                                                                                                                                                                             |
-| `NODE_ENV`                                                     | `production` selects the built server (HTTPS redirect, CSP); `npm run dev`/`npm start` set it.                                                                                                    |
+| Variable                                                       | If missing                                                                                                                                                                                                |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                                                 | Comments and counters do not work; the rest of the site stays up. Required by `prisma migrate deploy` and the seed.                                                                                       |
+| `DIRECT_URL`                                                   | What the Prisma CLI connects with (`prisma.config.ts`): `prisma migrate deploy` and `db seed`. Falls back to `DATABASE_URL`, so it is only needed when a pooler is in front. Not read by the running app. |
+| `SITE_URL`                                                     | Defaults to `https://josuzuki.me`. Must equal the public origin: it is used in the feeds and in the socket.io origin check (other origins are refused, so no live comments).                              |
+| `IRON_SESSION_SECRET`                                          | 32 characters or more. Without it (or if shorter) everyone is logged out, sign-in does nothing useful, and a warning is logged at startup. Use the old site's value so existing sessions survive.         |
+| `GOOGLE_CLIENT_ID`                                             | Defaults to the site's existing client id. Set only to use another one.                                                                                                                                   |
+| `SENDGRID_API_KEY`, `COMMENT_NOTIFY_TO`, `COMMENT_NOTIFY_FROM` | All three are needed to email a notification for each comment; otherwise no email is sent.                                                                                                                |
+| `COMMENT_RATE_LIMIT_MAX`, `COMMENT_RATE_LIMIT_WINDOW_SECONDS`  | 5 comments per client address per 600 seconds. The limiter is in memory, so it assumes one machine.                                                                                                       |
+| `PORT`                                                         | 3000.                                                                                                                                                                                                     |
+| `NODE_ENV`                                                     | `production` selects the built server (HTTPS redirect, CSP); `npm run dev`/`npm start` set it.                                                                                                            |
 
 ## Deployment (Fly.io)
 
 The image (`Dockerfile`) is built in three stages: production dependencies (`npm ci --omit=dev`,
 which also generates the Prisma client), a build stage (`npm ci`, `npm run build`), and the final
 `node:24-alpine` image running as the `node` user with `node_modules`, `dist/`, `server.js`, `prisma/`
-(schema, migrations, seed), the two backup files and the generated client. It starts with `node
+(schema, migrations, seed), `prisma.config.ts`, the two backup files and the generated client. It starts with `node
 server.js` (not `npm start`, so SIGTERM reaches Node; shutdown takes well under a second).
 
 `fly.toml` (region `gru`, 512 MB shared CPU like mazeps, always-on machine, `force_https`) runs
