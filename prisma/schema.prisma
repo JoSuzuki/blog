@@ -132,7 +132,8 @@ model QuizPrintImage {
   original Bytes
 }
 
-// A game: `printIds` is the shuffled order, `position` the index of the print
+// A game: `printIds` is the order of play (the manifest's order, see
+// src/lib/quiz/start-game.server.ts), `position` the index of the print
 // on screen, `revealedCount` how many prints from the start of the order have
 // been revealed (position, or position + 1 once the current one is). The
 // newest row is "the game"; there is at most one that is not FINISHED.
