@@ -1,4 +1,9 @@
-import { acquireSocket, onSocketCreated, releaseSocket } from './connection'
+import {
+  acquireSocket,
+  getSocket,
+  onSocketCreated,
+  releaseSocket,
+} from './connection'
 import type { ClientSocket } from './connection'
 import type { CommentCreatedPayload } from './events'
 
@@ -53,12 +58,14 @@ export const subscribeToPost = (
   const socket = acquireSocket()
   // Already connected (a navigation, not the first subscriber): join now.
   // Otherwise the 'connect' handler joins every route in use.
-  if (socket.connected) joinAndSync(socket, route)
+  if (socket?.connected) joinAndSync(socket, route)
 
   return () => {
     subscriptions.delete(subscription)
-    if (socket.connected && !routesInUse().has(route)) {
-      socket.emit('post:leave', route)
+    // The socket as it is now: it may have been created since subscribing.
+    const current = getSocket()
+    if (current?.connected && !routesInUse().has(route)) {
+      current.emit('post:leave', route)
     }
     releaseSocket()
   }
