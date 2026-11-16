@@ -5,15 +5,14 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider   = "prisma-client"
-  output     = "../src/generated/prisma"
-  engineType = "client"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
+// The connection URLs are in prisma.config.ts (for the CLI) and in
+// src/lib/db.server.ts (for the app).
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
 // `role` decides what a reader may do beyond the public site (see
@@ -131,7 +130,8 @@ model QuizPrintImage {
   original Bytes
 }
 
-// A game: `printIds` is the shuffled order, `position` the index of the print
+// A game: `printIds` is the order of play (the manifest's order, see
+// src/lib/quiz/start-game.server.ts), `position` the index of the print
 // on screen, `revealedCount` how many prints from the start of the order have
 // been revealed (position, or position + 1 once the current one is). The
 // newest row is "the game"; there is at most one that is not FINISHED.

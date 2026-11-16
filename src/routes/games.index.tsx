@@ -25,7 +25,7 @@ const QUIZ = {
   name: QUIZ_NAME,
   description:
     'Um print de conversa com os nomes escondidos: adivinhe quem escreveu cada mensagem.',
-  details: 'em grupo - cada um no seu celular',
+  details: 'Em grupo -cada um no seu celular',
 } as const
 
 export const Route = createFileRoute('/games/')({
