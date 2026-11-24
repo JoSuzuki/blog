@@ -22,6 +22,8 @@ import { Route as GamesQuemDisseIndexRouteImport } from './routes/games.quem-dis
 import { Route as GamesQuemDisseTelaoRouteImport } from './routes/games.quem-disse.telao'
 import { Route as GamesSantoriniIndexRouteImport } from './routes/games.santorini.index'
 import { Route as GamesSantoriniRoomCodeRouteImport } from './routes/games.santorini.$roomCode'
+import { Route as GamesTabuIndexRouteImport } from './routes/games.tabu.index'
+import { Route as GamesTabuRoomCodeRouteImport } from './routes/games.tabu.$roomCode'
 import { Route as GamesQuemDisseImagemPrintIdKindRouteImport } from './routes/games.quem-disse.imagem.$printId.$kind'
 
 const IndexRoute = IndexRouteImport.update({
@@ -89,6 +91,16 @@ const GamesSantoriniRoomCodeRoute = GamesSantoriniRoomCodeRouteImport.update({
   path: '/games/santorini/$roomCode',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GamesTabuIndexRoute = GamesTabuIndexRouteImport.update({
+  id: '/games/tabu/',
+  path: '/games/tabu/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GamesTabuRoomCodeRoute = GamesTabuRoomCodeRouteImport.update({
+  id: '/games/tabu/$roomCode',
+  path: '/games/tabu/$roomCode',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GamesQuemDisseImagemPrintIdKindRoute =
   GamesQuemDisseImagemPrintIdKindRouteImport.update({
     id: '/games/quem-disse/imagem/$printId/$kind',
@@ -108,8 +120,10 @@ export interface FileRoutesByFullPath {
   '/posts/': typeof PostsIndexRoute
   '/games/quem-disse/telao': typeof GamesQuemDisseTelaoRoute
   '/games/santorini/$roomCode': typeof GamesSantoriniRoomCodeRoute
+  '/games/tabu/$roomCode': typeof GamesTabuRoomCodeRoute
   '/games/quem-disse/': typeof GamesQuemDisseIndexRoute
   '/games/santorini/': typeof GamesSantoriniIndexRoute
+  '/games/tabu/': typeof GamesTabuIndexRoute
   '/games/quem-disse/imagem/$printId/$kind': typeof GamesQuemDisseImagemPrintIdKindRoute
 }
 export interface FileRoutesByTo {
@@ -124,8 +138,10 @@ export interface FileRoutesByTo {
   '/posts': typeof PostsIndexRoute
   '/games/quem-disse/telao': typeof GamesQuemDisseTelaoRoute
   '/games/santorini/$roomCode': typeof GamesSantoriniRoomCodeRoute
+  '/games/tabu/$roomCode': typeof GamesTabuRoomCodeRoute
   '/games/quem-disse': typeof GamesQuemDisseIndexRoute
   '/games/santorini': typeof GamesSantoriniIndexRoute
+  '/games/tabu': typeof GamesTabuIndexRoute
   '/games/quem-disse/imagem/$printId/$kind': typeof GamesQuemDisseImagemPrintIdKindRoute
 }
 export interface FileRoutesById {
@@ -141,8 +157,10 @@ export interface FileRoutesById {
   '/posts/': typeof PostsIndexRoute
   '/games/quem-disse/telao': typeof GamesQuemDisseTelaoRoute
   '/games/santorini/$roomCode': typeof GamesSantoriniRoomCodeRoute
+  '/games/tabu/$roomCode': typeof GamesTabuRoomCodeRoute
   '/games/quem-disse/': typeof GamesQuemDisseIndexRoute
   '/games/santorini/': typeof GamesSantoriniIndexRoute
+  '/games/tabu/': typeof GamesTabuIndexRoute
   '/games/quem-disse/imagem/$printId/$kind': typeof GamesQuemDisseImagemPrintIdKindRoute
 }
 export interface FileRouteTypes {
@@ -159,8 +177,10 @@ export interface FileRouteTypes {
     | '/posts/'
     | '/games/quem-disse/telao'
     | '/games/santorini/$roomCode'
+    | '/games/tabu/$roomCode'
     | '/games/quem-disse/'
     | '/games/santorini/'
+    | '/games/tabu/'
     | '/games/quem-disse/imagem/$printId/$kind'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -175,8 +195,10 @@ export interface FileRouteTypes {
     | '/posts'
     | '/games/quem-disse/telao'
     | '/games/santorini/$roomCode'
+    | '/games/tabu/$roomCode'
     | '/games/quem-disse'
     | '/games/santorini'
+    | '/games/tabu'
     | '/games/quem-disse/imagem/$printId/$kind'
   id:
     | '__root__'
@@ -191,8 +213,10 @@ export interface FileRouteTypes {
     | '/posts/'
     | '/games/quem-disse/telao'
     | '/games/santorini/$roomCode'
+    | '/games/tabu/$roomCode'
     | '/games/quem-disse/'
     | '/games/santorini/'
+    | '/games/tabu/'
     | '/games/quem-disse/imagem/$printId/$kind'
   fileRoutesById: FileRoutesById
 }
@@ -208,8 +232,10 @@ export interface RootRouteChildren {
   PostsIndexRoute: typeof PostsIndexRoute
   GamesQuemDisseTelaoRoute: typeof GamesQuemDisseTelaoRoute
   GamesSantoriniRoomCodeRoute: typeof GamesSantoriniRoomCodeRoute
+  GamesTabuRoomCodeRoute: typeof GamesTabuRoomCodeRoute
   GamesQuemDisseIndexRoute: typeof GamesQuemDisseIndexRoute
   GamesSantoriniIndexRoute: typeof GamesSantoriniIndexRoute
+  GamesTabuIndexRoute: typeof GamesTabuIndexRoute
   GamesQuemDisseImagemPrintIdKindRoute: typeof GamesQuemDisseImagemPrintIdKindRoute
 }
 
@@ -306,6 +332,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GamesSantoriniRoomCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/games/tabu/': {
+      id: '/games/tabu/'
+      path: '/games/tabu'
+      fullPath: '/games/tabu/'
+      preLoaderRoute: typeof GamesTabuIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/games/tabu/$roomCode': {
+      id: '/games/tabu/$roomCode'
+      path: '/games/tabu/$roomCode'
+      fullPath: '/games/tabu/$roomCode'
+      preLoaderRoute: typeof GamesTabuRoomCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/games/quem-disse/imagem/$printId/$kind': {
       id: '/games/quem-disse/imagem/$printId/$kind'
       path: '/games/quem-disse/imagem/$printId/$kind'
@@ -328,8 +368,10 @@ const rootRouteChildren: RootRouteChildren = {
   PostsIndexRoute: PostsIndexRoute,
   GamesQuemDisseTelaoRoute: GamesQuemDisseTelaoRoute,
   GamesSantoriniRoomCodeRoute: GamesSantoriniRoomCodeRoute,
+  GamesTabuRoomCodeRoute: GamesTabuRoomCodeRoute,
   GamesQuemDisseIndexRoute: GamesQuemDisseIndexRoute,
   GamesSantoriniIndexRoute: GamesSantoriniIndexRoute,
+  GamesTabuIndexRoute: GamesTabuIndexRoute,
   GamesQuemDisseImagemPrintIdKindRoute: GamesQuemDisseImagemPrintIdKindRoute,
 }
 export const routeTree = rootRouteImport

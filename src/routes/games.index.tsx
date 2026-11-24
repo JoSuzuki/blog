@@ -15,6 +15,13 @@ const GAMES = [
       'Jogo de estratégia abstrata inspirado na mitologia grega. Construa e suba em torres para alcançar o terceiro nível.',
     details: '2 jogadores - 15 min - online',
   },
+  {
+    to: '/games/tabu',
+    name: 'Tabu',
+    description:
+      'Faça seu time adivinhar a palavra sem dizer nenhuma das cinco proibidas. O outro time está de olho.',
+    details: '4 a 16 jogadores em dois times - 10 a 30 min - online',
+  },
 ] as const
 
 // Only the readers who may play see this one. Hiding it is a convenience, not

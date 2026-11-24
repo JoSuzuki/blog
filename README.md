@@ -121,6 +121,52 @@ reader has to be logged in to play, since a seat in a room belongs to a `User`.
 - **Data**: `SantoriniRoom` and `SantoriniRoomPlayer` in `prisma/schema.prisma`. The game state is
   one JSON column.
 
+### Games: Tabu
+
+The team word game, ported from the 2020 prototype in JoSuzuki/taboo (only its deck survived:
+`src/lib/taboo/cards.json`, 988 Portuguese cards, cleaned of duplicates and a couple of typos). Like
+Santorini, a reader has to be logged in: a seat belongs to a `User`, which is what lets a player
+reload, switch tabs or lose the connection and land back in their seat.
+
+```
+/games/tabu                  open rooms (waiting, or playing with a free seat); create or join one
+/games/tabu/$roomCode        one page for the room's whole life: lobby, game, result
+```
+
+- **Rules** are pure functions in `src/lib/taboo/game.ts` (tested in `game.test.ts`, `npm test`).
+  Two teams alternate turns and rotate speakers inside each team. The speaker sees the card and
+  marks it guessed (+1) or skipped (0); the other team sees it too and buzzes "Tabu!" (−1 for the
+  speaker's team). The lobby's host (whoever has been in the room the longest) picks how many times
+  each player speaks (1 to 5) and the turn length (30 to 120 s); each team gets
+  `2 × biggest team × rounds` turns in total.
+- **A room's life is server functions**, one per file under `src/lib/taboo`: `create-room`,
+  `join-room`, `leave-room`, `set-team`, `shuffle-teams`, `update-settings`, `remove-player`,
+  `start-game`, `play-again`, and the loaders' `get-rooms` and `get-room`. Each announces
+  `taboo:changed` on the room's channel (and `lobby`), and the pages run their loader again.
+- **Joining late and leaving.** A room takes players during the game too: a late arrival joins the
+  smaller team and enters the rotation. Leaving (or the host removing someone who is not coming back)
+  takes the player out of the game; if they were speaking the turn ends, if they were about to, the
+  next teammate speaks, and a team left empty ends the game. While a speaker is away, anyone can
+  pass their turn to the next teammate.
+- **The game is played over the socket**: `taboo:start-turn`, `taboo:card` (guessed, skipped or
+  buzzed, naming the card so a late buzz cannot hit the next one), `taboo:time-up` and `taboo:pass`,
+  one `.server.ts` file each. Every new state is pushed as `taboo:state` to each player's
+  `user:<id>` room, **each with their own view**: the game state holds the shuffled deck and is never
+  sent as it is, and the card on the table only reaches the speaker and the other team.
+- **The clock** is `endsAt` on the server's clock. The server keeps no timers: every player's page
+  sends `taboo:time-up` when its countdown ends, the server checks its own clock (with a small grace
+  either way) and the first one ends the turn. Views carry `serverNow`, so pages line their timers up.
+- **Presence**: being in a room's socket channel counts as having the room open. Joins, leaves and
+  disconnections push `taboo:presence` (seat ids), shown as dots next to the names; a page whose own
+  socket is down shows a "Reconectando…" banner and catches up by reloading when it is back.
+- **The table** (`src/components/taboo/scene.tsx`) is react-three-fiber like the Santorini board, and
+  likewise a lazy, browser-only chunk. Card faces are drawn on a 1024 × 1434 canvas
+  (`card-art.ts`) with the site's Inter, so they stay sharp up close. Cards are dealt from the deck,
+  float while in play and fly to the team's pile, off the table, or back to the deck. Sounds are
+  synthesized with WebAudio (`sounds.ts`), muted per reader.
+- **Data**: `TabooRoom` (settings and game state as JSON) and `TabooRoomPlayer` (with the lobby
+  team) in `prisma/schema.prisma`.
+
 ### Games: the quiz
 
 A private party game for a group of friends: a screenshot of an old conversation is shown with the

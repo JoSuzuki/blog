@@ -15,8 +15,10 @@ import { createRateLimiter } from '../src/lib/rate-limit.server'
 import {
   MAX_POST_ROOMS_PER_SOCKET,
   MAX_SANTORINI_ROOMS_PER_SOCKET,
+  MAX_TABOO_ROOMS_PER_SOCKET,
   postRoom,
   santoriniRoom,
+  tabooRoom,
   userRoom,
 } from '../src/lib/realtime/events'
 import type {
@@ -25,12 +27,19 @@ import type {
   IOSocket,
   RoomAck,
   SantoriniAck,
+  TabooAck,
 } from '../src/lib/realtime/events'
 import { commitTurn } from '../src/lib/santorini/commit-turn.server'
 import { playAction } from '../src/lib/santorini/play-action.server'
 import { resign } from '../src/lib/santorini/resign.server'
 import { ROOM_CODE_PATTERN } from '../src/lib/santorini/room'
 import { undoTurn } from '../src/lib/santorini/undo-turn.server'
+import { endTurn as endTabooTurn } from '../src/lib/taboo/end-turn.server'
+import { passSpeaker as passTabooSpeaker } from '../src/lib/taboo/pass-speaker.server'
+import { playCard as playTabooCard } from '../src/lib/taboo/play-card.server'
+import { ROOM_CODE_PATTERN as TABOO_ROOM_CODE_PATTERN } from '../src/lib/taboo/room'
+import { announcePresence as announceTabooPresence } from '../src/lib/taboo/room.server'
+import { startTurn as startTabooTurn } from '../src/lib/taboo/start-turn.server'
 import { getSiteOrigin } from '../src/lib/site'
 
 type Middleware = (
@@ -236,15 +245,48 @@ export function registerSocketHandlers(io: IOServer): () => void {
     return { ok: true }
   }
 
+  // Tabu channels work like Santorini's. Joining a room's channel is also
+  // what marks a reader as having the room open: each join and leave (and
+  // each disconnection, below) tells the room's pages who is there.
+  const isTabooChannel = (channel: unknown): channel is string =>
+    typeof channel === 'string' &&
+    (channel === 'lobby' || TABOO_ROOM_CODE_PATTERN.test(channel))
+
+  const joinTabooRoom = (socket: IOSocket, channel: unknown): RoomAck => {
+    if (!isTabooChannel(channel)) return { ok: false, reason: 'invalid' }
+    const room = tabooRoom(channel)
+    if (socket.rooms.has(room)) return { ok: true }
+    const joined = [...socket.rooms].filter((r) => r.startsWith('taboo:'))
+    if (joined.length >= MAX_TABOO_ROOMS_PER_SOCKET) {
+      return { ok: false, reason: 'too_many_rooms' }
+    }
+    void socket.join(room)
+    if (channel !== 'lobby') void announceTabooPresence(channel)
+    return { ok: true }
+  }
+
+  const leaveTabooRoom = (socket: IOSocket, channel: unknown): RoomAck => {
+    if (!isTabooChannel(channel)) return { ok: false, reason: 'invalid' }
+    void socket.leave(tabooRoom(channel))
+    if (channel !== 'lobby') void announceTabooPresence(channel)
+    return { ok: true }
+  }
+
+  /** The Tabu rooms (not the lobby) a socket has open. */
+  const tabooRoomCodes = (socket: IOSocket) =>
+    [...socket.rooms]
+      .filter((r) => r.startsWith('taboo:') && r !== tabooRoom('lobby'))
+      .map((r) => r.slice('taboo:'.length))
+
   // A Santorini game event: only a logged-in reader may send one, and every
   // one is answered. What the event does, and to whom the result is sent,
   // is in the action's own module under src/lib/santorini.
   const play = (
     socket: IOSocket,
     ack: unknown,
-    action: (userId: number) => Promise<SantoriniAck>,
+    action: (userId: number) => Promise<SantoriniAck | TabooAck>,
   ) => {
-    const answer = (response: SantoriniAck) => {
+    const answer = (response: SantoriniAck | TabooAck) => {
       if (typeof ack === 'function') ack(response)
     }
     identify(socket)
@@ -266,7 +308,7 @@ export function registerSocketHandlers(io: IOServer): () => void {
         return action(userId)
       })
       .then(answer, (error: unknown) => {
-        console.error('[socket] a Santorini game event failed:', error)
+        console.error('[socket] a game event failed:', error)
         answer({
           ok: false,
           error: 'unavailable',
@@ -316,9 +358,21 @@ export function registerSocketHandlers(io: IOServer): () => void {
     socketCleanups.set(socket, [])
     const onDisconnect = () => socketCleanups.delete(socket)
     socket.once('disconnect', onDisconnect)
-    socketCleanups
-      .get(socket)!
-      .push(() => socket.off('disconnect', onDisconnect))
+    // The rooms are gone by 'disconnect', so note them on 'disconnecting'.
+    let openTabooRooms: string[] = []
+    const onDisconnecting = () => {
+      openTabooRooms = tabooRoomCodes(socket)
+    }
+    const onGone = () => {
+      for (const code of openTabooRooms) void announceTabooPresence(code)
+    }
+    socket.once('disconnecting', onDisconnecting)
+    socket.once('disconnect', onGone)
+    socketCleanups.get(socket)!.push(() => {
+      socket.off('disconnect', onDisconnect)
+      socket.off('disconnecting', onDisconnecting)
+      socket.off('disconnect', onGone)
+    })
 
     if (announce) {
       console.log(
@@ -349,6 +403,26 @@ export function registerSocketHandlers(io: IOServer): () => void {
     })
     listen(socket, 'santorini:resign', (roomCode, ack) => {
       play(socket, ack, (userId) => resign(userId, roomCode))
+    })
+    listen(socket, 'taboo:join', (channel, ack) => {
+      reply(ack, joinTabooRoom(socket, channel))
+    })
+    listen(socket, 'taboo:leave', (channel, ack) => {
+      reply(ack, leaveTabooRoom(socket, channel))
+    })
+    listen(socket, 'taboo:start-turn', (roomCode, ack) => {
+      play(socket, ack, (userId) => startTabooTurn(userId, roomCode))
+    })
+    listen(socket, 'taboo:card', (roomCode, input, ack) => {
+      play(socket, ack, (userId) => playTabooCard(userId, roomCode, input))
+    })
+    listen(socket, 'taboo:time-up', (roomCode, turnNumber, ack) => {
+      play(socket, ack, (userId) => endTabooTurn(userId, roomCode, turnNumber))
+    })
+    listen(socket, 'taboo:pass', (roomCode, turnNumber, ack) => {
+      play(socket, ack, (userId) =>
+        passTabooSpeaker(userId, roomCode, turnNumber),
+      )
     })
     listen(socket, 'quiz:guess', (input, ack) => {
       quiz(socket, ack, (user) => submitGuess(user, input))
