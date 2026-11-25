@@ -55,6 +55,9 @@
   --color-team-red-dark: var(--colors-team-red-dark);
   --color-success: var(--colors-success);
   --color-success-dark: var(--colors-success-dark);
+  --color-team-blue-ink: var(--colors-team-blue-ink);
+  --color-team-red-ink: var(--colors-team-red-ink);
+  --color-success-ink: var(--colors-success-ink);
 
   --text-*: initial;
   --text-xs: var(--font-sizes-xs);
@@ -184,6 +187,14 @@
     --colors-success: #1fa971;
     --colors-success-dark: #0e6b45;
 
+    /*
+     * The game colors as text and outlines (an outlined game button): the
+     * color itself on dark themes, its dark shade on light ones for contrast.
+     */
+    --colors-team-blue-ink: var(--colors-team-blue);
+    --colors-team-red-ink: var(--colors-team-red);
+    --colors-success-ink: var(--colors-success);
+
     --font-sizes-xs: 1rem;
     --font-sizes-sm: 1.125rem;
     --font-sizes-md: 1.25rem;
@@ -222,6 +233,9 @@
   }
 
   :root[data-theme='light'] {
+    --colors-team-blue-ink: var(--colors-team-blue-dark);
+    --colors-team-red-ink: var(--colors-team-red-dark);
+    --colors-success-ink: var(--colors-success-dark);
     --colors-secondary: #b34270;
     --colors-accent: #432a79;
     --colors-accent-background: #ebe2ff;

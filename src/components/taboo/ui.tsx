@@ -55,16 +55,17 @@ export const TeamName = ({ team }: { team: Team }) => (
 
 const TONES = {
   accent: 'border-accent bg-accent text-background',
-  good: 'border-success-dark bg-success text-white [--pressable-color:var(--colors-success)]',
-  bad: 'border-team-red-dark bg-team-red text-white [--pressable-color:var(--colors-team-red)]',
   plain: 'border-accent bg-background text-accent',
-  0: 'border-team-blue-dark bg-team-blue text-white [--pressable-color:var(--colors-team-blue)]',
-  1: 'border-team-red-dark bg-team-red text-white [--pressable-color:var(--colors-team-red)]',
+  // The game colors as outlines, like the site's own buttons.
+  good: 'border-success-ink bg-background text-success-ink [--pressable-color:var(--colors-success-ink)]',
+  bad: 'border-team-red-ink bg-background text-team-red-ink [--pressable-color:var(--colors-team-red-ink)]',
+  0: 'border-team-blue-ink bg-background text-team-blue-ink [--pressable-color:var(--colors-team-blue-ink)]',
+  1: 'border-team-red-ink bg-background text-team-red-ink [--pressable-color:var(--colors-team-red-ink)]',
 } as const
 
 /**
- * A game button: the site's square, pressable button (an offset accent
- * shadow that lifts on hover), filled with a game color.
+ * A game button: the site's square, pressable button (an offset shadow that
+ * lifts on hover), outlined in a game color.
  */
 export const BigButton = ({
   children,
@@ -90,7 +91,7 @@ export const BigButton = ({
     disabled={disabled}
     data-testid={testId}
     className={
-      'pressable touch-manipulation border-2 px-md py-sm text-md tracking-tight select-none wght-bold ' +
+      'pressable touch-manipulation border px-md py-sm text-md tracking-tight select-none wght-bold ' +
       'disabled:cursor-not-allowed disabled:opacity-50 ' +
       (wide
         ? 'flex-1 py-md text-lg tablet:flex-none tablet:py-sm tablet:text-md '
