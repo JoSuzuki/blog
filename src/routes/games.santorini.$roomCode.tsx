@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import Article from '~/components/article/article'
 import Footer from '~/components/footer/footer'
 import Navbar from '~/components/navbar/navbar'
@@ -15,10 +15,19 @@ import type { RoomView } from '~/lib/santorini/room'
 // so "the game started" or "the other player moved" is just the loader
 // running again.
 export const Route = createFileRoute('/games/santorini/$roomCode')({
-  loader: ({ params }) =>
-    getRoom({ data: { roomCode: params.roomCode } }).catch(
+  loader: async ({ params }) => {
+    const result = await getRoom({ data: { roomCode: params.roomCode } }).catch(
       (): GetRoomResult => ({ ok: false, reason: 'unavailable' }),
-    ),
+    )
+    // Someone else's game, or a finished one: its page shows it to anyone.
+    if (!result.ok && result.reason === 'watch') {
+      throw redirect({
+        to: '/games/santorini/partidas/$gameId',
+        params: { gameId: String(result.gameId) },
+      })
+    }
+    return result
+  },
   head: () => ({
     meta: [
       { title: 'Santorini | JoSuzuki' },
@@ -42,8 +51,8 @@ function SantoriniRoom() {
           <LoginRequired />
         ) : result.reason === 'not_found' ? (
           <Unavailable>
-            Sala não encontrada: o código está errado, a sala foi fechada ou a
-            partida já tem seus dois jogadores.
+            Sala não encontrada: o código está errado ou a sala foi fechada
+            antes de a partida começar.
           </Unavailable>
         ) : (
           <Unavailable>Não foi possível carregar a sala agora.</Unavailable>

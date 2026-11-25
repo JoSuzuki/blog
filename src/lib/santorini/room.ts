@@ -1,6 +1,6 @@
 import type { GameState } from './game'
 
-// What the pages get about a Santorini room, shared by the room actions and
+// What the pages get about a Santorini room or game, shared by the actions and
 // the components. No server code here: the browser bundle imports this module.
 
 export type RoomStatus = 'WAITING' | 'PLAYING' | 'FINISHED'
@@ -22,6 +22,33 @@ export interface RoomView {
   /** Null until the game starts. */
   gameState: GameState | null
   /** Grows with every write to the room (see SantoriniGameUpdate). */
+  version: number
+}
+
+/** A game in the history: being played or finished. */
+export interface GameSummary {
+  /** The game's permanent id: codes are reused once a game is over. */
+  id: number
+  roomCode: string
+  status: 'PLAYING' | 'FINISHED'
+  players: Omit<RoomPlayerView, 'id'>[]
+  /** When the last move was written (the end, for a finished game). */
+  updatedAt: string
+}
+
+/** One game as anyone may see it, to spectate or review. */
+export interface GameView {
+  id: number
+  roomCode: string
+  status: RoomStatus
+  players: RoomPlayerView[]
+  /** The viewer's seat, if they played this game (it is over then). */
+  myPlayerId: number | null
+  /** Null while the room is still waiting for its game to start. */
+  gameState: GameState | null
+  createdAt: string
+  updatedAt: string
+  /** See RoomView. */
   version: number
 }
 

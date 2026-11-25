@@ -67,9 +67,21 @@ const roomInclude = {
   },
 } as const
 
-/** A room row with its seats, in the order the players sat down. */
+/**
+ * The rooms still in use. A code is unique among these only (see the schema):
+ * a finished game keeps its code, and the code may be drawn again later.
+ */
+export const ACTIVE_STATUSES = ['WAITING', 'PLAYING'] as const
+
+/**
+ * The room in use under `roomCode`, with its seats in the order the players
+ * sat down. Finished games are found by id (see get-game).
+ */
 export const findRoom = (roomCode: string) =>
-  prisma.santoriniRoom.findUnique({ where: { roomCode }, include: roomInclude })
+  prisma.santoriniRoom.findFirst({
+    where: { roomCode, status: { in: [...ACTIVE_STATUSES] } },
+    include: roomInclude,
+  })
 
 export type RoomRow = NonNullable<Awaited<ReturnType<typeof findRoom>>>
 
@@ -99,7 +111,7 @@ export const findActiveRoomCode = async (
 ): Promise<string | null> => {
   const room = await prisma.santoriniRoom.findFirst({
     where: {
-      status: { in: ['WAITING', 'PLAYING'] },
+      status: { in: [...ACTIVE_STATUSES] },
       players: { some: { userId } },
     },
     select: { roomCode: true },
@@ -190,7 +202,10 @@ export const saveGame = async (
     return true
   })
   if (!saved) return null
+  // A finished game leaves the live games on the history page.
+  if (winnerId !== undefined) announce(null, true)
   return {
+    roomId: room.id,
     roomCode: room.roomCode,
     status,
     gameState,
@@ -201,13 +216,17 @@ export const saveGame = async (
 
 /**
  * Pushes a game's new state to its two players, in every tab they have
- * open, and to nobody else. Never throws: a player who misses it gets the
- * state from the loader the next time their socket connects.
+ * open, and to whoever is watching the room's channel (games are public:
+ * anyone may spectate or review them). Never throws: a player who misses it
+ * gets the state from the loader the next time their socket connects.
  */
 export const sendToPlayers = (room: RoomRow, update: SantoriniGameUpdate) => {
   try {
     getIO()
-      .to(room.players.map((player) => userRoom(player.userId)))
+      .to([
+        ...room.players.map((player) => userRoom(player.userId)),
+        santoriniRoom(room.roomCode),
+      ])
       .emit('santorini:game', update)
   } catch (error) {
     if (globalThis.__blogSocketIO) {

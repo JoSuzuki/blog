@@ -8,6 +8,7 @@ import {
   LoginRequired,
   Unavailable,
 } from '~/components/santorini/notices'
+import SantoriniTabs from '~/components/santorini/tabs'
 import {
   useLiveSantorini,
   useRoomAction,
@@ -44,6 +45,7 @@ function SantoriniRooms() {
       <Navbar />
       <Article>
         <h1>Santorini</h1>
+        <SantoriniTabs current="salas" />
         <p className="mb-md">
           Cada jogador tem dois trabalhadores. Na sua vez, mova um deles para
           uma casa vizinha (subindo no máximo um andar) e depois construa um

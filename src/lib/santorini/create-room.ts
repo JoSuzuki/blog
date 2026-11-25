@@ -44,7 +44,9 @@ export const createRoom = createServerFn({ method: 'POST' }).handler(
     const activeRoomCode = await findActiveRoomCode(user.id)
     if (activeRoomCode) return { ok: true, roomCode: activeRoomCode }
 
-    // 4. Create it under a random code; on the rare collision, draw again.
+    // 4. Create it under a random code. A code only has to differ from the
+    // rooms in use (the unique index skips finished games), so a collision
+    // is next to impossible; on one, draw again.
     for (let attempt = 0; ; attempt++) {
       const roomCode = Array.from(
         { length: 6 },

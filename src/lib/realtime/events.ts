@@ -72,10 +72,13 @@ export interface SantoriniChangedPayload {
 
 /**
  * A game after a move, sent to its two players (their `userRoom`s) and to
- * nobody else. `version` grows with every write to the room; a page keeps
- * whichever of this and its loader data is newer.
+ * the room's channel, where spectators listen. `version` grows with every
+ * write to the room; a page keeps whichever of this and its loader data is
+ * newer. A code can be used again once its game is over, so a page about
+ * one game checks `roomId`.
  */
 export interface SantoriniGameUpdate {
+  roomId: number
   roomCode: string
   status: 'PLAYING' | 'FINISHED'
   gameState: GameState
