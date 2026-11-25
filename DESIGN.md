@@ -154,6 +154,10 @@ screen readers (`role="radio"` + `aria-checked`, or `aria-pressed`).
   colors with `readColorToken()` from `src/lib/site-theme.ts`. A scene may keep its own palette per
   theme (the Santorini board's Vector Terminal look, the Tabu table's lights), but player and team
   colors stay the game colors.
+- **Motion** says what just happened and is over in well under a second: a piece falls into place,
+  a worker hops, a marker pops up. Animate from `useFrame` through refs, never React state. With
+  `prefers-reduced-motion: reduce` everything is drawn where it ends up and nothing spins or pulses
+  (the Santorini board's `useReducedMotion` in `components/santorini/board-motion.ts`).
 
 ## Adding something
 

@@ -2,6 +2,7 @@ import { OrbitControls } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import type { ThreeEvent } from '@react-three/fiber'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import {
   AdditiveBlending,
   BoxGeometry,
@@ -20,21 +21,52 @@ import {
   Vector3,
   WireframeGeometry,
 } from 'three'
-import type { Group, Mesh, MeshBasicMaterial } from 'three'
+import type {
+  Group,
+  LineBasicMaterial,
+  LineLoop,
+  LineSegments,
+  Mesh,
+  MeshBasicMaterial,
+} from 'three'
 import { useSiteTheme } from '~/lib/site-theme'
 import type { SiteTheme } from '~/components/taboo/theme'
-import { BOARD_SIZE, DOME_HEIGHT, canExecuteAction } from '~/lib/santorini/game'
+import {
+  BOARD_SIZE,
+  DOME_HEIGHT,
+  WINNING_HEIGHT,
+  canExecuteAction,
+} from '~/lib/santorini/game'
 import type {
   ActionType,
   GameState,
   Position,
   Worker as WorkerPiece,
 } from '~/lib/santorini/game'
+import {
+  BOUNCE_IMPACT,
+  BoardMotionContext,
+  animateRipple,
+  clamp01,
+  easeInOutCubic,
+  easeOutBack,
+  easeOutBounce,
+  easeOutCubic,
+  useBoardMotion,
+  useReducedMotion,
+  useSinceMount,
+} from './board-motion'
 
 // The 3D board, drawn like an old vector display: a glowing grid, light
 // solid towers with an ink outline, wire domes and wire-gem workers. It only
 // draws the state it is given and reports clicks; the rules live in
 // ~/lib/santorini/game and every move is decided on the server.
+//
+// It animates the difference between one state and the next, so the same
+// motion plays for the player, for whoever watches live, and in the replay:
+// workers hop from square to square, floors and domes fall into place, the
+// opening position stacks up tile by tile, and a win lights a beam with
+// sparks. With reduced motion every piece is simply drawn where it ends up.
 //
 // This module pulls in three.js, so it is loaded lazily and only in the
 // browser (see SantoriniGame).
@@ -301,13 +333,98 @@ const Coordinates = ({ palette }: { palette: Palette }) => {
   )
 }
 
-/** Up to three solid floors and a wire dome on a finished tower. */
-const Tower = ({ height, palette }: { height: number; palette: Palette }) => {
+/** Seconds a floor or a dome takes to fall into place. */
+const DROP_SECONDS = 0.6
+const DROP_FROM = 1.6
+
+/**
+ * A floor or a dome that falls onto its tower when it is built, bounces and
+ * puffs an outline of its footprint. `delay` holds it back (in seconds):
+ * the opening position stacks up tile by tile.
+ */
+const Drop = ({
+  y,
+  delay,
+  outline,
+  palette,
+  children,
+}: {
+  /** Where its centre ends up, above the tile. */
+  y: number
+  delay: number
+  /** The footprint to puff when it lands, at the bottom of the piece. */
+  outline: { geometry: BufferGeometry; at: number }
+  palette: Palette
+  children: ReactNode
+}) => {
+  const piece = useRef<Group>(null)
+  const puff = useRef<LineLoop>(null)
+  const { reduced } = useBoardMotion()
+  const since = useSinceMount(delay)
+  useFrame(({ clock }) => {
+    const s = since(clock.elapsedTime)
+    if (piece.current) {
+      const p = clamp01(s / DROP_SECONDS)
+      piece.current.visible = s >= 0
+      piece.current.position.y = y + DROP_FROM * (1 - easeOutBounce(p))
+    }
+    animateRipple(puff.current, s - DROP_SECONDS * BOUNCE_IMPACT, 0.5, 0.45)
+  })
+  return (
+    <>
+      <group ref={piece} position={[0, y, 0]} visible={reduced}>
+        {children}
+      </group>
+      <lineLoop
+        ref={puff}
+        geometry={outline.geometry}
+        position={[0, outline.at + 0.005, 0]}
+        visible={false}
+      >
+        <lineBasicMaterial
+          color={palette.grid}
+          transparent
+          opacity={0}
+          depthWrite={false}
+        />
+      </lineLoop>
+    </>
+  )
+}
+
+/**
+ * Up to three solid floors and a wire dome on a finished tower. A piece that
+ * is new since the last draw falls into place; several new at once (a jump
+ * in the replay, the opening position) land one after the other.
+ */
+const Tower = ({
+  height,
+  palette,
+  introDelay,
+}: {
+  height: number
+  palette: Palette
+  /** Seconds to wait before the opening position lands on this tile. */
+  introDelay: number | null
+}) => {
   const floors = Math.min(height, DOME_HEIGHT - 1)
+  // The height at the last draw: pieces above it are the new ones.
+  const shown = useRef(introDelay === null ? height : 0)
+  useEffect(() => {
+    shown.current = height
+  }, [height])
+  const delayOf = (level: number) =>
+    (introDelay ?? 0) + Math.max(0, level - shown.current) * 0.16
   return (
     <>
       {LEVELS.slice(0, floors).map((level, i) => (
-        <group key={i} position={[0, levelBase(i) + level.height / 2, 0]}>
+        <Drop
+          key={i}
+          y={levelBase(i) + level.height / 2}
+          delay={delayOf(i)}
+          outline={{ geometry: squareOutlines[i], at: levelBase(i) }}
+          palette={palette}
+        >
           <mesh geometry={levelGeometry[i]}>
             <meshToonMaterial
               color={palette.towerFill}
@@ -320,10 +437,15 @@ const Tower = ({ height, palette }: { height: number; palette: Palette }) => {
           <lineSegments geometry={levelEdges[i]}>
             <lineBasicMaterial color={palette.towerInk} />
           </lineSegments>
-        </group>
+        </Drop>
       ))}
       {height === DOME_HEIGHT && (
-        <group position={[0, levelBase(DOME_HEIGHT - 1), 0]}>
+        <Drop
+          y={levelBase(DOME_HEIGHT - 1)}
+          delay={delayOf(DOME_HEIGHT - 1)}
+          outline={{ geometry: outerRing, at: levelBase(DOME_HEIGHT - 1) }}
+          palette={palette}
+        >
           <mesh geometry={domeGeometry}>
             <meshToonMaterial
               color={palette.towerFill}
@@ -336,7 +458,7 @@ const Tower = ({ height, palette }: { height: number; palette: Palette }) => {
           <lineSegments geometry={domeWire}>
             <lineBasicMaterial color={palette.dome} />
           </lineSegments>
-        </group>
+        </Drop>
       )}
     </>
   )
@@ -347,6 +469,7 @@ const Tower = ({ height, palette }: { height: number; palette: Palette }) => {
  * ring that pulses. A winning climb (onto level 3) gets a second ring; a
  * worker that can be picked gets the ring alone. A build shows the footprint
  * of what it would add: a square for the next floor, the circle for a dome.
+ * Markers pop up in a wave when they appear.
  */
 const Marker = ({
   palette,
@@ -354,6 +477,7 @@ const Marker = ({
   winning,
   hovered,
   floor,
+  delay,
 }: {
   palette: Palette
   filled: boolean
@@ -361,11 +485,21 @@ const Marker = ({
   hovered: boolean
   /** The level a build here would add (0 to 2), or undefined for a round marker. */
   floor?: number
+  /** Seconds before it pops up. */
+  delay: number
 }) => {
   const disc = useRef<Mesh>(null)
+  const pop = useRef<Group>(null)
   const group = useRef<Group>(null)
+  const { reduced } = useBoardMotion()
+  const since = useSinceMount(delay)
   useFrame(({ clock }) => {
-    const pulse = (Math.sin(clock.elapsedTime * 3) + 1) / 2
+    const pulse = reduced ? 0.5 : (Math.sin(clock.elapsedTime * 3) + 1) / 2
+    if (pop.current) {
+      const p = clamp01(since(clock.elapsedTime) / 0.3)
+      pop.current.visible = p > 0
+      pop.current.scale.setScalar(Math.max(0.001, easeOutBack(p)))
+    }
     if (disc.current) {
       const material = disc.current.material as MeshBasicMaterial
       material.opacity = hovered ? 0.85 : 0.3 + 0.35 * pulse
@@ -374,80 +508,395 @@ const Marker = ({
       group.current.scale.setScalar(1 + 0.08 * pulse)
   })
   return (
-    <group ref={group} position={[0, 0.015, 0]}>
-      <lineLoop
-        geometry={floor === undefined ? innerRing : squareOutlines[floor]}
-      >
-        <lineBasicMaterial color={palette.mine} />
-      </lineLoop>
-      {winning && (
-        <lineLoop geometry={outerRing}>
+    <group ref={pop} visible={reduced}>
+      <group ref={group} position={[0, 0.015, 0]}>
+        <lineLoop
+          geometry={floor === undefined ? innerRing : squareOutlines[floor]}
+        >
           <lineBasicMaterial color={palette.mine} />
         </lineLoop>
-      )}
-      {filled && (
-        <mesh
-          ref={disc}
-          geometry={floor === undefined ? discGeometry : squareFills[floor]}
-          rotation={[-Math.PI / 2, 0, 0]}
-        >
-          <meshBasicMaterial
-            color={palette.mine}
-            transparent
-            opacity={0.45}
-            depthWrite={false}
-          />
-        </mesh>
-      )}
+        {winning && (
+          <lineLoop geometry={outerRing}>
+            <lineBasicMaterial color={palette.mine} />
+          </lineLoop>
+        )}
+        {filled && (
+          <mesh
+            ref={disc}
+            geometry={floor === undefined ? discGeometry : squareFills[floor]}
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
+            <meshBasicMaterial
+              color={palette.mine}
+              transparent
+              opacity={0.45}
+              depthWrite={false}
+            />
+          </mesh>
+        )}
+      </group>
     </group>
   )
 }
 
-/** A worker: a spinning wire gem, faster and bobbing while it is selected. */
+const tileCentre = ({ x, y }: Position, height: number) =>
+  new Vector3(worldX(x), topOf(height), worldZ(y))
+
+/** Seconds a worker takes to drop onto the board when it is placed. */
+const PLACE_SECONDS = 0.45
+
+interface Flight {
+  from: Vector3
+  to: Vector3
+  start: number
+  duration: number
+  /** How high the arc rises above the higher end. 0 is a straight drop. */
+  arc: number
+}
+
+/**
+ * A worker: a spinning wire gem, faster and bobbing while it is selected.
+ * It hops in an arc from square to square, drops in when it is placed,
+ * squashes as it lands, and pings a ring when it is picked. The winner
+ * floats up and spins.
+ */
 const Worker = ({
   color,
+  tile,
+  height,
   selected,
   selectable,
+  winner,
+  delay,
+  palette,
   onClick,
 }: {
   color: string
+  tile: Position
+  /** The height of the tile it stands on. */
+  height: number
   selected: boolean
   selectable: boolean
+  winner: boolean
+  /** Seconds to wait before dropping in (for the opening position). */
+  delay: number
+  palette: Palette
   onClick: () => void
 }) => {
+  const body = useRef<Group>(null)
   const gem = useRef<Group>(null)
+  const landing = useRef<LineLoop>(null)
+  const ping = useRef<LineLoop>(null)
   const [hover, setHover] = useState(false)
+  const { reduced } = useBoardMotion()
   const offset = useMemo(() => Math.random() * Math.PI * 2, [])
-  useFrame(({ clock }) => {
-    if (!gem.current) return
-    const t = clock.elapsedTime
-    gem.current.rotation.y = t * (selected ? 2.5 : 0.6) + offset
-    gem.current.position.y =
-      0.28 + (selected ? 0.04 + Math.sin(t * 4) * 0.05 : 0)
+
+  const target = useRef(tileCentre(tile, height))
+  target.current.copy(tileCentre(tile, height))
+  const motion = useRef<{
+    position: Vector3 | null
+    flight: Flight | null
+    landedAt: number
+    pickedAt: number
+    wasSelected: boolean
+    spin: number
+    speed: number
+    lift: number
+  }>({
+    position: null,
+    flight: null,
+    landedAt: -Infinity,
+    pickedAt: -Infinity,
+    wasSelected: selected,
+    spin: offset,
+    speed: 0.6,
+    lift: 0,
   })
+
+  useFrame(({ clock }, delta) => {
+    const m = motion.current
+    const t = clock.elapsedTime
+    const to = target.current
+    if (!m.position) {
+      m.position = to.clone()
+      if (!reduced) {
+        m.flight = {
+          from: to.clone().setY(to.y + 2.4),
+          to: to.clone(),
+          start: t + delay,
+          duration: PLACE_SECONDS,
+          arc: 0,
+        }
+      }
+    } else if (!(m.flight?.to ?? m.position).equals(to)) {
+      if (reduced) {
+        m.position.copy(to)
+        m.flight = null
+      } else {
+        const distance = Math.hypot(to.x - m.position.x, to.z - m.position.z)
+        m.flight = {
+          from: m.position.clone(),
+          to: to.clone(),
+          start: t,
+          duration: Math.min(0.75, 0.38 + 0.1 * distance),
+          arc: 0.35 + 0.12 * distance,
+        }
+      }
+    }
+
+    const f = m.flight
+    let waiting = false
+    if (f) {
+      const p = (t - f.start) / f.duration
+      if (p < 0) {
+        waiting = true
+        m.position.copy(f.from)
+      } else if (p >= 1) {
+        m.position.copy(f.to)
+        m.flight = null
+        m.landedAt = t
+      } else if (f.arc === 0) {
+        // Placed: a fall that speeds up, like a dropped piece.
+        m.position.lerpVectors(f.from, f.to, p * p)
+      } else {
+        const e = easeInOutCubic(p)
+        m.position.lerpVectors(f.from, f.to, e)
+        m.position.y += f.arc * 4 * e * (1 - e)
+      }
+    }
+
+    if (selected && !m.wasSelected) m.pickedAt = t
+    m.wasSelected = selected
+
+    if (body.current) {
+      body.current.visible = !waiting
+      body.current.position.copy(m.position)
+      // A squash as it lands, then back to shape.
+      const q = (t - m.landedAt) / 0.22
+      const squash = q >= 0 && q < 1 ? Math.sin(q * Math.PI) * 0.28 : 0
+      body.current.scale.set(1 + squash * 0.5, 1 - squash, 1 + squash * 0.5)
+    }
+    if (gem.current) {
+      const speed = reduced ? 0 : winner ? 7 : selected ? 2.5 : 0.6
+      m.speed += (speed - m.speed) * Math.min(1, delta * 4)
+      m.spin += m.speed * delta
+      gem.current.rotation.y = m.spin
+      const lift = winner ? 0.32 : selected ? 0.04 : 0
+      m.lift += (lift - m.lift) * Math.min(1, delta * 6)
+      const bob =
+        reduced || (!selected && !winner)
+          ? 0
+          : Math.sin(t * (winner ? 3 : 4)) * (winner ? 0.07 : 0.05)
+      gem.current.position.y = 0.28 + m.lift + bob
+    }
+    landing.current?.position.copy(to).setY(to.y + 0.02)
+    animateRipple(landing.current, t - m.landedAt, 0.45, 0.9)
+    ping.current?.position.copy(m.position).setY(m.position.y + 0.02)
+    animateRipple(ping.current, t - m.pickedAt, 0.6, 1.1)
+  })
+
   const handleClick = (event: ThreeEvent<MouseEvent>) => {
     if (!selectable) return
     event.stopPropagation()
     onClick()
   }
+  const blending = palette.glow ? AdditiveBlending : NormalBlending
   return (
-    <group
-      ref={gem}
-      onClick={handleClick}
-      onPointerEnter={() => selectable && setHover(true)}
-      onPointerLeave={() => setHover(false)}
-    >
-      <lineSegments geometry={gemWire} scale={hover ? 1.15 : 1}>
-        <lineBasicMaterial color={color} />
+    <>
+      <group ref={body} visible={false}>
+        <group
+          ref={gem}
+          onClick={handleClick}
+          onPointerEnter={() => selectable && setHover(true)}
+          onPointerLeave={() => setHover(false)}
+        >
+          <lineSegments geometry={gemWire} scale={hover ? 1.15 : 1}>
+            <lineBasicMaterial color={color} />
+          </lineSegments>
+          <mesh geometry={gemFill} scale={hover ? 1.15 : 1}>
+            <meshBasicMaterial color={color} transparent opacity={0.55} />
+          </mesh>
+          {/* Larger than it looks: the gem is small, a finger is not. */}
+          <mesh scale={1.8}>
+            <octahedronGeometry args={[0.2, 0]} />
+            <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+          </mesh>
+        </group>
+      </group>
+      {[landing, ping].map((ref, i) => (
+        <lineLoop key={i} ref={ref} geometry={innerRing} visible={false}>
+          <lineBasicMaterial
+            color={color}
+            transparent
+            opacity={0}
+            blending={blending}
+            depthWrite={false}
+          />
+        </lineLoop>
+      ))}
+    </>
+  )
+}
+
+/** Streaks thrown up by each burst of the win. */
+const SPARKS = 56
+const SPARK_LIFE = 1.5
+const BURSTS = 3
+const BURST_EVERY = 1.3
+const BEAM_LINES = 12
+const BEAM_HEIGHT = 4.5
+const RISING_RINGS = 3
+
+const beamGeometry = (() => {
+  const points: number[] = []
+  for (let i = 0; i < BEAM_LINES; i++) {
+    const angle = (i / BEAM_LINES) * Math.PI * 2
+    const [x, z] = [Math.cos(angle) * 0.3, Math.sin(angle) * 0.3]
+    points.push(x, 0, z, x, BEAM_HEIGHT, z)
+  }
+  const geometry = new BufferGeometry()
+  geometry.setAttribute('position', new Float32BufferAttribute(points, 3))
+  return geometry
+})()
+
+/**
+ * The win: a beam of light rising from the winner's tower with rings
+ * climbing it, and three bursts of sparks in the winner's colour. With
+ * reduced motion only the beam is drawn, still.
+ */
+const Celebration = ({
+  position,
+  color,
+  palette,
+}: {
+  position: Vector3
+  color: string
+  palette: Palette
+}) => {
+  const { reduced } = useBoardMotion()
+  // Waits for the winning hop to land.
+  const since = useSinceMount(0.5)
+  const beam = useRef<LineSegments>(null)
+  const rings = useRef<(LineLoop | null)[]>([])
+  const sparks = useRef<LineSegments>(null)
+  const sparkData = useMemo(() => {
+    const geometry = new BufferGeometry()
+    geometry.setAttribute(
+      'position',
+      new Float32BufferAttribute(new Float32Array(SPARKS * 6), 3),
+    )
+    return { geometry, velocity: new Float32Array(SPARKS * 3), burst: -1 }
+  }, [])
+  useEffect(() => () => sparkData.geometry.dispose(), [sparkData])
+
+  useFrame(({ clock }) => {
+    const s = since(clock.elapsedTime)
+    const shown = reduced || s >= 0
+    if (beam.current) {
+      beam.current.visible = shown
+      const grow = reduced ? 1 : easeOutCubic(clamp01(s / 0.6))
+      beam.current.scale.set(1, Math.max(0.001, grow), 1)
+      const material = beam.current.material as LineBasicMaterial
+      material.opacity = reduced
+        ? 0.45
+        : 0.35 + 0.15 * Math.sin(clock.elapsedTime * 9) * Math.sin(s * 2.3)
+    }
+    rings.current.forEach((ring, i) => {
+      if (!ring) return
+      const material = ring.material as LineBasicMaterial
+      if (reduced) {
+        ring.visible = true
+        ring.position.y = 0.6 + i * 0.7
+        material.opacity = 0.5
+        return
+      }
+      const p = (s / 1.8 + i / RISING_RINGS) % 1
+      ring.visible = s >= 0
+      ring.position.y = 0.1 + p * (BEAM_HEIGHT - 1)
+      ring.scale.setScalar(1.6 - p * 0.9)
+      material.opacity = Math.sin(p * Math.PI) * 0.8
+    })
+
+    const lines = sparks.current
+    if (!lines) return
+    const burst = Math.floor(s / BURST_EVERY)
+    const age = s - burst * BURST_EVERY
+    lines.visible = !reduced && s >= 0 && burst < BURSTS && age < SPARK_LIFE
+    if (!lines.visible) return
+    const { velocity } = sparkData
+    if (burst !== sparkData.burst) {
+      sparkData.burst = burst
+      for (let i = 0; i < SPARKS; i++) {
+        const angle = Math.random() * Math.PI * 2
+        const up = 2.2 + Math.random() * 2.6
+        const out = 0.8 + Math.random() * 1.8
+        velocity.set([Math.cos(angle) * out, up, Math.sin(angle) * out], i * 3)
+      }
+    }
+    const positions = sparkData.geometry.getAttribute(
+      'position',
+    ) as Float32BufferAttribute
+    const gravity = -5.5
+    for (let i = 0; i < SPARKS; i++) {
+      const [vx, vy, vz] = velocity.subarray(i * 3, i * 3 + 3)
+      const at = (time: number) => [
+        vx * time,
+        0.4 + vy * time + 0.5 * gravity * time * time,
+        vz * time,
+      ]
+      const head = at(age)
+      const tail = at(Math.max(0, age - 0.07))
+      positions.setXYZ(i * 2, head[0], head[1], head[2])
+      positions.setXYZ(i * 2 + 1, tail[0], tail[1], tail[2])
+    }
+    positions.needsUpdate = true
+    ;(lines.material as LineBasicMaterial).opacity = 1 - (age / SPARK_LIFE) ** 2
+  })
+
+  const blending = palette.glow ? AdditiveBlending : NormalBlending
+  return (
+    <group position={position}>
+      <lineSegments ref={beam} geometry={beamGeometry} visible={reduced}>
+        <lineBasicMaterial
+          color={color}
+          transparent
+          opacity={0.4}
+          blending={blending}
+          depthWrite={false}
+        />
       </lineSegments>
-      <mesh geometry={gemFill} scale={hover ? 1.15 : 1}>
-        <meshBasicMaterial color={color} transparent opacity={0.55} />
-      </mesh>
-      {/* Larger than it looks: the gem is small, a finger is not. */}
-      <mesh scale={1.8}>
-        <octahedronGeometry args={[0.2, 0]} />
-        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-      </mesh>
+      {Array.from({ length: RISING_RINGS }, (_, i) => (
+        <lineLoop
+          key={i}
+          ref={(ring) => {
+            rings.current[i] = ring
+          }}
+          geometry={outerRing}
+          visible={false}
+        >
+          <lineBasicMaterial
+            color={color}
+            transparent
+            opacity={0}
+            blending={blending}
+            depthWrite={false}
+          />
+        </lineLoop>
+      ))}
+      <lineSegments
+        ref={sparks}
+        geometry={sparkData.geometry}
+        visible={false}
+        frustumCulled={false}
+      >
+        <lineBasicMaterial
+          color={color}
+          transparent
+          opacity={1}
+          blending={blending}
+          depthWrite={false}
+        />
+      </lineSegments>
     </group>
   )
 }
@@ -456,9 +905,7 @@ interface TileProps {
   x: number
   y: number
   height: number
-  worker: WorkerPiece | undefined
   palette: Palette
-  playerId: number
   hovered: boolean
   selectedWorker: boolean
   canClickTile: boolean
@@ -467,18 +914,17 @@ interface TileProps {
   winningMove: boolean
   canSelectWorker: boolean
   canPerformActions: boolean
+  /** Seconds before the opening position lands here, or null after it. */
+  introDelay: number | null
   onTileClick: (tile: Position) => void
   onTileHover: (tile: Position | null) => void
-  onWorkerClick: (worker: WorkerPiece) => void
 }
 
 const Tile = ({
   x,
   y,
   height,
-  worker,
   palette,
-  playerId,
   hovered,
   selectedWorker,
   canClickTile,
@@ -486,9 +932,9 @@ const Tile = ({
   winningMove,
   canSelectWorker,
   canPerformActions,
+  introDelay,
   onTileClick,
   onTileHover,
-  onWorkerClick,
 }: TileProps) => {
   const clickable = canPerformActions && canClickTile
   const selectable = canPerformActions && canSelectWorker
@@ -499,9 +945,12 @@ const Tile = ({
     event.stopPropagation()
     onTileClick({ x, y })
   }
+  // Markers pop up in a wave across the board; where to build, once the
+  // worker has landed from its hop.
+  const markerDelay = (x + y) * 0.03 + (buildsHere ? 0.4 : 0)
   return (
     <group position={[worldX(x), 0, worldZ(y)]}>
-      <Tower height={height} palette={palette} />
+      <Tower height={height} palette={palette} introDelay={introDelay} />
       {/* The invisible square on top of the tile (or its tower) that takes clicks. */}
       <mesh
         position={[0, top + 0.01, 0]}
@@ -521,6 +970,7 @@ const Tile = ({
             winning={winningMove}
             floor={buildsHere && height < DOME_HEIGHT - 1 ? height : undefined}
             hovered={hovered}
+            delay={markerDelay}
           />
         )}
         {(selectable || selectedWorker) && !clickable && (
@@ -529,14 +979,7 @@ const Tile = ({
             filled={false}
             winning={false}
             hovered={false}
-          />
-        )}
-        {worker && (
-          <Worker
-            color={worker.playerId === playerId ? palette.mine : palette.theirs}
-            selected={selectedWorker}
-            selectable={selectable}
-            onClick={() => onWorkerClick(worker)}
+            delay={markerDelay}
           />
         )}
       </group>
@@ -566,6 +1009,13 @@ const Scene = ({
   palette,
 }: BoardProps & { palette: Palette }) => {
   const [hoveredTile, setHoveredTile] = useState<Position | null>(null)
+  const reduced = useReducedMotion()
+  // Whatever is on the board when it first draws lands piece by piece.
+  const intro = useRef(true)
+  useEffect(() => {
+    intro.current = false
+  }, [])
+  const motion = useMemo(() => ({ reduced, intro }), [reduced])
 
   const selectedWorkerTile = gameState.currentTurn.actions.find(
     (action) => action.type === 'select_worker',
@@ -576,8 +1026,21 @@ const Scene = ({
   )?.tile
   const selectedTile = movedTo ?? selectedWorkerTile
 
+  const heightAt = ({ x, y }: Position) => gameState.board[y][x].height
+  const can = (type: ActionType, tile: Position) =>
+    canExecuteAction(gameState, { type, tile, playerId }, nextActionType)
+  const colorOf = (worker: WorkerPiece) =>
+    worker.playerId === playerId ? palette.mine : palette.theirs
+  // Only a win puts a worker on the third level: moving there ends the game.
+  const winner =
+    gameState.phase === 'move_and_build'
+      ? gameState.workers.find(
+          (worker) => heightAt(worker.position) === WINNING_HEIGHT,
+        )
+      : undefined
+
   return (
-    <>
+    <BoardMotionContext.Provider value={motion}>
       <color attach="background" args={[palette.background]} />
       <ambientLight intensity={1.6} />
       <directionalLight position={[-4, 9, 3]} intensity={1.8} />
@@ -585,38 +1048,61 @@ const Scene = ({
       <Coordinates palette={palette} />
       {gameState.board.map((row, y) =>
         row.map((tile, x) => {
-          const can = (type: ActionType) =>
-            canExecuteAction(
-              gameState,
-              { type, tile: { x, y }, playerId },
-              nextActionType,
-            )
-          const canMove = can('move_worker')
-          const canBuild = can('build_from_worker')
+          const canMove = can('move_worker', { x, y })
+          const canBuild = can('build_from_worker', { x, y })
           return (
             <Tile
               key={`${y}-${x}`}
               x={x}
               y={y}
               height={tile.height}
-              worker={gameState.workers.find(
-                (worker) => worker.position.x === x && worker.position.y === y,
-              )}
               palette={palette}
-              playerId={playerId}
               hovered={hoveredTile?.x === x && hoveredTile.y === y}
               selectedWorker={selectedTile?.x === x && selectedTile.y === y}
-              canClickTile={can('place_worker') || canMove || canBuild}
+              canClickTile={
+                can('place_worker', { x, y }) || canMove || canBuild
+              }
               buildsHere={canBuild}
               winningMove={canMove && tile.height === DOME_HEIGHT - 1}
-              canSelectWorker={can('select_worker')}
+              canSelectWorker={can('select_worker', { x, y })}
               canPerformActions={canPerformActions}
+              introDelay={
+                intro.current ? (x + (BOARD_SIZE - 1 - y)) * 0.05 : null
+              }
               onTileClick={onTileClick}
               onTileHover={setHoveredTile}
-              onWorkerClick={onWorkerClick}
             />
           )
         }),
+      )}
+      {/* Workers keep their place in the list (placed in order, moved in
+          place), so each one is the same piece from turn to turn and can hop. */}
+      {gameState.workers.map((worker, index) => (
+        <Worker
+          key={index}
+          color={colorOf(worker)}
+          tile={worker.position}
+          height={heightAt(worker.position)}
+          selected={
+            selectedTile?.x === worker.position.x &&
+            selectedTile.y === worker.position.y
+          }
+          selectable={
+            canPerformActions && can('select_worker', worker.position)
+          }
+          winner={worker === winner}
+          delay={intro.current ? 0.7 + index * 0.12 : 0}
+          palette={palette}
+          onClick={() => onWorkerClick(worker)}
+        />
+      ))}
+      {winner && (
+        <Celebration
+          key={`${winner.position.x}-${winner.position.y}`}
+          position={tileCentre(winner.position, WINNING_HEIGHT)}
+          color={colorOf(winner)}
+          palette={palette}
+        />
       )}
       {/* Drag to look around; never from below the board or from too far. */}
       <OrbitControls
@@ -627,7 +1113,7 @@ const Scene = ({
         maxZoom={260}
       />
       <FitCamera />
-    </>
+    </BoardMotionContext.Provider>
   )
 }
 
