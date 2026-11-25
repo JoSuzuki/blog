@@ -76,8 +76,9 @@ Headings `h1`–`h6` have their own sizes in `app.css`. Weight is an axis of the
 
 ### Space, size and layout
 
-`xs` 0.25rem · `sm` 0.5rem · `md` 1rem · `lg` 2rem · `xl` 3rem, for padding, margin, gap and sizes
-(`p-sm`, `gap-md`, `size-sm`). Breakpoints `mobile:` (480px) and `tablet:` (768px). The text column
+`xs` 4px · `sm` 8px · `md` 16px · `lg` 32px · `xl` 48px, for padding, margin, gap and sizes
+(`p-sm`, `gap-md`, `size-sm`). Spaces are in pixels on purpose: they keep the intended rhythm when a reader enlarges
+the text, which stays in rem. New spacing is in pixels too. Breakpoints `mobile:` (480px) and `tablet:` (768px). The text column
 is `max-w-container` (65ch); game pages go up to `max-w-[72rem]`.
 
 ### Lines and shadow

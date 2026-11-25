@@ -259,11 +259,11 @@ function Design() {
           <div className="grid gap-lg tablet:grid-cols-2">
             <ul className="flex flex-col gap-xs">
               {[
-                ['xs', '0.25rem'],
-                ['sm', '0.5rem'],
-                ['md', '1rem'],
-                ['lg', '2rem'],
-                ['xl', '3rem'],
+                ['xs', '4px'],
+                ['sm', '8px'],
+                ['md', '16px'],
+                ['lg', '32px'],
+                ['xl', '48px'],
               ].map(([name, value]) => (
                 <li key={name} className="flex items-center gap-sm text-xs">
                   <code className="w-xl">{name}</code>

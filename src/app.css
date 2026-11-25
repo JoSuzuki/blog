@@ -205,11 +205,12 @@
     --font-weights-semibold: 'wght' 600;
     --font-weights-bold: 'wght' 850;
 
-    --spaces-xs: 0.25rem;
-    --spaces-sm: 0.5rem;
-    --spaces-md: 1rem;
-    --spaces-lg: 2rem;
-    --spaces-xl: 3rem;
+    /* In pixels on purpose: spacing keeps its intent when the text is enlarged. */
+    --spaces-xs: 4px;
+    --spaces-sm: 8px;
+    --spaces-md: 16px;
+    --spaces-lg: 32px;
+    --spaces-xl: 48px;
 
     --container-max-width: 65ch;
   }
@@ -271,8 +272,8 @@
       color 0.16s ease-out,
       background-color 0.16s ease-out;
 
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 16px;
+    padding-right: 16px;
 
     font-size: var(--font-sizes-md);
 
