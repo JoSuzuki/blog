@@ -346,7 +346,7 @@ const Segmented = <T extends number>({
             'min-w-xl border-2 px-sm py-xs text-sm transition-colors wght-semibold disabled:cursor-default ' +
             (option === value
               ? 'border-accent bg-accent text-background'
-              : 'border-accent-background hover:border-accent')
+              : 'border-accent/40 hover:border-accent')
           }
         >
           {format(option)}
