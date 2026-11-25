@@ -1,8 +1,9 @@
 import { createServerFn } from '@tanstack/react-start'
+import { displayNameOf } from '~/lib/users/display-name'
 import { getCurrentUser } from '~/lib/auth/current-user.server'
 import { prisma } from '~/lib/db.server'
 import type { RoomSummary } from './room'
-import { findActiveRoomCode, toDisplayName } from './room.server'
+import { findActiveRoomCode } from './room.server'
 
 export type GetRoomsResult =
   | {
@@ -36,7 +37,7 @@ export const getRooms = createServerFn({ method: 'GET' }).handler(
             // in it: it is deleted when its last player leaves.
             players: {
               orderBy: { id: 'asc' },
-              select: { user: { select: { name: true } } },
+              select: { user: { select: { name: true, nickname: true } } },
             },
           },
         }),
@@ -46,7 +47,7 @@ export const getRooms = createServerFn({ method: 'GET' }).handler(
         activeRoomCode,
         rooms: rooms.map((room) => ({
           roomCode: room.roomCode,
-          hostName: toDisplayName(room.players[0]?.user.name ?? ''),
+          hostName: room.players[0] ? displayNameOf(room.players[0].user) : '',
           playerCount: room.players.length,
         })),
       }

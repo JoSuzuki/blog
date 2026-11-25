@@ -11,9 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AtomDotxmlRouteImport } from './routes/atom[.]xml'
+import { Route as ConfirmarEmailRouteImport } from './routes/confirmar-email'
 import { Route as DesignRouteImport } from './routes/design'
 import { Route as FeedDotjsonRouteImport } from './routes/feed[.]json'
 import { Route as FeedDotxmlRouteImport } from './routes/feed[.]xml'
+import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as UsersRouteImport } from './routes/users'
 import { Route as GamesIndexRouteImport } from './routes/games.index'
 import { Route as PostsIndexRouteImport } from './routes/posts.index'
@@ -39,6 +42,11 @@ const AtomDotxmlRoute = AtomDotxmlRouteImport.update({
   path: '/atom.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConfirmarEmailRoute = ConfirmarEmailRouteImport.update({
+  id: '/confirmar-email',
+  path: '/confirmar-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DesignRoute = DesignRouteImport.update({
   id: '/design',
   path: '/design',
@@ -52,6 +60,16 @@ const FeedDotjsonRoute = FeedDotjsonRouteImport.update({
 const FeedDotxmlRoute = FeedDotxmlRouteImport.update({
   id: '/feed.xml',
   path: '/feed.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerfilRoute = PerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
+  id: '/redefinir-senha',
+  path: '/redefinir-senha',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UsersRoute = UsersRouteImport.update({
@@ -131,9 +149,12 @@ const GamesQuemDisseImagemPrintIdKindRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/atom.xml': typeof AtomDotxmlRoute
+  '/confirmar-email': typeof ConfirmarEmailRoute
   '/design': typeof DesignRoute
   '/feed.json': typeof FeedDotjsonRoute
   '/feed.xml': typeof FeedDotxmlRoute
+  '/perfil': typeof PerfilRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/users': typeof UsersRoute
   '/posts/$slug': typeof PostsSlugRoute
   '/tags/$tag': typeof TagsTagRoute
@@ -152,9 +173,12 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/atom.xml': typeof AtomDotxmlRoute
+  '/confirmar-email': typeof ConfirmarEmailRoute
   '/design': typeof DesignRoute
   '/feed.json': typeof FeedDotjsonRoute
   '/feed.xml': typeof FeedDotxmlRoute
+  '/perfil': typeof PerfilRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/users': typeof UsersRoute
   '/posts/$slug': typeof PostsSlugRoute
   '/tags/$tag': typeof TagsTagRoute
@@ -174,9 +198,12 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/atom.xml': typeof AtomDotxmlRoute
+  '/confirmar-email': typeof ConfirmarEmailRoute
   '/design': typeof DesignRoute
   '/feed.json': typeof FeedDotjsonRoute
   '/feed.xml': typeof FeedDotxmlRoute
+  '/perfil': typeof PerfilRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/users': typeof UsersRoute
   '/posts/$slug': typeof PostsSlugRoute
   '/tags/$tag': typeof TagsTagRoute
@@ -197,9 +224,12 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/atom.xml'
+    | '/confirmar-email'
     | '/design'
     | '/feed.json'
     | '/feed.xml'
+    | '/perfil'
+    | '/redefinir-senha'
     | '/users'
     | '/posts/$slug'
     | '/tags/$tag'
@@ -218,9 +248,12 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/atom.xml'
+    | '/confirmar-email'
     | '/design'
     | '/feed.json'
     | '/feed.xml'
+    | '/perfil'
+    | '/redefinir-senha'
     | '/users'
     | '/posts/$slug'
     | '/tags/$tag'
@@ -239,9 +272,12 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/atom.xml'
+    | '/confirmar-email'
     | '/design'
     | '/feed.json'
     | '/feed.xml'
+    | '/perfil'
+    | '/redefinir-senha'
     | '/users'
     | '/posts/$slug'
     | '/tags/$tag'
@@ -261,9 +297,12 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AtomDotxmlRoute: typeof AtomDotxmlRoute
+  ConfirmarEmailRoute: typeof ConfirmarEmailRoute
   DesignRoute: typeof DesignRoute
   FeedDotjsonRoute: typeof FeedDotjsonRoute
   FeedDotxmlRoute: typeof FeedDotxmlRoute
+  PerfilRoute: typeof PerfilRoute
+  RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   UsersRoute: typeof UsersRoute
   PostsSlugRoute: typeof PostsSlugRoute
   TagsTagRoute: typeof TagsTagRoute
@@ -296,6 +335,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AtomDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/confirmar-email': {
+      id: '/confirmar-email'
+      path: '/confirmar-email'
+      fullPath: '/confirmar-email'
+      preLoaderRoute: typeof ConfirmarEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/design': {
       id: '/design'
       path: '/design'
@@ -315,6 +361,20 @@ declare module '@tanstack/react-router' {
       path: '/feed.xml'
       fullPath: '/feed.xml'
       preLoaderRoute: typeof FeedDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perfil': {
+      id: '/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/redefinir-senha': {
+      id: '/redefinir-senha'
+      path: '/redefinir-senha'
+      fullPath: '/redefinir-senha'
+      preLoaderRoute: typeof RedefinirSenhaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/users': {
@@ -421,9 +481,12 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AtomDotxmlRoute: AtomDotxmlRoute,
+  ConfirmarEmailRoute: ConfirmarEmailRoute,
   DesignRoute: DesignRoute,
   FeedDotjsonRoute: FeedDotjsonRoute,
   FeedDotxmlRoute: FeedDotxmlRoute,
+  PerfilRoute: PerfilRoute,
+  RedefinirSenhaRoute: RedefinirSenhaRoute,
   UsersRoute: UsersRoute,
   PostsSlugRoute: PostsSlugRoute,
   TagsTagRoute: TagsTagRoute,

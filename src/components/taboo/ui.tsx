@@ -200,8 +200,8 @@ export const PlayedCards = ({ cards }: { cards: PlayedCard[] }) =>
 /** Shown instead of a Tabu page to a reader who is not logged in. */
 export const LoginRequired = () => (
   <GameLoginRequired testId="taboo-login">
-    Para jogar é preciso entrar com a sua conta do Google: é assim que a sala
-    sabe quem é quem (e te guarda o lugar se a conexão cair).
+    Para jogar é preciso entrar na sua conta (Google ou email): é assim que a
+    sala sabe quem é quem (e te guarda o lugar se a conexão cair).
   </GameLoginRequired>
 )
 

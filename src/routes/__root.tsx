@@ -53,7 +53,7 @@ export const Route = createRootRoute({
       return await getSession()
     } catch (error) {
       console.error('Reading the session failed:', error)
-      return { user: null, role: null, googleClientId: '' }
+      return { user: null, role: null, displayName: null, googleClientId: '' }
     }
   },
   staleTime: Infinity,

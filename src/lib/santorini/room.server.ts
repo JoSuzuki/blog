@@ -1,4 +1,5 @@
 import { setResponseStatus } from '@tanstack/react-start/server'
+import { displayNameOf } from '~/lib/users/display-name'
 import { z } from 'zod'
 import type { CurrentUser } from '~/lib/auth/current-user.server'
 import { prisma } from '~/lib/db.server'
@@ -62,7 +63,7 @@ const roomInclude = {
       id: true,
       userId: true,
       winner: true,
-      user: { select: { name: true } },
+      user: { select: { name: true, nickname: true } },
     },
   },
 } as const
@@ -85,10 +86,6 @@ export const findRoom = (roomCode: string) =>
 
 export type RoomRow = NonNullable<Awaited<ReturnType<typeof findRoom>>>
 
-/** What other players see of a reader: the first name only. */
-export const toDisplayName = (name: string) =>
-  name.trim().split(/\s+/)[0] || name
-
 export const toRoomView = (
   room: RoomRow,
   user: Pick<CurrentUser, 'id'>,
@@ -97,7 +94,7 @@ export const toRoomView = (
   status: room.status,
   players: room.players.map((player) => ({
     id: player.id,
-    name: toDisplayName(player.user.name),
+    name: displayNameOf(player.user),
     winner: player.winner,
   })),
   myPlayerId: room.players.find((p) => p.userId === user.id)?.id ?? null,

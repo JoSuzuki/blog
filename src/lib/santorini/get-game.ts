@@ -1,10 +1,10 @@
 import { createServerFn } from '@tanstack/react-start'
+import { displayNameOf } from '~/lib/users/display-name'
 import { z } from 'zod'
 import { getCurrentUser } from '~/lib/auth/current-user.server'
 import { prisma } from '~/lib/db.server'
 import type { GameState } from './game'
 import type { GameView } from './room'
-import { toDisplayName } from './room.server'
 
 export type GetGameResult =
   | { ok: true; game: GameView }
@@ -42,7 +42,7 @@ export const getGame = createServerFn({ method: 'GET' })
                 id: true,
                 userId: true,
                 winner: true,
-                user: { select: { name: true } },
+                user: { select: { name: true, nickname: true } },
               },
             },
           },
@@ -63,7 +63,7 @@ export const getGame = createServerFn({ method: 'GET' })
           status: room.status,
           players: room.players.map((player) => ({
             id: player.id,
-            name: toDisplayName(player.user.name),
+            name: displayNameOf(player.user),
             winner: player.winner,
           })),
           myPlayerId,

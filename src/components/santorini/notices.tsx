@@ -8,8 +8,8 @@ import { ErrorMessage } from '~/components/notice/notice'
 /** Shown instead of a Santorini page to a reader who is not logged in. */
 export const LoginRequired = () => (
   <GameLoginRequired testId="santorini-login">
-    Para jogar é preciso entrar com a sua conta do Google: é assim que a sala
-    sabe quem é quem.
+    Para jogar é preciso entrar na sua conta (Google ou email): é assim que a
+    sala sabe quem é quem.
   </GameLoginRequired>
 )
 

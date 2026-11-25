@@ -1,4 +1,5 @@
 import { randomInt } from 'node:crypto'
+import { displayNameOf } from '~/lib/users/display-name'
 import { setResponseStatus } from '@tanstack/react-start/server'
 import { z } from 'zod'
 import type { CurrentUser } from '~/lib/auth/current-user.server'
@@ -99,7 +100,7 @@ const roomInclude = {
       id: true,
       userId: true,
       team: true,
-      user: { select: { name: true } },
+      user: { select: { name: true, nickname: true } },
     },
   },
 } as const
@@ -109,10 +110,6 @@ export const findRoom = (roomCode: string) =>
   prisma.tabooRoom.findUnique({ where: { roomCode }, include: roomInclude })
 
 export type RoomRow = NonNullable<Awaited<ReturnType<typeof findRoom>>>
-
-/** What other players see of a reader: the first name only. */
-export const toDisplayName = (name: string) =>
-  name.trim().split(/\s+/)[0] || name
 
 /** The seat that has been in the room the longest. */
 export const hostOf = (room: Pick<RoomRow, 'players'>) =>
@@ -236,7 +233,7 @@ export const toRoomView = (
     status: state.status,
     players: room.players.map((player) => ({
       id: player.id,
-      name: toDisplayName(player.user.name),
+      name: displayNameOf(player.user),
       team: teamOfSeat(player.id, player.team),
     })),
     hostId: hostOf(room)?.id ?? null,

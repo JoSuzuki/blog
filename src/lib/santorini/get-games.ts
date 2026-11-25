@@ -1,11 +1,11 @@
 import { createServerFn } from '@tanstack/react-start'
+import { displayNameOf } from '~/lib/users/display-name'
 import { z } from 'zod'
 import { getCurrentUser } from '~/lib/auth/current-user.server'
 import { prisma } from '~/lib/db.server'
 import type { Prisma } from '~/generated/prisma/client'
 import { ROOM_CODE_PATTERN } from './room'
 import type { GameSummary } from './room'
-import { toDisplayName } from './room.server'
 
 /** Finished games per page. */
 export const GAMES_PAGE_SIZE = 20
@@ -41,7 +41,7 @@ const summarySelect = {
   updatedAt: true,
   players: {
     orderBy: { id: 'asc' },
-    select: { winner: true, user: { select: { name: true } } },
+    select: { winner: true, user: { select: { name: true, nickname: true } } },
   },
 } as const satisfies Prisma.SantoriniRoomSelect
 
@@ -54,7 +54,7 @@ const toSummary = (room: SummaryRow): GameSummary => ({
   roomCode: room.roomCode,
   status: room.status === 'FINISHED' ? 'FINISHED' : 'PLAYING',
   players: room.players.map((player) => ({
-    name: toDisplayName(player.user.name),
+    name: displayNameOf(player.user),
     winner: player.winner,
   })),
   updatedAt: room.updatedAt.toISOString(),
