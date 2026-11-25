@@ -15,7 +15,7 @@ import { playAgain } from '~/lib/taboo/play-again'
 import { removePlayer } from '~/lib/taboo/remove-player'
 import { TABOO_PATH, TEAM_NAMES } from '~/lib/taboo/room'
 import type { GameView, RoomView } from '~/lib/taboo/room'
-import { TEAM_COLORS } from './card-art'
+import { TEAM_CLASSES } from './theme'
 import type { SceneOutcome } from './scene'
 import { isMuted, play as playSound, setMuted } from './sounds'
 import {
@@ -267,11 +267,7 @@ const TabooGame = ({ room, game, online, clockOffset }: TabooGameProps) => {
       />
 
       <div
-        className="relative -mx-sm h-[min(52svh,30rem)] min-h-64 overflow-hidden rounded-2xl tablet:mx-0 tablet:h-[min(58vh,34rem)] tablet:min-h-72"
-        style={{
-          background:
-            'radial-gradient(120% 90% at 50% 10%, color-mix(in srgb, var(--colors-accent) 22%, transparent), transparent 70%)',
-        }}
+        className="relative -mx-sm h-[min(52svh,30rem)] min-h-64 overflow-hidden border-y-2 border-accent bg-accent-background tablet:mx-0 tablet:h-[min(58vh,34rem)] tablet:min-h-72 tablet:border-2"
         data-testid="taboo-table"
       >
         <Scene
@@ -290,7 +286,7 @@ const TabooGame = ({ room, game, online, clockOffset }: TabooGameProps) => {
             setMuted(!muted)
             setMutedState(!muted)
           }}
-          className="absolute top-sm right-sm rounded-full bg-black/25 px-sm py-xs text-sm text-white backdrop-blur"
+          className="pressable absolute top-sm right-sm border border-accent bg-background px-sm py-xs text-sm"
           aria-label={muted ? 'Ligar o som' : 'Desligar o som'}
         >
           {muted ? '🔇' : '🔊'}
@@ -408,7 +404,7 @@ const TabooGame = ({ room, game, online, clockOffset }: TabooGameProps) => {
         <ActionError message={actions.error ?? lifeActions.error} />
         {playing && game.played.length > 0 && (
           <div className="flex flex-col items-center gap-xs">
-            <p className="text-xs opacity-70">Neste turno</p>
+            <p className="text-xs text-accent">Neste turno</p>
             <PlayedCards cards={game.played} />
           </div>
         )}
@@ -453,7 +449,7 @@ const TabooGame = ({ room, game, online, clockOffset }: TabooGameProps) => {
         {myPlayerId !== null && (
           <button
             type="button"
-            className="text-secondary underline disabled:opacity-50"
+            className="pressable border border-accent px-sm py-xs disabled:opacity-50"
             onClick={() => void handleLeave()}
             disabled={lifeActions.pending}
           >
@@ -481,27 +477,31 @@ const ScoreCell = ({
   return (
     <div
       className={
-        'flex min-w-0 items-center gap-xs rounded-2xl px-sm py-xs text-white transition-transform tablet:gap-sm tablet:px-md tablet:py-sm ' +
-        (team === 1 ? 'flex-row-reverse text-right ' : '') +
-        (active ? 'tablet:scale-[1.03]' : 'opacity-75')
+        // Phones stack the name over the score, so "Vermelho" fits.
+        'flex min-w-0 flex-col-reverse gap-xs border-2 px-sm py-xs text-white transition-[opacity,box-shadow] tablet:flex-row tablet:items-center tablet:gap-sm tablet:px-md tablet:py-sm ' +
+        TEAM_CLASSES[team].from +
+        (team === 1
+          ? ' items-end text-right tablet:flex-row-reverse'
+          : ' items-start') +
+        (active ? ' shadow-[3px_3px_0_0_var(--colors-accent)]' : ' opacity-75')
       }
       style={{
-        background: `linear-gradient(${team === 0 ? 135 : 225}deg, ${TEAM_COLORS[team].light}, ${TEAM_COLORS[team].dark})`,
-        boxShadow: active
-          ? `0 0 0 2px var(--colors-background), 0 0 0 4px ${TEAM_COLORS[team].light}`
-          : undefined,
+        background: `linear-gradient(${team === 0 ? 135 : 225}deg, var(--colors-team-${team === 0 ? 'blue' : 'red'}), var(--colors-team-${team === 0 ? 'blue' : 'red'}-dark))`,
       }}
     >
       <span
-        className="text-[2rem] leading-none tabular-nums wght-bold tablet:text-[2.5rem]"
+        className="text-lg leading-none tabular-nums wght-bold"
         data-testid={`taboo-score-${team}`}
       >
         {game.scores[team]}
       </span>
-      <span className="min-w-0 truncate text-xs leading-tight tablet:text-sm">
+      <span className="max-w-full min-w-0 truncate text-xs leading-tight tablet:text-sm">
         {TEAM_NAMES[team]}
         {myTeam === team && (
-          <span className="block text-xs opacity-80">seu time</span>
+          <span className="hidden text-xs tablet:block">
+            {' '}
+            seu time
+          </span>
         )}
       </span>
     </div>
@@ -520,15 +520,15 @@ const Scoreboard = ({
   myTeam: Team | null
 }) => (
   <div
-    className="grid grid-cols-[1fr_auto_1fr] items-center gap-xs tablet:gap-sm"
+    className="grid grid-cols-[1fr_auto_1fr] items-stretch gap-sm tablet:gap-md"
     data-testid="taboo-scoreboard"
   >
     <ScoreCell team={0} game={game} myTeam={myTeam} />
-    <div className="flex min-w-16 flex-col items-center tablet:min-w-24">
+    <div className="flex min-w-xl flex-col items-center justify-center border-2 border-accent px-sm py-xs tablet:px-md">
       <span
         className={
-          'text-[2rem] leading-none tabular-nums wght-bold tablet:text-[2.25rem] ' +
-          (seconds !== null && seconds <= 10 ? 'text-[#E5383B]' : '')
+          'text-lg leading-none tabular-nums wght-bold ' +
+          (seconds !== null && seconds <= 10 ? 'text-team-red' : '')
         }
         data-testid="taboo-timer"
         aria-live="off"
@@ -536,7 +536,7 @@ const Scoreboard = ({
         {seconds === null ? '—' : seconds}
       </span>
       <span
-        className="text-[0.75rem] whitespace-nowrap opacity-70 tablet:text-xs"
+        className="text-xs whitespace-nowrap text-accent"
         data-testid="taboo-turn"
       >
         {turnLabel}
@@ -653,22 +653,20 @@ const TeamPanel = ({
     game.history.filter((t) => t.speakerId === id).length
   return (
     <section
-      className="rounded-xl border-2 p-sm"
-      style={{ borderColor: TEAM_COLORS[team].light }}
+      className={`border-2 p-sm ${TEAM_CLASSES[team].border}`}
       data-testid={`taboo-panel-${team}`}
     >
       <h2
-        className="mb-xs flex items-baseline justify-between text-md wght-bold"
-        style={{ color: TEAM_COLORS[team].light }}
+        className={`-mx-sm -mt-sm mb-sm flex items-baseline justify-between px-sm py-xs text-md text-white wght-bold ${TEAM_CLASSES[team].bg}`}
       >
         {TEAM_NAMES[team]}
-        <span className="text-xs opacity-70">
+        <span className="text-xs">
           {turns.length} {turns.length === 1 ? 'turno' : 'turnos'}
         </span>
       </h2>
       <ul className="flex flex-col gap-xs">
         {game.teams[team].length === 0 && (
-          <li className="text-sm opacity-60">Ninguém mais neste time</li>
+          <li className="text-sm text-accent">Ninguém mais neste time</li>
         )}
         {game.teams[team].map((id) => {
           const name = playerName(room.players, id)
@@ -682,19 +680,22 @@ const TeamPanel = ({
                 {name}
               </span>
               {id === room.myPlayerId && (
-                <span className="opacity-60">(você)</span>
+                <span className="text-accent">(você)</span>
               )}
               {speaking && (
                 <span
-                  className="rounded-full px-xs text-xs text-white"
-                  style={{ background: TEAM_COLORS[team].light }}
+                  className={`px-xs text-xs text-white ${TEAM_CLASSES[team].bg}`}
                 >
                   falando
                 </span>
               )}
-              {next && <span className="text-xs opacity-60">próximo</span>}
+              {next && (
+                <span className="border border-accent px-xs text-xs text-accent">
+                  próximo
+                </span>
+              )}
               <span
-                className="ml-auto text-xs opacity-60"
+                className="ml-auto text-xs text-accent"
                 title="Vezes que falou"
               >
                 {spoke(id)}×
@@ -703,7 +704,7 @@ const TeamPanel = ({
                 <button
                   type="button"
                   title={`Tirar ${name} da partida`}
-                  className="text-xs opacity-60 hover:opacity-100"
+                  className="border border-accent px-xs text-xs text-accent hover:bg-accent hover:text-background"
                   disabled={pending}
                   onClick={() => onRemove(id, name)}
                 >
@@ -715,7 +716,7 @@ const TeamPanel = ({
         })}
       </ul>
       {otherTeam(team) === game.team && game.phase === 'playing' && (
-        <p className="mt-xs text-xs opacity-70">
+        <p className="mt-xs text-xs text-accent">
           De olho nas palavras proibidas.
         </p>
       )}

@@ -6,8 +6,9 @@ import LoginButton from '~/components/login-button/login-button'
 import type { Team } from '~/lib/taboo/game'
 import { TABOO_PATH, TEAM_NAMES } from '~/lib/taboo/room'
 import type { CardFace, PlayedCard, RoomPlayerView } from '~/lib/taboo/room'
-import { TEAM_COLORS } from './card-art'
+import { INK, PAPER } from './card-art'
 import type { TabooSceneProps } from './scene'
+import { TEAM_CLASSES } from './theme'
 
 // Small pieces the Tabu pages share.
 
@@ -45,19 +46,26 @@ class SceneBoundary extends Component<
   }
 }
 
-export const teamStyle = (team: Team) => ({
-  '--team': TEAM_COLORS[team].light,
-  '--team-dark': TEAM_COLORS[team].dark,
-})
-
 /** The team's name in its color. */
 export const TeamName = ({ team }: { team: Team }) => (
-  <span className="wght-bold" style={{ color: TEAM_COLORS[team].light }}>
+  <span className={`wght-bold ${TEAM_CLASSES[team].text}`}>
     {TEAM_NAMES[team]}
   </span>
 )
 
-/** A big, colored game button. */
+const TONES = {
+  accent: 'border-accent bg-accent text-background',
+  good: 'border-success-dark bg-success text-white',
+  bad: 'border-team-red-dark bg-team-red text-white',
+  plain: 'border-accent bg-background text-text',
+  0: 'border-team-blue-dark bg-team-blue text-white',
+  1: 'border-team-red-dark bg-team-red text-white',
+} as const
+
+/**
+ * A game button: the site's square, pressable button (an offset accent
+ * shadow that lifts on hover), filled with a game color.
+ */
 export const BigButton = ({
   children,
   onClick,
@@ -70,71 +78,54 @@ export const BigButton = ({
   children: ReactNode
   onClick: () => void
   disabled?: boolean
-  tone?: 'accent' | 'good' | 'bad' | 'plain' | Team
+  tone?: keyof typeof TONES
   hint?: string
   testId?: string
   /** On phones, share the row with the other buttons, tall and easy to hit. */
   wide?: boolean
-}) => {
-  const colors =
-    tone === 'good'
-      ? { bg: '#1FA971', shadow: '#0E6B45' }
-      : tone === 'bad'
-        ? { bg: '#E5383B', shadow: '#8E1518' }
-        : tone === 'plain'
-          ? { bg: 'transparent', shadow: 'var(--colors-accent)' }
-          : tone === 'accent'
-            ? { bg: 'var(--colors-accent)', shadow: 'var(--colors-dimmed)' }
-            : { bg: TEAM_COLORS[tone].light, shadow: TEAM_COLORS[tone].ink }
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      data-testid={testId}
-      className={
-        'relative min-h-12 touch-manipulation rounded-xl border-2 px-md py-sm text-md tracking-tight transition-transform select-none wght-bold ' +
-        (wide
-          ? 'min-h-14 flex-1 text-lg tablet:min-h-12 tablet:flex-none tablet:text-md '
-          : '') +
-        'hover:-translate-y-px active:translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 ' +
-        (tone === 'plain'
-          ? 'border-accent text-text'
-          : 'border-transparent text-white')
-      }
-      style={{
-        background: colors.bg,
-        boxShadow: `0 4px 0 0 ${colors.shadow}`,
-      }}
-    >
-      {children}
-      {hint && (
-        <kbd className="ml-sm hidden rounded border border-current/40 px-1 text-xs opacity-70 tablet:inline">
-          {hint}
-        </kbd>
-      )}
-    </button>
-  )
-}
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    disabled={disabled}
+    data-testid={testId}
+    className={
+      'pressable touch-manipulation border-2 px-md py-sm text-md tracking-tight select-none wght-bold ' +
+      'disabled:cursor-not-allowed disabled:opacity-50 ' +
+      (wide
+        ? 'flex-1 py-md text-lg tablet:flex-none tablet:py-sm tablet:text-md '
+        : '') +
+      TONES[tone]
+    }
+  >
+    {children}
+    {hint && (
+      <kbd className="ml-sm hidden border border-current px-xs text-xs wght-semibold tablet:inline">
+        {hint}
+      </kbd>
+    )}
+  </button>
+)
 
-/** A dot that says whether a player has the room open. */
+/** A small square that says whether a player has the room open. */
 export const OnlineDot = ({ online }: { online: boolean }) => (
   <span
     title={online ? 'Na sala' : 'Fora da sala'}
     aria-label={online ? 'na sala' : 'fora da sala'}
-    className="inline-block size-2.5 shrink-0 rounded-full"
-    style={{
-      background: online ? '#1FA971' : 'transparent',
-      border: online ? 'none' : '2px solid currentColor',
-      opacity: online ? 1 : 0.4,
-    }}
+    className={
+      'inline-block h-sm w-sm shrink-0 border ' +
+      (online ? 'border-success-dark bg-success' : 'border-accent')
+    }
   />
 )
 
 export const playerName = (players: RoomPlayerView[], id: number | null) =>
   players.find((p) => p.id === id)?.name ?? 'alguém'
 
-/** The card as HTML: shown while the table loads, and where WebGL fails. */
+/**
+ * The card as HTML: shown while the table loads, and where WebGL fails. It
+ * copies the 3D card, so it keeps the card's own paper and rounded corners.
+ */
 export const CardHtml = ({
   card,
   team,
@@ -144,25 +135,22 @@ export const CardHtml = ({
 }) => (
   <div className="flex h-full items-center justify-center p-md">
     <div
-      className="flex aspect-[5/7] h-full max-h-[26rem] flex-col overflow-hidden rounded-2xl bg-[#FBF7EF] p-sm text-[#1C1A2B] shadow-xl"
+      className="flex aspect-[5/7] h-full max-h-[26rem] flex-col overflow-hidden rounded-xl p-sm"
+      style={{ background: PAPER, color: INK }}
       data-testid="taboo-card-html"
     >
       {card ? (
         <>
           <div
-            className="flex flex-[0_0_38%] flex-col items-center justify-center rounded-xl px-sm text-center text-white"
-            style={{
-              background: `linear-gradient(${TEAM_COLORS[team].light}, ${TEAM_COLORS[team].dark})`,
-            }}
+            className={`flex flex-[0_0_38%] flex-col items-center justify-center rounded-lg px-sm text-center text-white ${TEAM_CLASSES[team].bg}`}
           >
-            <span className="text-xs tracking-[0.3em] opacity-80">TABU</span>
+            <span className="text-xs tracking-widest">TABU</span>
             <span className="text-lg leading-tight break-words uppercase wght-bold">
               {card.word}
             </span>
           </div>
           <p
-            className="mt-sm text-center text-xs tracking-[0.25em] wght-bold"
-            style={{ color: TEAM_COLORS[team].dark }}
+            className={`mt-sm text-center text-xs tracking-widest wght-bold ${TEAM_CLASSES[team].text}`}
           >
             NÃO DIGA
           </p>
@@ -173,7 +161,7 @@ export const CardHtml = ({
           </ul>
         </>
       ) : (
-        <div className="flex flex-1 items-center justify-center rounded-xl bg-gradient-to-br from-[#5B3AA6] to-[#2A1652] text-lg text-[#F6EAD3] wght-bold">
+        <div className="flex flex-1 items-center justify-center rounded-lg bg-purple text-lg text-white wght-bold">
           TABU
         </div>
       )}
@@ -181,35 +169,36 @@ export const CardHtml = ({
   </div>
 )
 
-const OUTCOME_LABEL = {
-  correct: { text: '+1', color: '#1FA971', name: 'acertou' },
-  taboo: { text: '−1', color: '#E5383B', name: 'tabu' },
-  skipped: { text: '0', color: '#8a8aa0', name: 'pulou' },
-  timeout: { text: '⏱', color: '#8a8aa0', name: 'tempo' },
+const OUTCOMES = {
+  correct: {
+    text: '+1',
+    name: 'acertou',
+    className: 'border-success text-success',
+  },
+  taboo: {
+    text: '−1',
+    name: 'tabu',
+    className: 'border-team-red text-team-red',
+  },
+  skipped: { text: '0', name: 'pulou', className: 'border-accent text-accent' },
+  timeout: { text: '⏱', name: 'tempo', className: 'border-accent text-accent' },
 } as const
 
-/** The cards of a turn as chips: word and what happened to it. */
+/** The cards of a turn as tags: what happened to it, and the word. */
 export const PlayedCards = ({ cards }: { cards: PlayedCard[] }) =>
   cards.length === 0 ? null : (
-    <ul className="flex flex-wrap gap-xs" data-testid="taboo-played">
+    <ul
+      className="flex flex-wrap justify-center gap-xs"
+      data-testid="taboo-played"
+    >
       {cards.map(({ card, outcome }, index) => (
         <li
           key={`${card.id}-${index}`}
-          title={`${card.word} (${OUTCOME_LABEL[outcome].name}): ${card.taboo.join(', ')}`}
-          className="flex items-center gap-xs rounded-full border px-sm text-xs uppercase"
-          style={{ borderColor: OUTCOME_LABEL[outcome].color }}
+          title={`${card.word} (${OUTCOMES[outcome].name}): ${card.taboo.join(', ')}`}
+          className={`flex items-center gap-xs border px-xs text-xs uppercase ${OUTCOMES[outcome].className}`}
         >
-          <span
-            className="wght-bold"
-            style={{ color: OUTCOME_LABEL[outcome].color }}
-          >
-            {OUTCOME_LABEL[outcome].text}
-          </span>
-          <span
-            className={outcome === 'correct' ? 'wght-semibold' : 'opacity-70'}
-          >
-            {card.word}
-          </span>
+          <span className="wght-bold">{OUTCOMES[outcome].text}</span>
+          <span className="text-text">{card.word}</span>
         </li>
       ))}
     </ul>
@@ -243,10 +232,10 @@ export const ActionError = ({ message }: { message: string | null }) =>
 export const Reconnecting = () => (
   <div
     role="status"
-    className="mb-sm flex items-center gap-sm rounded-lg border border-accent px-sm py-xs text-sm"
+    className="mb-sm flex items-center gap-sm border border-accent bg-accent-background px-sm py-xs text-sm"
     data-testid="taboo-reconnecting"
   >
-    <span className="inline-block size-3 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+    <span className="inline-block h-sm w-sm animate-spin bg-accent" />
     Reconectando… seu lugar na sala está guardado.
   </div>
 )
@@ -262,18 +251,16 @@ export const ActionBar = ({ children }: { children: ReactNode }) => {
   return (
     <>
       <div
-        className="fixed inset-x-0 bottom-0 z-20 flex gap-sm border-t border-accent/30 px-sm pt-sm backdrop-blur-md tablet:static tablet:z-auto tablet:justify-center tablet:border-0 tablet:p-0 tablet:backdrop-blur-none"
+        className="fixed inset-x-0 bottom-0 z-20 flex gap-sm border-t border-accent bg-background px-sm pt-sm tablet:static tablet:z-auto tablet:justify-center tablet:border-0 tablet:bg-transparent tablet:p-0"
         style={{
-          paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))',
-          background:
-            'color-mix(in srgb, var(--colors-background) 88%, transparent)',
+          paddingBottom: 'max(var(--spaces-sm), env(safe-area-inset-bottom))',
         }}
         data-testid="taboo-action-bar"
       >
         {children}
       </div>
       {/* Room for the bar at the end of the page, on phones. */}
-      <div className="h-24 tablet:hidden" aria-hidden />
+      <div className="h-xl pb-xl tablet:hidden" aria-hidden />
     </>
   )
 }

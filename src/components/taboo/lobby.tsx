@@ -18,7 +18,7 @@ import { setTeam } from '~/lib/taboo/set-team'
 import { shuffleTeams } from '~/lib/taboo/shuffle-teams'
 import { startGame } from '~/lib/taboo/start-game'
 import { updateSettings } from '~/lib/taboo/update-settings'
-import { TEAM_COLORS } from './card-art'
+import { TEAM_CLASSES } from './theme'
 import {
   ActionBar,
   ActionError,
@@ -131,7 +131,7 @@ const TabooLobby = ({ room, online }: LobbyProps) => {
           <div>
             <button
               type="button"
-              className="text-sm text-secondary underline disabled:opacity-50"
+              className="pressable border border-accent px-sm py-xs text-sm disabled:opacity-50"
               disabled={pending}
               onClick={() =>
                 void run(() => shuffleTeams({ data: { roomCode } }))
@@ -143,7 +143,7 @@ const TabooLobby = ({ room, online }: LobbyProps) => {
         )}
 
         <fieldset
-          className="rounded-xl border border-accent p-md"
+          className="border-2 border-accent p-md"
           data-testid="taboo-settings"
           disabled={!isHost || pending}
         >
@@ -248,20 +248,17 @@ const TeamColumn = ({
   onRemove,
 }: TeamColumnProps) => (
   <section
-    className="flex flex-col rounded-xl border-2 p-sm"
-    style={{ borderColor: TEAM_COLORS[team].light }}
+    className={`flex flex-col border-2 p-sm ${TEAM_CLASSES[team].border}`}
     data-testid={`taboo-team-${team}`}
   >
     <h2
-      className="mb-xs flex items-center justify-between text-md wght-bold"
-      style={{ color: TEAM_COLORS[team].light }}
+      className={`-mx-sm -mt-sm mb-sm flex items-center justify-between px-sm py-xs text-md text-white wght-bold ${TEAM_CLASSES[team].bg}`}
     >
-      {TEAM_NAMES[team]}{' '}
-      <span className="text-sm opacity-70">{players.length}</span>
+      {TEAM_NAMES[team]} <span className="text-sm">{players.length}</span>
     </h2>
     <ul className="mb-sm flex flex-1 flex-col gap-xs">
       {players.length === 0 && (
-        <li className="text-sm opacity-60">Ninguém ainda</li>
+        <li className="text-sm text-accent">Ninguém ainda</li>
       )}
       {players.map((player) => (
         <li key={player.id} className="flex items-center gap-xs text-sm">
@@ -275,14 +272,14 @@ const TeamColumn = ({
             </span>
           )}
           {player.id === myPlayerId && (
-            <span className="opacity-60">(você)</span>
+            <span className="text-accent">(você)</span>
           )}
           {isHost && player.id !== myPlayerId && (
             <span className="ml-auto flex gap-xs">
               <button
                 type="button"
                 title={`Mudar ${player.name} de time`}
-                className="opacity-60 hover:opacity-100"
+                className="border border-accent px-xs text-accent hover:bg-accent hover:text-background"
                 disabled={pending}
                 onClick={() => onMove(player.id)}
               >
@@ -291,7 +288,7 @@ const TeamColumn = ({
               <button
                 type="button"
                 title={`Tirar ${player.name} da sala`}
-                className="opacity-60 hover:opacity-100"
+                className="border border-accent px-xs text-accent hover:bg-accent hover:text-background"
                 disabled={pending}
                 onClick={() => onRemove(player.id, player.name)}
               >
@@ -346,10 +343,10 @@ const Segmented = <T extends number>({
           aria-checked={option === value}
           onClick={() => onChange(option)}
           className={
-            'min-w-12 rounded-lg border-2 px-sm py-xs text-sm transition-colors wght-semibold disabled:cursor-default ' +
+            'min-w-xl border-2 px-sm py-xs text-sm transition-colors wght-semibold disabled:cursor-default ' +
             (option === value
-              ? 'border-accent bg-accent text-white'
-              : 'border-accent/40 hover:border-accent')
+              ? 'border-accent bg-accent text-background'
+              : 'border-accent-background hover:border-accent')
           }
         >
           {format(option)}
@@ -374,9 +371,9 @@ const InviteBox = ({ roomCode }: { roomCode: string }) => {
     }
   }
   return (
-    <div className="flex items-center gap-sm rounded-xl border border-accent p-sm">
+    <div className="flex items-center gap-sm border-2 border-accent p-sm">
       <div className="min-w-0 flex-1">
-        <p className="text-xs opacity-70">Sala</p>
+        <p className="text-xs text-accent">Sala</p>
         <p
           className="text-lg leading-none tracking-[0.2em] text-accent wght-bold"
           data-testid="taboo-room-code"

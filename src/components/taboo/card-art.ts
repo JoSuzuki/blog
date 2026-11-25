@@ -1,5 +1,6 @@
 import type { Team } from '~/lib/taboo/game'
 import type { CardFace } from '~/lib/taboo/room'
+import type { Palette, SiteTheme } from './theme'
 
 // The card faces, drawn on a canvas: the 3D scene uses them as textures, and
 // they are big enough (1024 × 1434, the 5:7 of a playing card) to stay sharp
@@ -7,16 +8,9 @@ import type { CardFace } from '~/lib/taboo/room'
 
 export const CARD_PX = { width: 1024, height: 1434 } as const
 
-export const TEAM_COLORS: Record<
-  Team,
-  { light: string; dark: string; ink: string }
-> = {
-  0: { light: '#3D6BFF', dark: '#1F3FD1', ink: '#16257A' },
-  1: { light: '#FF5257', dark: '#D3263A', ink: '#7A1020' },
-}
-
-const PAPER = '#FBF7EF'
-const INK = '#1C1A2B'
+/** The card's own paper and ink: the cards look the same in every theme. */
+export const PAPER = '#FBF7EF'
+export const INK = '#1C1A2B'
 const RULE = '#E7DFCF'
 const BACK = { light: '#5B3AA6', dark: '#2A1652', cream: '#F6EAD3' }
 
@@ -122,10 +116,11 @@ const newCanvas = () => {
 export const drawCardFront = (
   card: CardFace,
   team: Team,
+  palette: Palette,
 ): HTMLCanvasElement => {
   const { canvas, ctx } = newCanvas()
   const { width: W, height: H } = CARD_PX
-  const color = TEAM_COLORS[team]
+  const color = palette.team[team]
 
   // Paper, with transparent rounded corners.
   roundedRect(ctx, 0, 0, W, H, 72)
@@ -244,11 +239,32 @@ export const drawCardFront = (
   return canvas
 }
 
-/** The back: the blog's purple (or a team's color, for the piles), with the logo. */
-export const drawCardBack = (team?: Team): HTMLCanvasElement => {
+/**
+ * The back. Each theme has its own: the blog's purple by day, a starry night
+ * in the dark theme, a classified file in the secret one. The teams' piles
+ * use a back in the team's color.
+ */
+export const drawCardBack = ({
+  theme,
+  palette,
+  team,
+}: {
+  theme: SiteTheme
+  palette: Palette
+  team?: Team
+}): HTMLCanvasElement => {
   const { canvas, ctx } = newCanvas()
   const { width: W, height: H } = CARD_PX
-  const base = team === undefined ? BACK : { ...BACK, ...TEAM_COLORS[team] }
+  const secret = theme === 'secret' && team === undefined
+  const base =
+    team !== undefined
+      ? palette.team[team]
+      : theme === 'dark'
+        ? { light: '#2B1470', dark: '#0B0326' }
+        : secret
+          ? { light: '#2A0008', dark: '#080001' }
+          : BACK
+  const cream = secret ? '#FF2A44' : BACK.cream
 
   roundedRect(ctx, 0, 0, W, H, 72)
   const gradient = ctx.createLinearGradient(0, 0, W, H)
@@ -259,50 +275,98 @@ export const drawCardBack = (team?: Team): HTMLCanvasElement => {
   ctx.save()
   ctx.clip()
 
-  // A diagonal pattern of the word.
+  // A diagonal pattern of the word ("CONFIDENCIAL" on a secret card).
   ctx.save()
   ctx.translate(W / 2, H / 2)
   ctx.rotate(-Math.PI / 6)
-  ctx.font = `850 64px ${SANS}`
+  ctx.font = `850 ${secret ? 44 : 64}px ${SANS}`
   setSpacing(ctx, 10)
-  ctx.fillStyle = 'rgba(255,255,255,0.07)'
+  ctx.fillStyle = secret ? 'rgba(255,42,68,0.13)' : 'rgba(255,255,255,0.07)'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
+  const word = secret ? 'CONFIDENCIAL' : 'TABU'
+  const step = secret ? 460 : 300
   for (let row = -14; row <= 14; row++) {
-    const offset = (row % 2) * 150
+    const offset = (row % 2) * (step / 2)
     for (let col = -6; col <= 6; col++) {
-      ctx.fillText('TABU', col * 300 + offset, row * 110)
+      ctx.fillText(word, col * step + offset, row * 110)
     }
   }
   ctx.restore()
 
-  // Inner frame.
-  ctx.strokeStyle = 'rgba(246,234,211,0.55)'
+  // Stars and a moon, at night.
+  if (theme === 'dark' && team === undefined) {
+    for (let i = 0; i < 90; i++) {
+      const x = (Math.sin(i * 91.7) * 0.5 + 0.5) * W
+      const y = (Math.sin(i * 47.3 + 2) * 0.5 + 0.5) * H
+      const r = 1.5 + (Math.sin(i * 13.1) * 0.5 + 0.5) * 3.5
+      ctx.fillStyle = `rgba(246,234,211,${0.35 + (i % 5) * 0.12})`
+      ctx.beginPath()
+      ctx.arc(x, y, r, 0, Math.PI * 2)
+      ctx.fill()
+    }
+    ctx.fillStyle = BACK.cream
+    ctx.beginPath()
+    ctx.arc(W - 210, 230, 70, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.fillStyle = base.light
+    ctx.beginPath()
+    ctx.arc(W - 180, 205, 62, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  // Inner frame: square cut corners on a secret card, rounded otherwise.
+  ctx.strokeStyle = secret ? 'rgba(255,42,68,0.7)' : 'rgba(246,234,211,0.55)'
   ctx.lineWidth = 6
-  roundedRect(ctx, 56, 56, W - 112, H - 112, 44)
+  roundedRect(ctx, 56, 56, W - 112, H - 112, secret ? 4 : 44)
   ctx.stroke()
 
   // The logo.
   const logoW = 640
   const logoH = 300
-  roundedRect(ctx, (W - logoW) / 2, (H - logoH) / 2, logoW, logoH, 150)
-  ctx.fillStyle = BACK.cream
-  ctx.shadowColor = 'rgba(0,0,0,0.25)'
-  ctx.shadowOffsetY = 10
-  ctx.shadowBlur = 30
+  roundedRect(
+    ctx,
+    (W - logoW) / 2,
+    (H - logoH) / 2,
+    logoW,
+    logoH,
+    secret ? 6 : 150,
+  )
+  ctx.fillStyle = cream
+  ctx.shadowColor = secret ? 'rgba(255,42,68,0.6)' : 'rgba(0,0,0,0.25)'
+  ctx.shadowOffsetY = secret ? 0 : 10
+  ctx.shadowBlur = secret ? 50 : 30
   ctx.fill()
   ctx.shadowColor = 'transparent'
   ctx.font = `850 176px ${SANS}`
   setSpacing(ctx, -4)
-  ctx.fillStyle = base.dark
+  ctx.fillStyle = secret ? '#080001' : base.dark
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillText('TABU', W / 2, H / 2 + 8)
 
-  ctx.font = `700 30px ${SANS}`
-  setSpacing(ctx, 6)
-  ctx.fillStyle = 'rgba(246,234,211,0.75)'
-  ctx.fillText('JOSUZUKI.ME', W / 2, H - 120)
+  if (secret) {
+    // A "SECRETO" stamp, and the site's name blacked out.
+    ctx.save()
+    ctx.translate(W / 2 + 150, H / 2 - 260)
+    ctx.rotate(-0.22)
+    ctx.strokeStyle = '#FF2A44'
+    ctx.lineWidth = 8
+    ctx.strokeRect(-190, -55, 380, 110)
+    ctx.font = `850 72px ${SANS}`
+    setSpacing(ctx, 8)
+    ctx.fillStyle = '#FF2A44'
+    ctx.fillText('SECRETO', 0, 4)
+    ctx.restore()
+    ctx.fillStyle = '#000000'
+    ctx.fillRect(W / 2 - 200, H - 150, 260, 54)
+    ctx.fillRect(W / 2 + 80, H - 150, 120, 54)
+  } else {
+    ctx.font = `700 30px ${SANS}`
+    setSpacing(ctx, 6)
+    ctx.fillStyle = 'rgba(246,234,211,0.75)'
+    ctx.fillText('JOSUZUKI.ME', W / 2, H - 120)
+  }
 
   ctx.restore()
   return canvas

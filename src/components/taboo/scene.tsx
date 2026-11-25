@@ -1,10 +1,24 @@
-import { Environment, Lightformer, Shadow } from '@react-three/drei'
+import {
+  Environment,
+  Lightformer,
+  Shadow,
+  Sparkles,
+  Stars,
+} from '@react-three/drei'
+import {
+  EffectComposer,
+  Noise,
+  Scanline,
+  Vignette,
+} from '@react-three/postprocessing'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
+  BufferGeometry,
   CanvasTexture,
   Color,
   ExtrudeGeometry,
+  Float32BufferAttribute,
   InstancedMesh,
   MathUtils,
   MeshStandardMaterial,
@@ -13,15 +27,12 @@ import {
   Shape,
   ShapeGeometry,
 } from 'three'
-import type { Group, Texture, WebGLRenderer } from 'three'
+import type { Group, Mesh, Texture, WebGLRenderer } from 'three'
 import type { CardOutcome, Team } from '~/lib/taboo/game'
 import type { CardFace } from '~/lib/taboo/room'
-import {
-  TEAM_COLORS,
-  drawCardBack,
-  drawCardFront,
-  loadCardFonts,
-} from './card-art'
+import { readPalette, useSiteTheme } from './theme'
+import type { Palette, SiteTheme } from './theme'
+import { PAPER, drawCardBack, drawCardFront, loadCardFonts } from './card-art'
 
 // The table: the card in play floats over it, the deck and the two teams'
 // piles lie on it, and cards fly between them as they are played. It only
@@ -68,6 +79,138 @@ const CARD_R = 0.17
 const CARD_D = 0.024
 const FACE_GAP = 0.0012
 const TABLE_Y = -2.15
+
+const SHADOW: Record<SiteTheme, string> = {
+  light: '#1a0f33',
+  dark: '#000000',
+  secret: '#000000',
+}
+
+/** Each theme lights the table its own way. */
+const Lights = ({ theme, palette }: { theme: SiteTheme; palette: Palette }) => {
+  const warm = theme === 'secret' ? palette.accent : '#ffd9c2'
+  const cool = theme === 'secret' ? palette.accent : '#c9d4ff'
+  return (
+    <>
+      <ambientLight intensity={theme === 'light' ? 0.9 : 0.75} />
+      <directionalLight position={[3, 6, 6]} intensity={0.9} />
+      <directionalLight
+        position={[-5, 2, 3]}
+        intensity={theme === 'light' ? 0.35 : 0.6}
+        color={theme === 'light' ? cool : palette.accent}
+      />
+      <Environment resolution={128} frames={1}>
+        <Lightformer
+          form="rect"
+          intensity={2}
+          position={[0, 4, 4]}
+          scale={[10, 3, 1]}
+        />
+        <Lightformer
+          form="rect"
+          intensity={1}
+          color={warm}
+          position={[-6, 1, 2]}
+          scale={[3, 6, 1]}
+        />
+        <Lightformer
+          form="rect"
+          intensity={1}
+          color={cool}
+          position={[6, 1, 2]}
+          scale={[3, 6, 1]}
+        />
+      </Environment>
+    </>
+  )
+}
+
+/** A square grid on the table, in the theme's accent: graph paper, or a radar. */
+const TableGrid = ({ color, opacity }: { color: string; opacity: number }) => {
+  const geometry = useMemo(() => {
+    const points: number[] = []
+    // From far behind the cards to just short of the camera.
+    const [left, right, back, front] = [-16, 16, -18, 7]
+    const step = 0.8
+    for (let i = 0; left + i * step <= right; i++) {
+      const x = left + i * step
+      points.push(x, 0, back, x, 0, front)
+    }
+    for (let i = 0; back + i * step <= front; i++) {
+      const z = back + i * step
+      points.push(left, 0, z, right, 0, z)
+    }
+    const g = new BufferGeometry()
+    g.setAttribute('position', new Float32BufferAttribute(points, 3))
+    return g
+  }, [])
+  useEffect(() => () => geometry.dispose(), [geometry])
+  return (
+    <lineSegments geometry={geometry} position={[0, TABLE_Y + 0.002, 0]}>
+      <lineBasicMaterial color={color} transparent opacity={opacity} />
+    </lineSegments>
+  )
+}
+
+/** A sweeping red line, like a scanner passing over the table. */
+const Sweep = ({ color }: { color: string }) => {
+  const ref = useRef<Mesh>(null)
+  useFrame(({ clock }) => {
+    if (!ref.current) return
+    ref.current.position.z = -10 + ((clock.elapsedTime * 3) % 16)
+  })
+  return (
+    <mesh
+      ref={ref}
+      position={[0, TABLE_Y + 0.003, 0]}
+      rotation-x={-Math.PI / 2}
+    >
+      <planeGeometry args={[40, 0.06]} />
+      <meshBasicMaterial color={color} transparent opacity={0.7} />
+    </mesh>
+  )
+}
+
+/** The details each theme adds around the cards. */
+const ThemeDetails = ({
+  theme,
+  palette,
+}: {
+  theme: SiteTheme
+  palette: Palette
+}) => {
+  if (theme === 'light') {
+    return <TableGrid color={palette.accent} opacity={0.14} />
+  }
+  if (theme === 'dark') {
+    return (
+      <>
+        <Stars
+          radius={30}
+          depth={20}
+          count={900}
+          factor={2.2}
+          fade
+          speed={0.6}
+        />
+        <Sparkles
+          count={40}
+          scale={[12, 5, 4]}
+          position={[0, 0.5, -2]}
+          size={2.5}
+          speed={0.3}
+          color={palette.accent}
+        />
+      </>
+    )
+  }
+  return (
+    <>
+      <TableGrid color={palette.accent} opacity={0.35} />
+      <Sweep color={palette.accent} />
+    </>
+  )
+}
 
 const roundedCardShape = () => {
   const x = -CARD_W / 2
@@ -120,7 +263,11 @@ const toTexture = (canvas: HTMLCanvasElement, gl: WebGLRenderer) => {
 }
 
 /** Card textures, drawn once each and kept until the scene goes away. */
-const useTextures = (fontsReady: boolean) => {
+const useTextures = (
+  fontsReady: boolean,
+  theme: SiteTheme,
+  palette: Palette,
+) => {
   const gl = useThree((state) => state.gl)
   const cache = useRef(new Map<string, Texture>())
   useEffect(() => {
@@ -146,11 +293,15 @@ const useTextures = (fontsReady: boolean) => {
     }
     return {
       front: (card: CardFace, team: Team) =>
-        get(`front:${card.id}:${team}`, () => drawCardFront(card, team)),
+        get(`front:${theme}:${card.id}:${team}`, () =>
+          drawCardFront(card, team, palette),
+        ),
       back: (team?: Team) =>
-        get(`back:${team ?? 'x'}`, () => drawCardBack(team)),
+        get(`back:${theme}:${team ?? 'x'}`, () =>
+          drawCardBack({ theme, palette, team }),
+        ),
     }
-  }, [gl, fontsReady])
+  }, [gl, fontsReady, theme, palette])
 }
 
 type Textures = ReturnType<typeof useTextures>
@@ -475,7 +626,7 @@ const Stack = ({
         rotation-x={-Math.PI / 2}
         scale={[CARD_W * 1.5, CARD_H * 1.3, 1]}
         opacity={count > 0 ? 0.35 : 0}
-        color="#1a0f33"
+        color={SHADOW.light}
       />
       {Array.from({ length: shown }, (_, i) => (
         <group
@@ -686,7 +837,14 @@ interface LiveCard {
   exit: CardOutcome | null
 }
 
-const Table = (props: TabooSceneProps & { fontsReady: boolean }) => {
+const Table = (
+  props: TabooSceneProps & {
+    fontsReady: boolean
+    theme: SiteTheme
+    palette: Palette
+  },
+) => {
+  const { theme, palette } = props
   const { mode, tableCard, outcomes, speakingTeam, scores, timeLeft, winner } =
     props
   const geometries = useMemo(createGeometries, [])
@@ -697,7 +855,7 @@ const Table = (props: TabooSceneProps & { fontsReady: boolean }) => {
     },
     [geometries],
   )
-  const textures = useTextures(props.fontsReady)
+  const textures = useTextures(props.fontsReady, theme, palette)
   const layout = useLayout()
 
   // The cards on (and leaving) the table.
@@ -755,40 +913,13 @@ const Table = (props: TabooSceneProps & { fontsReady: boolean }) => {
     winner === null
       ? []
       : winner === 'tie'
-        ? [TEAM_COLORS[0].light, TEAM_COLORS[1].light, '#F6EAD3']
-        : [TEAM_COLORS[winner].light, TEAM_COLORS[winner].dark, '#F6EAD3']
+        ? [palette.team[0].light, palette.team[1].light, PAPER]
+        : [palette.team[winner].light, palette.team[winner].dark, PAPER]
 
   return (
     <>
-      <ambientLight intensity={0.9} />
-      <directionalLight position={[3, 6, 6]} intensity={0.9} />
-      <directionalLight
-        position={[-5, 2, 3]}
-        intensity={0.35}
-        color="#c9d4ff"
-      />
-      <Environment resolution={128} frames={1}>
-        <Lightformer
-          form="rect"
-          intensity={2}
-          position={[0, 4, 4]}
-          scale={[10, 3, 1]}
-        />
-        <Lightformer
-          form="rect"
-          intensity={1}
-          color="#ffd9c2"
-          position={[-6, 1, 2]}
-          scale={[3, 6, 1]}
-        />
-        <Lightformer
-          form="rect"
-          intensity={1}
-          color="#c9d4ff"
-          position={[6, 1, 2]}
-          scale={[3, 6, 1]}
-        />
-      </Environment>
+      <Lights theme={theme} palette={palette} />
+      <ThemeDetails theme={theme} palette={palette} />
 
       {mode === 'lobby' ? (
         <HeroCard geometries={geometries} textures={textures} layout={layout} />
@@ -854,7 +985,7 @@ const Table = (props: TabooSceneProps & { fontsReady: boolean }) => {
           rotation-x={-Math.PI / 2}
           scale={[CARD_W * layout.cardScale * 1.4, 1.6, 1]}
           opacity={0.3}
-          color="#1a0f33"
+          color={SHADOW[theme]}
         />
       )}
     </>
@@ -864,6 +995,9 @@ const Table = (props: TabooSceneProps & { fontsReady: boolean }) => {
 /** The table, in a transparent canvas over the page's own background. */
 const TabooScene = (props: TabooSceneProps) => {
   const [fontsReady, setFontsReady] = useState(false)
+  const theme = useSiteTheme()
+  // The tokens change with the theme.
+  const palette = useMemo(() => readPalette(), [theme])
   useEffect(() => {
     let alive = true
     void loadCardFonts().then(() => alive && setFontsReady(true))
@@ -879,7 +1013,20 @@ const TabooScene = (props: TabooSceneProps) => {
       gl={{ antialias: true, alpha: true }}
       onCreated={({ camera }) => camera.lookAt(0, -0.35, 0)}
     >
-      <Table {...props} fontsReady={fontsReady} />
+      <Table
+        {...props}
+        fontsReady={fontsReady}
+        theme={theme}
+        palette={palette}
+      />
+      {theme === 'secret' && (
+        // A surveillance monitor: scanlines, grain and dark corners.
+        <EffectComposer multisampling={0}>
+          <Scanline density={1.6} opacity={0.18} />
+          <Noise opacity={0.08} />
+          <Vignette offset={0.25} darkness={0.75} />
+        </EffectComposer>
+      )}
     </Canvas>
   )
 }
