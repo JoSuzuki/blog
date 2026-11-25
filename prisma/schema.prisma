@@ -5,8 +5,9 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["partialIndexes"]
 }
 
 // The connection URLs are in prisma.config.ts (for the CLI) and in
@@ -66,11 +67,19 @@ model HitCounter {
 // A table of Santorini (the two-player board game under /games). A room is
 // WAITING until its two players are in and one of them starts the game.
 // `gameState` is the whole game as JSON (the GameState type in
-// src/lib/santorini/game.ts); null until the game starts. `updatedAt` doubles
-// as the version every move checks, so two requests cannot both write.
+// src/lib/santorini/game.ts), every move of it in `history`; null until the
+// game starts. `updatedAt` doubles as the version every move checks, so two
+// requests cannot both write. Finished rooms are kept: they are the history,
+// which anyone may review at /games/santorini/partidas/<id>.
+//
+// `roomCode` is unique only among the rooms in use (WAITING or PLAYING): six
+// characters from 36 give about 2.2 billion codes, which would run out (or
+// start colliding every time) if finished games kept theirs forever. So a
+// code names a room while it is in use, and afterwards the newest finished
+// game that had it; the game's permanent name is its `id`.
 model SantoriniRoom {
   id        Int                   @id @default(autoincrement())
-  roomCode  String                @unique
+  roomCode  String
   creator   User                  @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   creatorId Int
   status    SantoriniRoomStatus   @default(WAITING)
@@ -79,8 +88,13 @@ model SantoriniRoom {
   createdAt DateTime              @default(now())
   updatedAt DateTime              @updatedAt
 
-  // The rooms list shows the WAITING ones.
+  // A partial unique index. The condition is written the way Postgres
+  // prints it back, or every `migrate diff` would recreate the index.
+  @@unique([roomCode], map: "SantoriniRoom_active_roomCode_key", where: raw("status = ANY (ARRAY['WAITING'::\"SantoriniRoomStatus\", 'PLAYING'::\"SantoriniRoomStatus\"])"))
+  // The rooms list shows the WAITING ones; the history, the others.
   @@index([status])
+  // Finding the games played under a code, newest first.
+  @@index([roomCode, id])
 }
 
 enum SantoriniRoomStatus {

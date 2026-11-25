@@ -23,6 +23,43 @@ const linkClassName =
   'aria-[current=page]:relative aria-[current=page]:text-accent ' +
   'aria-[current=page]:after:absolute aria-[current=page]:after:-right-[4px] aria-[current=page]:after:-bottom-[3px] aria-[current=page]:after:-left-[4px] aria-[current=page]:after:h-[2px] aria-[current=page]:after:bg-accent'
 
+export interface TabLink {
+  to: string
+  title: string
+  /** Active on `to` only, not on the pages under it. */
+  exact: boolean
+}
+
+/**
+ * A row of links with the active one underlined, as the site's navigation
+ * draws it. Also used for tabs inside a page (Santorini's Salas / Partidas).
+ */
+export const TabLinks = ({
+  links,
+  label,
+}: {
+  links: readonly TabLink[]
+  /** Names the row for screen readers when it is not the site's navigation. */
+  label?: string
+}) => (
+  <ul
+    aria-label={label}
+    className="flex items-center gap-x-md overflow-auto py-sm"
+  >
+    {links.map((link) => (
+      <li key={link.to}>
+        <Link
+          to={link.to}
+          activeOptions={{ exact: link.exact }}
+          className={linkClassName}
+        >
+          {link.title}
+        </Link>
+      </li>
+    ))}
+  </ul>
+)
+
 interface NavigationLinksProps {
   /**
    * The 404 page was not wrapped by the legacy theme, so it had no nav pages
@@ -34,22 +71,7 @@ interface NavigationLinksProps {
 const NavigationLinks = ({ links = true }: NavigationLinksProps) => {
   const { role } = useSession()
   const pages = isAdmin(role) ? [...NAV_PAGES, USERS_PAGE] : NAV_PAGES
-  return (
-    <ul className="flex items-center gap-x-md overflow-auto py-sm">
-      {links &&
-        pages.map((page) => (
-          <li key={page.to}>
-            <Link
-              to={page.to}
-              activeOptions={{ exact: page.exact }}
-              className={linkClassName}
-            >
-              {page.title}
-            </Link>
-          </li>
-        ))}
-    </ul>
-  )
+  return <TabLinks links={links ? pages : []} />
 }
 
 export default NavigationLinks

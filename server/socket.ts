@@ -221,8 +221,9 @@ export function registerSocketHandlers(io: IOServer): () => void {
     return { ok: true }
   }
 
-  // Santorini channels carry no data (see SantoriniChangedPayload), so anyone
-  // may listen; what a reader may see is decided by the loaders.
+  // Anyone may listen to a Santorini channel: `santorini:changed` carries no
+  // data, and the moves pushed to a room's channel are public (games can be
+  // spectated and reviewed by anyone).
   const isSantoriniChannel = (channel: unknown): channel is string =>
     typeof channel === 'string' &&
     (channel === 'lobby' || ROOM_CODE_PATTERN.test(channel))

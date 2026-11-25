@@ -18,7 +18,8 @@ import type {
 // - Channels (`lobby`, or a room's code) only say that what they show
 //   changed, for the pages about a room's life: the list, the lobby.
 // - A game is played on it: the moves go out as events answered by an ack,
-//   and each new state comes back to both players as `santorini:game`.
+//   and each new state comes back to both players (and to the room's
+//   channel, for spectators) as `santorini:game`.
 
 // ---------------------------------------------------------------------------
 // Channels
@@ -83,9 +84,10 @@ onSocketCreated((socket) => {
 })
 
 /**
- * Calls `onUpdate` with every new state of the games the reader plays (the
- * server sends them to the two players only; check `roomCode`). Keeps the
- * socket open while subscribed. Returns the function that stops.
+ * Calls `onUpdate` with every new state of the games the reader plays, and
+ * of the game whose room channel the page subscribed to (spectators; see
+ * subscribeToSantorini). Check `roomId`. Keeps the socket open while
+ * subscribed. Returns the function that stops.
  */
 export const subscribeToGames = (
   onUpdate: (update: SantoriniGameUpdate) => void,

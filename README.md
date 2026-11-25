@@ -91,6 +91,8 @@ reader has to be logged in to play, since a seat in a room belongs to a `User`.
 /games                       the list of games
 /games/santorini             rooms waiting for a second player; create or join one
 /games/santorini/$roomCode   one page for the room's whole life: lobby, board, result
+/games/santorini/partidas    every game, for anyone: live ones to watch, finished ones to review; search by code
+/games/santorini/partidas/$gameId   one game by its permanent id: watched live, or replayed turn by turn
 ```
 
 - **Rules** are pure functions in `src/lib/santorini/game.ts`, used by the server to decide what
@@ -119,6 +121,15 @@ reader has to be logged in to play, since a seat in a room belongs to a `User`.
 - **The board** (`src/components/santorini/board.tsx`) is three.js through react-three-fiber. It
   is a chunk of its own (about 970 KB), fetched only by a page that shows a board and never
   rendered on the server, which is why those packages are `devDependencies`.
+- **History and spectating.** Finished rooms are never deleted, and a game's state keeps every step
+  in `history`, so `/games/santorini/partidas/$gameId` replays any game from its first placement
+  (`src/lib/santorini/replay.ts`, tested in `replay.test.ts`). Games are public: anyone, logged in or
+  not, can list them (`get-games`), watch a live one or review a finished one (`get-game`). Moves are
+  pushed to the room's channel as well as to the players, which is how a spectator's board follows
+  the game. Opening a room code you do not play in leads to that game's page.
+- **Room codes** are unique only among rooms in use (WAITING or PLAYING), through a partial unique
+  index, so finished games never use up codes. A code names the room in use, and afterwards the
+  newest finished game that had it; the permanent name of a game is its id.
 - **Data**: `SantoriniRoom` and `SantoriniRoomPlayer` in `prisma/schema.prisma`. The game state is
   one JSON column.
 
