@@ -2,12 +2,12 @@ import type { Socket } from 'socket.io-client'
 import type { ClientToServerEvents, ServerToClientEvents } from './events'
 
 // The page's one socket.io connection, shared by everything live on it
-// (`./post-socket`, `./santorini-socket`, `./quiz-socket`). Nothing here runs
-// on import, and socket.io-client itself is not part of any page's bundle:
-// the first `acquireSocket` call (from an effect, so never during server
-// rendering or hydration) downloads it and then creates the connection, which
-// is closed shortly after the last user releases it. Pages with nothing live
-// never get either.
+// (`./post-socket`, `./santorini-socket`, `./quiz-socket`, `./taboo-socket`).
+// Nothing here runs on import, and socket.io-client itself is not part of any
+// page's bundle: the first `acquireSocket` call (from an effect, so never
+// during server rendering or hydration) downloads it and then creates the
+// connection, which is closed shortly after the last user releases it. Pages
+// with nothing live never get either.
 
 export type ClientSocket = Socket<ServerToClientEvents, ClientToServerEvents>
 

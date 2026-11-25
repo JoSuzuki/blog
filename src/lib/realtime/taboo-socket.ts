@@ -1,9 +1,11 @@
 import type { RoomView } from '~/lib/taboo/room'
 import {
   acquireSocket,
+  getSocket,
   onSocketCreated,
   reconnectSocket,
   releaseSocket,
+  whenSocketReady,
 } from './connection'
 import type { ClientSocket } from './connection'
 import type { TabooAck, TabooCardInput, TabooPresencePayload } from './events'
@@ -49,12 +51,14 @@ export const subscribeToTaboo = (
   const subscription = { channel, onChange }
   subscriptions.add(subscription)
   const socket = acquireSocket()
-  if (socket.connected) joinAndSync(socket, channel)
+  if (socket?.connected) joinAndSync(socket, channel)
 
   return () => {
     subscriptions.delete(subscription)
-    if (socket.connected && !channelsInUse().has(channel)) {
-      socket.emit('taboo:leave', channel)
+    // The socket as it is now: it may have been created since subscribing.
+    const current = getSocket()
+    if (current?.connected && !channelsInUse().has(channel)) {
+      current.emit('taboo:leave', channel)
     }
     releaseSocket()
   }
@@ -115,7 +119,9 @@ export const subscribeToConnection = (
 ): (() => void) => {
   connectionListeners.add(onChange)
   const socket = acquireSocket()
-  onChange(socket.connected)
+  // Null while socket.io-client downloads: not connected yet, and the
+  // 'connect' listener above reports it once it is.
+  onChange(socket?.connected ?? false)
   return () => {
     connectionListeners.delete(onChange)
     releaseSocket()
@@ -148,24 +154,31 @@ const send = (
   ) => void,
 ): Promise<TabooAck> =>
   new Promise((resolve) => {
-    const socket = acquireSocket()
-    const attempt = (retryAsLoggedIn: boolean) => {
-      emit(socket.timeout(ANSWER_TIMEOUT_MS), (error, answer) => {
-        if (
-          !error &&
-          !answer.ok &&
-          answer.error === 'login' &&
-          retryAsLoggedIn
-        ) {
-          reconnectSocket()
-          attempt(false)
-          return
-        }
+    acquireSocket()
+    void whenSocketReady().then((socket) => {
+      if (!socket) {
         releaseSocket()
-        resolve(error ? NO_ANSWER : answer)
-      })
-    }
-    attempt(true)
+        resolve(NO_ANSWER)
+        return
+      }
+      const attempt = (retryAsLoggedIn: boolean) => {
+        emit(socket.timeout(ANSWER_TIMEOUT_MS), (error, answer) => {
+          if (
+            !error &&
+            !answer.ok &&
+            answer.error === 'login' &&
+            retryAsLoggedIn
+          ) {
+            reconnectSocket()
+            attempt(false)
+            return
+          }
+          releaseSocket()
+          resolve(error ? NO_ANSWER : answer)
+        })
+      }
+      attempt(true)
+    })
   })
 
 export const startTurn = (roomCode: string) =>
