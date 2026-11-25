@@ -144,14 +144,18 @@
   font-variation-settings: var(--font-weights-bold);
 }
 
-/* The offset accent shadow that lifts on hover and flattens when pressed. */
+/*
+ * The offset shadow that lifts on hover and flattens when pressed. It is the
+ * accent color unless an element sets `--pressable-color` (a colored game
+ * button uses its own color).
+ */
 @utility pressable {
   position: relative;
-  box-shadow: 1px 1px 0 0 var(--colors-accent);
+  box-shadow: 1px 1px 0 0 var(--pressable-color, var(--colors-accent));
   &:hover {
     top: -1px;
     left: -1px;
-    box-shadow: 2px 2px 0 0 var(--colors-accent);
+    box-shadow: 2px 2px 0 0 var(--pressable-color, var(--colors-accent));
   }
   &:active {
     top: 1px;

@@ -55,11 +55,11 @@ export const TeamName = ({ team }: { team: Team }) => (
 
 const TONES = {
   accent: 'border-accent bg-accent text-background',
-  good: 'border-success-dark bg-success text-white',
-  bad: 'border-team-red-dark bg-team-red text-white',
+  good: 'border-success-dark bg-success text-white [--pressable-color:var(--colors-success)]',
+  bad: 'border-team-red-dark bg-team-red text-white [--pressable-color:var(--colors-team-red)]',
   plain: 'border-accent bg-background text-text',
-  0: 'border-team-blue-dark bg-team-blue text-white',
-  1: 'border-team-red-dark bg-team-red text-white',
+  0: 'border-team-blue-dark bg-team-blue text-white [--pressable-color:var(--colors-team-blue)]',
+  1: 'border-team-red-dark bg-team-red text-white [--pressable-color:var(--colors-team-red)]',
 } as const
 
 /**
