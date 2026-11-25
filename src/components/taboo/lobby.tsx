@@ -131,7 +131,7 @@ const TabooLobby = ({ room, online }: LobbyProps) => {
           <div>
             <button
               type="button"
-              className="pressable border border-accent px-sm py-xs text-sm disabled:opacity-50"
+              className="pressable border border-accent px-sm py-xs text-sm text-accent disabled:opacity-50"
               disabled={pending}
               onClick={() =>
                 void run(() => shuffleTeams({ data: { roomCode } }))
@@ -384,7 +384,7 @@ const InviteBox = ({ roomCode }: { roomCode: string }) => {
       <button
         type="button"
         onClick={() => void copy()}
-        className="pressable border border-accent px-sm py-xs text-sm"
+        className="pressable border border-accent px-sm py-xs text-sm text-accent"
       >
         {copied ? 'Link copiado!' : 'Copiar link'}
       </button>

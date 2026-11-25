@@ -112,7 +112,7 @@ function Rooms({ rooms }: RoomsProps) {
                 type="button"
                 disabled={pending}
                 onClick={() => void handleJoin(room.roomCode)}
-                className="pressable border border-accent px-sm py-xs text-text"
+                className="pressable border border-accent px-sm py-xs text-accent"
               >
                 Entrar
               </button>

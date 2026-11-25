@@ -57,7 +57,7 @@ const TONES = {
   accent: 'border-accent bg-accent text-background',
   good: 'border-success-dark bg-success text-white [--pressable-color:var(--colors-success)]',
   bad: 'border-team-red-dark bg-team-red text-white [--pressable-color:var(--colors-team-red)]',
-  plain: 'border-accent bg-background text-text',
+  plain: 'border-accent bg-background text-accent',
   0: 'border-team-blue-dark bg-team-blue text-white [--pressable-color:var(--colors-team-blue)]',
   1: 'border-team-red-dark bg-team-red text-white [--pressable-color:var(--colors-team-red)]',
 } as const

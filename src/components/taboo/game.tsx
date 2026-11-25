@@ -449,7 +449,7 @@ const TabooGame = ({ room, game, online, clockOffset }: TabooGameProps) => {
         {myPlayerId !== null && (
           <button
             type="button"
-            className="pressable border border-accent px-sm py-xs disabled:opacity-50"
+            className="pressable border border-accent px-sm py-xs text-accent disabled:opacity-50"
             onClick={() => void handleLeave()}
             disabled={lifeActions.pending}
           >
