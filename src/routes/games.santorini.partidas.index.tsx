@@ -48,7 +48,7 @@ function SantoriniGames() {
       <Navbar />
       <Article>
         <h1>Santorini</h1>
-        <SantoriniTabs current="partidas" />
+        <SantoriniTabs />
         <SearchForm search={search} loggedIn={result.ok && result.loggedIn} />
         {result.ok ? (
           <Games result={result} search={search} />

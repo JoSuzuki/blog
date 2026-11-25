@@ -45,7 +45,7 @@ function SantoriniRooms() {
       <Navbar />
       <Article>
         <h1>Santorini</h1>
-        <SantoriniTabs current="salas" />
+        <SantoriniTabs />
         <p className="mb-md">
           Cada jogador tem dois trabalhadores. Na sua vez, mova um deles para
           uma casa vizinha (subindo no máximo um andar) e depois construa um
