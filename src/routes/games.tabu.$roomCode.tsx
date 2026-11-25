@@ -37,7 +37,7 @@ function TabooRoomPage() {
     <>
       <Navbar />
       <main className="mx-auto w-full max-w-[72rem] pb-xl">
-        <h1 className="mb-md">Tabu</h1>
+        <h1 className="mb-md max-tablet:sr-only">Tabu</h1>
         {result.ok ? (
           <Room room={result.room} />
         ) : result.reason === 'login' ? (

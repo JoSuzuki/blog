@@ -152,3 +152,38 @@ export const useServerNow = (
   }, [clockOffset, active, fps])
   return now
 }
+
+/**
+ * Keeps the phone's screen on while `active` (a game is being played), where
+ * the browser allows it, taking the lock again when the page comes back to
+ * the front.
+ */
+export const useWakeLock = (active: boolean) => {
+  useEffect(() => {
+    if (
+      !active ||
+      typeof navigator === 'undefined' ||
+      !('wakeLock' in navigator)
+    ) {
+      return
+    }
+    let lock: WakeLockSentinel | null = null
+    let released = false
+    const take = async () => {
+      if (document.visibilityState !== 'visible' || released) return
+      try {
+        lock = await navigator.wakeLock.request('screen')
+      } catch {
+        // Not allowed here (battery saver, an old browser): the screen may sleep.
+      }
+    }
+    const onVisible = () => void take()
+    void take()
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      released = true
+      document.removeEventListener('visibilitychange', onVisible)
+      void lock?.release().catch(() => {})
+    }
+  }, [active])
+}

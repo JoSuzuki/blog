@@ -19,6 +19,7 @@ import { TEAM_COLORS } from './card-art'
 import type { SceneOutcome } from './scene'
 import { isMuted, play as playSound, setMuted } from './sounds'
 import {
+  ActionBar,
   ActionError,
   BigButton,
   CardHtml,
@@ -28,7 +29,12 @@ import {
   TeamName,
   playerName,
 } from './ui'
-import { useReloadTaboo, useRoomAction, useServerNow } from './use-taboo'
+import {
+  useReloadTaboo,
+  useRoomAction,
+  useServerNow,
+  useWakeLock,
+} from './use-taboo'
 
 interface TabooGameProps {
   room: RoomView
@@ -70,6 +76,14 @@ const TabooGame = ({ room, game, online, clockOffset }: TabooGameProps) => {
   const speaker = playerName(players, game.speakerId)
   const over = game.phase === 'over'
   const playing = game.phase === 'playing'
+
+  // Phones: the screen stays on during the game, and the speaker's phone
+  // buzzes when their turn comes up.
+  useWakeLock(!over)
+  const myTurnUp = !over && game.phase === 'ready' && role === 'speaker'
+  useEffect(() => {
+    if (myTurnUp) navigator.vibrate?.([80, 60, 80])
+  }, [myTurnUp, game.turnNumber])
 
   // The clock.
   const now = useServerNow(clockOffset, playing)
@@ -241,7 +255,10 @@ const TabooGame = ({ room, game, online, clockOffset }: TabooGameProps) => {
     : `Turno ${Math.min(game.turnNumber + 1, game.totalTurns)} de ${game.totalTurns}`
 
   return (
-    <div data-testid="taboo-game" className="flex flex-col gap-md">
+    <div
+      data-testid="taboo-game"
+      className="flex flex-col gap-sm tablet:gap-md"
+    >
       <Scoreboard
         game={game}
         seconds={seconds}
@@ -250,7 +267,7 @@ const TabooGame = ({ room, game, online, clockOffset }: TabooGameProps) => {
       />
 
       <div
-        className="relative h-[min(58vh,34rem)] min-h-72 w-full overflow-hidden rounded-2xl"
+        className="relative -mx-sm h-[min(52svh,30rem)] min-h-64 overflow-hidden rounded-2xl tablet:mx-0 tablet:h-[min(58vh,34rem)] tablet:min-h-72"
         style={{
           background:
             'radial-gradient(120% 90% at 50% 10%, color-mix(in srgb, var(--colors-accent) 22%, transparent), transparent 70%)',
@@ -295,9 +312,10 @@ const TabooGame = ({ room, game, online, clockOffset }: TabooGameProps) => {
         ) : (
           <RoleBanner role={role} game={game} speaker={speaker} />
         )}
-        <div className="flex flex-wrap justify-center gap-sm">
+        <ActionBar>
           {!over && game.phase === 'ready' && role === 'speaker' && (
             <BigButton
+              wide
               tone="good"
               onClick={start}
               disabled={pending}
@@ -314,6 +332,7 @@ const TabooGame = ({ room, game, online, clockOffset }: TabooGameProps) => {
             !online.includes(game.speakerId) &&
             game.teams[game.team].length > 1 && (
               <BigButton
+                wide
                 tone="plain"
                 onClick={() =>
                   void run(() => passSpeaker(roomCode, game.turnNumber))
@@ -327,6 +346,7 @@ const TabooGame = ({ room, game, online, clockOffset }: TabooGameProps) => {
           {playing && role === 'speaker' && (
             <>
               <BigButton
+                wide
                 tone="plain"
                 onClick={() => mark('skipped')}
                 disabled={pending || cardId === null}
@@ -336,6 +356,7 @@ const TabooGame = ({ room, game, online, clockOffset }: TabooGameProps) => {
                 Pular
               </BigButton>
               <BigButton
+                wide
                 tone="good"
                 onClick={() => mark('correct')}
                 disabled={pending || cardId === null}
@@ -348,6 +369,7 @@ const TabooGame = ({ room, game, online, clockOffset }: TabooGameProps) => {
           )}
           {playing && role === 'watcher' && (
             <BigButton
+              wide
               tone="bad"
               onClick={() => mark('taboo')}
               disabled={pending || cardId === null}
@@ -359,6 +381,7 @@ const TabooGame = ({ room, game, online, clockOffset }: TabooGameProps) => {
           )}
           {role === 'spectator' && !over && myPlayerId === null && (
             <BigButton
+              wide
               onClick={() =>
                 void lifeActions.run(() => joinRoom({ data: { roomCode } }))
               }
@@ -370,6 +393,7 @@ const TabooGame = ({ room, game, online, clockOffset }: TabooGameProps) => {
           )}
           {over && myPlayerId !== null && (
             <BigButton
+              wide
               tone="good"
               onClick={() =>
                 void lifeActions.run(() => playAgain({ data: { roomCode } }))
@@ -380,7 +404,7 @@ const TabooGame = ({ room, game, online, clockOffset }: TabooGameProps) => {
               Jogar de novo
             </BigButton>
           )}
-        </div>
+        </ActionBar>
         <ActionError message={actions.error ?? lifeActions.error} />
         {playing && game.played.length > 0 && (
           <div className="flex flex-col items-center gap-xs">
@@ -444,6 +468,46 @@ const TabooGame = ({ room, game, online, clockOffset }: TabooGameProps) => {
 const formatPoints = (points: number) =>
   `${points > 0 ? '+' : points < 0 ? '−' : ''}${Math.abs(points)} ${Math.abs(points) === 1 ? 'ponto' : 'pontos'}`
 
+const ScoreCell = ({
+  team,
+  game,
+  myTeam,
+}: {
+  team: Team
+  game: GameView
+  myTeam: Team | null
+}) => {
+  const active = !game.winner && game.team === team
+  return (
+    <div
+      className={
+        'flex min-w-0 items-center gap-xs rounded-2xl px-sm py-xs text-white transition-transform tablet:gap-sm tablet:px-md tablet:py-sm ' +
+        (team === 1 ? 'flex-row-reverse text-right ' : '') +
+        (active ? 'tablet:scale-[1.03]' : 'opacity-75')
+      }
+      style={{
+        background: `linear-gradient(${team === 0 ? 135 : 225}deg, ${TEAM_COLORS[team].light}, ${TEAM_COLORS[team].dark})`,
+        boxShadow: active
+          ? `0 0 0 2px var(--colors-background), 0 0 0 4px ${TEAM_COLORS[team].light}`
+          : undefined,
+      }}
+    >
+      <span
+        className="text-[2rem] leading-none tabular-nums wght-bold tablet:text-[2.5rem]"
+        data-testid={`taboo-score-${team}`}
+      >
+        {game.scores[team]}
+      </span>
+      <span className="min-w-0 truncate text-xs leading-tight tablet:text-sm">
+        {TEAM_NAMES[team]}
+        {myTeam === team && (
+          <span className="block text-xs opacity-80">seu time</span>
+        )}
+      </span>
+    </div>
+  )
+}
+
 const Scoreboard = ({
   game,
   seconds,
@@ -456,46 +520,14 @@ const Scoreboard = ({
   myTeam: Team | null
 }) => (
   <div
-    className="grid grid-cols-[1fr_auto_1fr] items-center gap-sm"
+    className="grid grid-cols-[1fr_auto_1fr] items-center gap-xs tablet:gap-sm"
     data-testid="taboo-scoreboard"
   >
-    {([0, 1] as const).map((team) => {
-      const active = !game.winner && game.team === team
-      const cell = (
-        <div
-          key={team}
-          className={
-            'flex items-center gap-sm rounded-2xl px-sm py-sm text-white transition-transform tablet:px-md ' +
-            (team === 1 ? 'flex-row-reverse text-right' : '') +
-            (active ? ' tablet:scale-[1.03]' : ' opacity-80')
-          }
-          style={{
-            background: `linear-gradient(135deg, ${TEAM_COLORS[team].light}, ${TEAM_COLORS[team].dark})`,
-            boxShadow: active
-              ? `0 0 0 3px var(--colors-background), 0 0 0 5px ${TEAM_COLORS[team].light}`
-              : undefined,
-          }}
-        >
-          <span
-            className="text-[2.5rem] leading-none tabular-nums wght-bold"
-            data-testid={`taboo-score-${team}`}
-          >
-            {game.scores[team]}
-          </span>
-          <span className="text-sm leading-tight">
-            {TEAM_NAMES[team]}
-            {myTeam === team && (
-              <span className="block text-xs opacity-80">seu time</span>
-            )}
-          </span>
-        </div>
-      )
-      return team === 0 ? cell : null
-    })}
-    <div className="flex min-w-24 flex-col items-center">
+    <ScoreCell team={0} game={game} myTeam={myTeam} />
+    <div className="flex min-w-16 flex-col items-center tablet:min-w-24">
       <span
         className={
-          'text-[2.25rem] leading-none tabular-nums wght-bold ' +
+          'text-[2rem] leading-none tabular-nums wght-bold tablet:text-[2.25rem] ' +
           (seconds !== null && seconds <= 10 ? 'text-[#E5383B]' : '')
         }
         data-testid="taboo-timer"
@@ -503,41 +535,14 @@ const Scoreboard = ({
       >
         {seconds === null ? '—' : seconds}
       </span>
-      <span className="text-xs opacity-70" data-testid="taboo-turn">
+      <span
+        className="text-[0.75rem] whitespace-nowrap opacity-70 tablet:text-xs"
+        data-testid="taboo-turn"
+      >
         {turnLabel}
       </span>
     </div>
-    {([1] as const).map((team) => {
-      const active = !game.winner && game.team === team
-      return (
-        <div
-          key={team}
-          className={
-            'flex flex-row-reverse items-center gap-sm rounded-2xl px-sm py-sm text-right text-white transition-transform tablet:px-md' +
-            (active ? ' tablet:scale-[1.03]' : ' opacity-80')
-          }
-          style={{
-            background: `linear-gradient(225deg, ${TEAM_COLORS[team].light}, ${TEAM_COLORS[team].dark})`,
-            boxShadow: active
-              ? `0 0 0 3px var(--colors-background), 0 0 0 5px ${TEAM_COLORS[team].light}`
-              : undefined,
-          }}
-        >
-          <span
-            className="text-[2.5rem] leading-none tabular-nums wght-bold"
-            data-testid={`taboo-score-${team}`}
-          >
-            {game.scores[team]}
-          </span>
-          <span className="text-sm leading-tight">
-            {TEAM_NAMES[team]}
-            {myTeam === team && (
-              <span className="block text-xs opacity-80">seu time</span>
-            )}
-          </span>
-        </div>
-      )
-    })}
+    <ScoreCell team={1} game={game} myTeam={myTeam} />
   </div>
 )
 
@@ -573,7 +578,7 @@ const RoleBanner = ({
   })()
   return (
     <p
-      className="max-w-[40ch] text-md wght-semibold"
+      className="max-w-[40ch] text-sm leading-snug wght-semibold tablet:text-md"
       role="status"
       data-testid="taboo-role"
     >

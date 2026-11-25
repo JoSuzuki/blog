@@ -19,7 +19,14 @@ import { shuffleTeams } from '~/lib/taboo/shuffle-teams'
 import { startGame } from '~/lib/taboo/start-game'
 import { updateSettings } from '~/lib/taboo/update-settings'
 import { TEAM_COLORS } from './card-art'
-import { ActionError, BigButton, CardHtml, OnlineDot, Scene } from './ui'
+import {
+  ActionBar,
+  ActionError,
+  BigButton,
+  CardHtml,
+  OnlineDot,
+  Scene,
+} from './ui'
 import { useRoomAction } from './use-taboo'
 
 interface LobbyProps {
@@ -66,7 +73,7 @@ const TabooLobby = ({ room, online }: LobbyProps) => {
       className="grid gap-lg tablet:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]"
     >
       <div className="flex flex-col gap-md">
-        <div className="h-64 tablet:h-80">
+        <div className="-mx-sm h-44 tablet:mx-0 tablet:h-80">
           <Scene
             mode="lobby"
             tableCard={null}
@@ -90,7 +97,7 @@ const TabooLobby = ({ room, online }: LobbyProps) => {
         </div>
       </div>
 
-      <div className="flex flex-col gap-md">
+      <div className="order-first flex flex-col gap-md tablet:order-none">
         <div className="grid grid-cols-2 gap-sm">
           {([0, 1] as const).map((team) => (
             <TeamColumn
@@ -170,26 +177,7 @@ const TabooLobby = ({ room, online }: LobbyProps) => {
         </fieldset>
 
         <ActionError message={error} />
-        <div className="flex flex-wrap items-center gap-md">
-          {!seated && (
-            <BigButton
-              onClick={() => void run(() => joinRoom({ data: { roomCode } }))}
-              disabled={pending || room.players.length >= MAX_PLAYERS}
-              testId="taboo-join"
-            >
-              Entrar na sala
-            </BigButton>
-          )}
-          {seated && (
-            <BigButton
-              tone="good"
-              onClick={() => void run(() => startGame({ data: { roomCode } }))}
-              disabled={pending || !ready}
-              testId="taboo-start"
-            >
-              Começar partida
-            </BigButton>
-          )}
+        <ActionBar>
           {seated && (
             <BigButton
               tone="plain"
@@ -199,7 +187,28 @@ const TabooLobby = ({ room, online }: LobbyProps) => {
               Sair da sala
             </BigButton>
           )}
-        </div>
+          {!seated && (
+            <BigButton
+              wide
+              onClick={() => void run(() => joinRoom({ data: { roomCode } }))}
+              disabled={pending || room.players.length >= MAX_PLAYERS}
+              testId="taboo-join"
+            >
+              Entrar na sala
+            </BigButton>
+          )}
+          {seated && (
+            <BigButton
+              wide
+              tone="good"
+              onClick={() => void run(() => startGame({ data: { roomCode } }))}
+              disabled={pending || !ready}
+              testId="taboo-start"
+            >
+              Começar partida
+            </BigButton>
+          )}
+        </ActionBar>
         {seated && !ready && (
           <p className="text-sm" data-testid="taboo-need-players">
             Cada time precisa de pelo menos {MIN_TEAM_SIZE} jogadores para

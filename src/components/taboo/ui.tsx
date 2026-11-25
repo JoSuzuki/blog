@@ -1,5 +1,5 @@
 import { ClientOnly } from '@tanstack/react-router'
-import { Component, Suspense, lazy } from 'react'
+import { Children, Component, Suspense, lazy } from 'react'
 import type { ReactNode } from 'react'
 import CommonLink from '~/components/common-link/common-link'
 import LoginButton from '~/components/login-button/login-button'
@@ -65,6 +65,7 @@ export const BigButton = ({
   tone = 'accent',
   hint,
   testId,
+  wide = false,
 }: {
   children: ReactNode
   onClick: () => void
@@ -72,6 +73,8 @@ export const BigButton = ({
   tone?: 'accent' | 'good' | 'bad' | 'plain' | Team
   hint?: string
   testId?: string
+  /** On phones, share the row with the other buttons, tall and easy to hit. */
+  wide?: boolean
 }) => {
   const colors =
     tone === 'good'
@@ -90,7 +93,10 @@ export const BigButton = ({
       disabled={disabled}
       data-testid={testId}
       className={
-        'relative min-h-12 rounded-xl border-2 px-md py-sm text-md tracking-tight transition-transform select-none wght-bold ' +
+        'relative min-h-12 touch-manipulation rounded-xl border-2 px-md py-sm text-md tracking-tight transition-transform select-none wght-bold ' +
+        (wide
+          ? 'min-h-14 flex-1 text-lg tablet:min-h-12 tablet:flex-none tablet:text-md '
+          : '') +
         'hover:-translate-y-px active:translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 ' +
         (tone === 'plain'
           ? 'border-accent text-text'
@@ -244,3 +250,30 @@ export const Reconnecting = () => (
     Reconectando… seu lugar na sala está guardado.
   </div>
 )
+
+/**
+ * A page's main buttons. On a phone they sit in a bar fixed to the bottom of the
+ * screen, big and side by side, where thumbs are; from tablets up they are
+ * inline under the table. Nothing in it: nothing shows.
+ */
+export const ActionBar = ({ children }: { children: ReactNode }) => {
+  const shown = Children.toArray(children).some(Boolean)
+  if (!shown) return null
+  return (
+    <>
+      <div
+        className="fixed inset-x-0 bottom-0 z-20 flex gap-sm border-t border-accent/30 px-sm pt-sm backdrop-blur-md tablet:static tablet:z-auto tablet:justify-center tablet:border-0 tablet:p-0 tablet:backdrop-blur-none"
+        style={{
+          paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))',
+          background:
+            'color-mix(in srgb, var(--colors-background) 88%, transparent)',
+        }}
+        data-testid="taboo-action-bar"
+      >
+        {children}
+      </div>
+      {/* Room for the bar at the end of the page, on phones. */}
+      <div className="h-24 tablet:hidden" aria-hidden />
+    </>
+  )
+}

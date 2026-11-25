@@ -665,7 +665,7 @@ const WaitingCard = ({
     )
   })
   return (
-    <group ref={group} scale={layout.pileScale}>
+    <group ref={group} scale={layout.cardScale * 0.7}>
       <CardMesh
         geometries={geometries}
         front={textures.back()}
