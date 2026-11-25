@@ -83,18 +83,18 @@ export const readPalette = (): Palette => {
 /** Tailwind classes per team, spelled out so Tailwind finds them. */
 export const TEAM_CLASSES: Record<
   Team,
-  { text: string; bg: string; border: string; from: string }
+  { text: string; bg: string; border: string; ink: string }
 > = {
   0: {
     text: 'text-team-blue',
     bg: 'bg-team-blue',
     border: 'border-team-blue',
-    from: 'border-team-blue-dark',
+    ink: 'border-team-blue-ink text-team-blue-ink',
   },
   1: {
     text: 'text-team-red',
     bg: 'bg-team-red',
     border: 'border-team-red',
-    from: 'border-team-red-dark',
+    ink: 'border-team-red-ink text-team-red-ink',
   },
 }

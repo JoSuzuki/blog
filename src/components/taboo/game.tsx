@@ -478,15 +478,16 @@ const ScoreCell = ({
     <div
       className={
         // Phones stack the name over the score, so "Vermelho" fits.
-        'flex min-w-0 flex-col-reverse gap-xs border-2 px-sm py-xs text-white transition-[opacity,box-shadow] tablet:flex-row tablet:items-center tablet:gap-sm tablet:px-md tablet:py-sm ' +
-        TEAM_CLASSES[team].from +
+        'flex min-w-0 flex-col-reverse gap-xs border px-sm py-xs transition-opacity tablet:flex-row tablet:items-center tablet:gap-sm tablet:px-md tablet:py-sm ' +
+        TEAM_CLASSES[team].ink +
         (team === 1
           ? ' items-end text-right tablet:flex-row-reverse'
           : ' items-start') +
-        (active ? ' shadow-[3px_3px_0_0_var(--colors-accent)]' : ' opacity-75')
+        // No offset: it is not a button. The team on turn is bolder.
+        (active ? '' : ' opacity-60')
       }
       style={{
-        background: `linear-gradient(${team === 0 ? 135 : 225}deg, var(--colors-team-${team === 0 ? 'blue' : 'red'}), var(--colors-team-${team === 0 ? 'blue' : 'red'}-dark))`,
+        background: `color-mix(in srgb, var(--colors-team-${team === 0 ? 'blue' : 'red'}) ${active ? 24 : 12}%, var(--colors-background))`,
       }}
     >
       <span
@@ -498,10 +499,7 @@ const ScoreCell = ({
       <span className="max-w-full min-w-0 truncate text-xs leading-tight tablet:text-sm">
         {TEAM_NAMES[team]}
         {myTeam === team && (
-          <span className="hidden text-xs tablet:block">
-            {' '}
-            seu time
-          </span>
+          <span className="hidden text-xs tablet:block"> seu time</span>
         )}
       </span>
     </div>
@@ -524,7 +522,7 @@ const Scoreboard = ({
     data-testid="taboo-scoreboard"
   >
     <ScoreCell team={0} game={game} myTeam={myTeam} />
-    <div className="flex min-w-xl flex-col items-center justify-center border-2 border-accent px-sm py-xs tablet:px-md">
+    <div className="flex min-w-xl flex-col items-center justify-center border border-accent px-sm py-xs tablet:px-md">
       <span
         className={
           'text-lg leading-none tabular-nums wght-bold ' +
