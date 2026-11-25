@@ -1,3 +1,5 @@
+import Badge from '~/components/badge/badge'
+import { buttonClass, choiceClass } from '~/components/button/button'
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
@@ -88,10 +90,7 @@ function SearchForm({
     })
   }
 
-  const chip = (active: boolean) =>
-    active
-      ? 'border border-accent bg-accent px-sm py-xs text-sm text-background'
-      : 'pressable border border-accent px-sm py-xs text-sm text-accent'
+  const chip = (active: boolean) => `${choiceClass(active)} text-sm`
 
   return (
     <div className="mb-md">
@@ -114,10 +113,7 @@ function SearchForm({
           spellCheck={false}
           className="w-0 min-w-0 flex-1 border border-accent bg-transparent px-sm py-xs uppercase placeholder:normal-case"
         />
-        <button
-          type="submit"
-          className="pressable border border-accent px-sm py-xs text-accent"
-        >
+        <button type="submit" className={buttonClass()}>
           Buscar
         </button>
       </form>
@@ -228,15 +224,13 @@ function GameList({ games }: { games: GameSummary[] }) {
           <Link
             to="/games/santorini/partidas/$gameId"
             params={{ gameId: String(game.id) }}
-            className="pressable block border border-accent px-sm py-xs text-text no-underline"
+            className="block pressable border border-accent px-sm py-xs text-text no-underline"
             data-testid="santorini-game-link"
           >
             <span className="flex items-baseline justify-between gap-sm">
               <span className="text-accent wght-bold">{game.roomCode}</span>
               {game.status === 'PLAYING' ? (
-                <span className="border border-team-red-ink px-xs text-xs text-team-red-ink wght-bold">
-                  AO VIVO
-                </span>
+                <Badge tone="live">AO VIVO</Badge>
               ) : (
                 <span className="text-xs">
                   {formatDateTime(game.updatedAt)}

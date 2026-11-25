@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AtomDotxmlRouteImport } from './routes/atom[.]xml'
+import { Route as DesignRouteImport } from './routes/design'
 import { Route as FeedDotjsonRouteImport } from './routes/feed[.]json'
 import { Route as FeedDotxmlRouteImport } from './routes/feed[.]xml'
 import { Route as UsersRouteImport } from './routes/users'
@@ -36,6 +37,11 @@ const IndexRoute = IndexRouteImport.update({
 const AtomDotxmlRoute = AtomDotxmlRouteImport.update({
   id: '/atom.xml',
   path: '/atom.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DesignRoute = DesignRouteImport.update({
+  id: '/design',
+  path: '/design',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeedDotjsonRoute = FeedDotjsonRouteImport.update({
@@ -125,6 +131,7 @@ const GamesQuemDisseImagemPrintIdKindRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/atom.xml': typeof AtomDotxmlRoute
+  '/design': typeof DesignRoute
   '/feed.json': typeof FeedDotjsonRoute
   '/feed.xml': typeof FeedDotxmlRoute
   '/users': typeof UsersRoute
@@ -145,6 +152,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/atom.xml': typeof AtomDotxmlRoute
+  '/design': typeof DesignRoute
   '/feed.json': typeof FeedDotjsonRoute
   '/feed.xml': typeof FeedDotxmlRoute
   '/users': typeof UsersRoute
@@ -166,6 +174,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/atom.xml': typeof AtomDotxmlRoute
+  '/design': typeof DesignRoute
   '/feed.json': typeof FeedDotjsonRoute
   '/feed.xml': typeof FeedDotxmlRoute
   '/users': typeof UsersRoute
@@ -188,6 +197,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/atom.xml'
+    | '/design'
     | '/feed.json'
     | '/feed.xml'
     | '/users'
@@ -208,6 +218,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/atom.xml'
+    | '/design'
     | '/feed.json'
     | '/feed.xml'
     | '/users'
@@ -228,6 +239,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/atom.xml'
+    | '/design'
     | '/feed.json'
     | '/feed.xml'
     | '/users'
@@ -249,6 +261,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AtomDotxmlRoute: typeof AtomDotxmlRoute
+  DesignRoute: typeof DesignRoute
   FeedDotjsonRoute: typeof FeedDotjsonRoute
   FeedDotxmlRoute: typeof FeedDotxmlRoute
   UsersRoute: typeof UsersRoute
@@ -281,6 +294,13 @@ declare module '@tanstack/react-router' {
       path: '/atom.xml'
       fullPath: '/atom.xml'
       preLoaderRoute: typeof AtomDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/design': {
+      id: '/design'
+      path: '/design'
+      fullPath: '/design'
+      preLoaderRoute: typeof DesignRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/feed.json': {
@@ -401,6 +421,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AtomDotxmlRoute: AtomDotxmlRoute,
+  DesignRoute: DesignRoute,
   FeedDotjsonRoute: FeedDotjsonRoute,
   FeedDotxmlRoute: FeedDotxmlRoute,
   UsersRoute: UsersRoute,

@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 /** The tag in the heading of a tag page. */
 export const TagName = ({ tag }: { tag: string }) => {
   return (
-    <span className="mr-xs border border-accent bg-accent-background px-xs text-lg leading-[1.2] text-accent [box-shadow:3px_3px_0_0_var(--colors-accent)] wght-bold">
+    <span className="mr-xs border border-accent bg-accent-background px-xs text-lg leading-[1.2] text-accent wght-bold">
       {tag}
     </span>
   )
@@ -14,7 +14,7 @@ const Tag = ({ tag }: { tag: string }) => {
     <Link
       to="/tags/$tag"
       params={{ tag }}
-      className="pressable flex border border-accent bg-accent-background px-xs leading-[1.2] text-accent active:shadow-[0_0_0_0_var(--colors-accent)]"
+      className="flex pressable border border-accent bg-accent-background px-xs leading-[1.2] text-accent active:shadow-[0_0_0_0_var(--colors-accent)]"
     >
       {tag}
     </Link>

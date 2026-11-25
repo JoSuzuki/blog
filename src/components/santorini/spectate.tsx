@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import Badge from '~/components/badge/badge'
 import type { SantoriniGameUpdate } from '~/lib/realtime/events'
 import { subscribeToGames } from '~/lib/realtime/santorini-socket'
 import { applyTurnActions } from '~/lib/santorini/game'
@@ -42,9 +43,7 @@ const SantoriniSpectate = ({
   return (
     <div data-testid="santorini-spectate">
       <p className="mb-sm flex items-center gap-sm" role="status">
-        <span className="border border-team-red-ink px-xs text-xs text-team-red-ink wght-bold">
-          AO VIVO
-        </span>
+        <Badge tone="live">AO VIVO</Badge>
         Vez de {turnOf?.name ?? '…'}.
       </p>
       <ReadOnlyBoard gameState={board} redPlayerId={redPlayerId} />

@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { buttonClass } from '~/components/button/button'
 import CommonLink from '~/components/common-link/common-link'
 import {
   passSpeaker,
@@ -286,7 +287,7 @@ const TabooGame = ({ room, game, online, clockOffset }: TabooGameProps) => {
             setMuted(!muted)
             setMutedState(!muted)
           }}
-          className="pressable absolute top-sm right-sm border border-accent bg-background px-sm py-xs text-sm"
+          className={`absolute top-sm right-sm ${buttonClass({ size: 'sm' })}`}
           aria-label={muted ? 'Ligar o som' : 'Desligar o som'}
         >
           {muted ? '🔇' : '🔊'}
@@ -449,7 +450,7 @@ const TabooGame = ({ room, game, online, clockOffset }: TabooGameProps) => {
         {myPlayerId !== null && (
           <button
             type="button"
-            className="pressable border border-accent px-sm py-xs text-accent disabled:opacity-50"
+            className={buttonClass()}
             onClick={() => void handleLeave()}
             disabled={lifeActions.pending}
           >
@@ -702,7 +703,7 @@ const TeamPanel = ({
                 <button
                   type="button"
                   title={`Tirar ${name} da partida`}
-                  className="border border-accent px-xs text-xs text-accent hover:bg-accent hover:text-background"
+                  className={buttonClass({ size: 'xs' })}
                   disabled={pending}
                   onClick={() => onRemove(id, name)}
                 >

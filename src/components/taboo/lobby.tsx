@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
+import { buttonClass, choiceClass } from '~/components/button/button'
 import {
   MAX_PLAYERS,
   MIN_TEAM_SIZE,
@@ -131,7 +132,7 @@ const TabooLobby = ({ room, online }: LobbyProps) => {
           <div>
             <button
               type="button"
-              className="pressable border border-accent px-sm py-xs text-sm text-accent disabled:opacity-50"
+              className={buttonClass({ size: 'sm' })}
               disabled={pending}
               onClick={() =>
                 void run(() => shuffleTeams({ data: { roomCode } }))
@@ -279,7 +280,7 @@ const TeamColumn = ({
               <button
                 type="button"
                 title={`Mudar ${player.name} de time`}
-                className="border border-accent px-xs text-accent hover:bg-accent hover:text-background"
+                className={buttonClass({ size: 'xs' })}
                 disabled={pending}
                 onClick={() => onMove(player.id)}
               >
@@ -288,7 +289,7 @@ const TeamColumn = ({
               <button
                 type="button"
                 title={`Tirar ${player.name} da sala`}
-                className="border border-accent px-xs text-accent hover:bg-accent hover:text-background"
+                className={buttonClass({ size: 'xs' })}
                 disabled={pending}
                 onClick={() => onRemove(player.id, player.name)}
               >
@@ -343,10 +344,7 @@ const Segmented = <T extends number>({
           aria-checked={option === value}
           onClick={() => onChange(option)}
           className={
-            'min-w-xl border-2 px-sm py-xs text-sm transition-colors wght-semibold disabled:cursor-default ' +
-            (option === value
-              ? 'border-accent bg-accent text-background'
-              : 'border-accent/40 hover:border-accent')
+            'min-w-xl text-sm wght-semibold ' + choiceClass(option === value)
           }
         >
           {format(option)}
@@ -384,7 +382,7 @@ const InviteBox = ({ roomCode }: { roomCode: string }) => {
       <button
         type="button"
         onClick={() => void copy()}
-        className="pressable border border-accent px-sm py-xs text-sm text-accent"
+        className={buttonClass({ size: 'sm' })}
       >
         {copied ? 'Link copiado!' : 'Copiar link'}
       </button>

@@ -1,4 +1,6 @@
+import { choiceClass } from '~/components/button/button'
 import { useState } from 'react'
+import { ErrorMessage } from '~/components/notice/notice'
 import { QUIZ_PEOPLE } from '~/lib/quiz/quiz'
 import type { QuizPrintView } from '~/lib/quiz/quiz'
 import { submitGuess } from '~/lib/realtime/quiz-socket'
@@ -64,8 +66,8 @@ const GuessForm = ({ gameId, print, picks }: GuessFormProps) => {
               aria-selected={slot === active}
               onClick={() => setActive(slot)}
               className={
-                'min-h-12 flex-1 border border-accent px-sm text-left text-xs ' +
-                (slot === active ? 'bg-accent text-background' : 'text-text')
+                'min-h-12 flex-1 text-left text-xs ' +
+                choiceClass(slot === active)
               }
               data-testid={`quiz-slot-${slot}`}
             >
@@ -93,8 +95,9 @@ const GuessForm = ({ gameId, print, picks }: GuessFormProps) => {
               aria-checked={selected}
               onClick={() => void pick(active, person)}
               className={
-                'min-h-14 touch-manipulation border border-accent px-xs text-sm ' +
-                (selected ? 'bg-accent text-background wght-bold' : 'text-text')
+                'min-h-14 text-sm ' +
+                choiceClass(selected) +
+                (selected ? ' wght-bold' : '')
               }
               data-testid={`quiz-person-${person}`}
             >
@@ -103,11 +106,7 @@ const GuessForm = ({ gameId, print, picks }: GuessFormProps) => {
           )
         })}
       </div>
-      {error && (
-        <p role="alert" className="my-sm text-accent" data-testid="quiz-error">
-          {error}
-        </p>
-      )}
+      <ErrorMessage message={error} testId="quiz-error" />
       <p
         className="mt-sm text-xs"
         role="status"

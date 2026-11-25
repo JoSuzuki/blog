@@ -21,7 +21,7 @@ import {
   WireframeGeometry,
 } from 'three'
 import type { Group, Mesh, MeshBasicMaterial } from 'three'
-import { useSiteTheme } from '~/components/taboo/theme'
+import { useSiteTheme } from '~/lib/site-theme'
 import type { SiteTheme } from '~/components/taboo/theme'
 import { BOARD_SIZE, DOME_HEIGHT, canExecuteAction } from '~/lib/santorini/game'
 import type {

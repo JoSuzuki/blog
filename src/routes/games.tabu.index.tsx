@@ -1,10 +1,7 @@
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import Article from '~/components/article/article'
-import {
-  ActionError,
-  LoginRequired,
-  Unavailable,
-} from '~/components/taboo/ui'
+import { buttonClass } from '~/components/button/button'
+import { ActionError, LoginRequired, Unavailable } from '~/components/taboo/ui'
 import { useLiveTaboo, useRoomAction } from '~/components/taboo/use-taboo'
 import { MAX_PLAYERS } from '~/lib/taboo/game'
 import Button from '~/components/button/button'
@@ -112,7 +109,7 @@ function Rooms({ rooms }: RoomsProps) {
                 type="button"
                 disabled={pending}
                 onClick={() => void handleJoin(room.roomCode)}
-                className="pressable border border-accent px-sm py-xs text-accent"
+                className={buttonClass()}
               >
                 Entrar
               </button>

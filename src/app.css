@@ -148,21 +148,23 @@
 }
 
 /*
- * The offset shadow that lifts on hover and flattens when pressed. It is the
- * accent color unless an element sets `--pressable-color` (a colored game
- * button uses its own color).
+ * The offset shadow that lifts on hover and flattens when pressed: the mark of
+ * everything that can be clicked, and only of that (see DESIGN.md). It is the
+ * accent color unless an element sets `--pressable-color` (an outlined game
+ * button uses its own color). It moves with `translate`, so it also works on
+ * absolutely positioned elements, and a disabled control stays flat.
  */
 @utility pressable {
-  position: relative;
   box-shadow: 1px 1px 0 0 var(--pressable-color, var(--colors-accent));
-  &:hover {
-    top: -1px;
-    left: -1px;
+  &:hover:not(:disabled) {
+    translate: -1px -1px;
     box-shadow: 2px 2px 0 0 var(--pressable-color, var(--colors-accent));
   }
-  &:active {
-    top: 1px;
-    left: 1px;
+  &:active:not(:disabled) {
+    translate: 1px 1px;
+    box-shadow: none;
+  }
+  &:disabled {
     box-shadow: none;
   }
 }
@@ -203,16 +205,26 @@
     --font-weights-semibold: 'wght' 600;
     --font-weights-bold: 'wght' 850;
 
-    --spaces-xs: 0.25rem;
-    --spaces-sm: 0.5rem;
-    --spaces-md: 1rem;
-    --spaces-lg: 2rem;
-    --spaces-xl: 3rem;
+    /* In pixels on purpose: spacing keeps its intent when the text is enlarged. */
+    --spaces-xs: 4px;
+    --spaces-sm: 8px;
+    --spaces-md: 16px;
+    --spaces-lg: 32px;
+    --spaces-xl: 48px;
 
     --container-max-width: 65ch;
   }
 
-  :root[data-theme='secret'] {
+  /*
+   * The three themes. The selectors work on any element, not only <html>, so
+   * a part of a page can show another theme (the /design reference page puts
+   * the three side by side); such an element also needs `bg-background
+   * text-text`. Each theme sets every color that differs between themes.
+   */
+  [data-theme='secret'] {
+    --colors-team-blue-ink: var(--colors-team-blue);
+    --colors-team-red-ink: var(--colors-team-red);
+    --colors-success-ink: var(--colors-success);
     --colors-secondary: #ff3164;
     --colors-accent: #ec0f2d;
     --colors-accent-background: #300300;
@@ -222,8 +234,11 @@
     --colors-inline-code: #a11010;
   }
 
-  :root[data-theme='dark'] {
-    --colors-secondary: #c25b84;
+  [data-theme='dark'] {
+    --colors-team-blue-ink: var(--colors-team-blue);
+    --colors-team-red-ink: var(--colors-team-red);
+    --colors-success-ink: var(--colors-success);
+    --colors-secondary: #ffab5e;
     --colors-accent: #7670db;
     --colors-accent-background: #150044;
     --colors-dimmed: #522ba9;
@@ -232,11 +247,11 @@
     --colors-inline-code: #4842b3;
   }
 
-  :root[data-theme='light'] {
+  [data-theme='light'] {
     --colors-team-blue-ink: var(--colors-team-blue-dark);
     --colors-team-red-ink: var(--colors-team-red-dark);
     --colors-success-ink: var(--colors-success-dark);
-    --colors-secondary: #b34270;
+    --colors-secondary: #b0500a;
     --colors-accent: #432a79;
     --colors-accent-background: #ebe2ff;
     --colors-dimmed: #bbd1e2;
@@ -257,8 +272,8 @@
       color 0.16s ease-out,
       background-color 0.16s ease-out;
 
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 16px;
+    padding-right: 16px;
 
     font-size: var(--font-sizes-md);
 

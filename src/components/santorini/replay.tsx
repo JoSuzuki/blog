@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { buttonClass } from '~/components/button/button'
 import type { GameState } from '~/lib/santorini/game'
 import { describeTurn, replayFrames } from '~/lib/santorini/replay'
 import type { RoomPlayerView } from '~/lib/santorini/room'
@@ -69,8 +70,7 @@ const SantoriniReplay = ({ gameState, players, redPlayerId }: ReplayProps) => {
   const name = (id: number | undefined) =>
     players.find((p) => p.id === id)?.name ?? 'Alguém'
 
-  const control =
-    'pressable touch-manipulation border border-accent bg-background px-sm py-xs text-accent select-none disabled:opacity-50 disabled:shadow-none'
+  const control = buttonClass()
 
   return (
     <div data-testid="santorini-replay">
