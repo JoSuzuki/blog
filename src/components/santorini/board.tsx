@@ -13,6 +13,7 @@ import {
   Float32BufferAttribute,
   NearestFilter,
   NormalBlending,
+  PlaneGeometry,
   OctahedronGeometry,
   SRGBColorSpace,
   SphereGeometry,
@@ -151,6 +152,19 @@ const ringGeometry = (radius: number) =>
     }),
   )
 const innerRing = ringGeometry(DOME_RADIUS)
+// The footprint of the floor a build would add on a tile of each height.
+const squareOutlines = LEVELS.map(({ size }) => {
+  const h = size / 2
+  return new BufferGeometry().setFromPoints(
+    [
+      [-h, -h],
+      [h, -h],
+      [h, h],
+      [-h, h],
+    ].map(([x, z]) => new Vector3(x, 0, z)),
+  )
+})
+const squareFills = LEVELS.map(({ size }) => new PlaneGeometry(size, size))
 const outerRing = ringGeometry(DOME_RADIUS + 0.08)
 
 const lineGrid = (from: number, to: number, y: number) => {
@@ -331,18 +345,22 @@ const Tower = ({ height, palette }: { height: number; palette: Palette }) => {
 /**
  * Where the viewer can play: a dome's footprint in their colour, a disc in a
  * ring that pulses. A winning climb (onto level 3) gets a second ring; a
- * worker that can be picked gets the ring alone.
+ * worker that can be picked gets the ring alone. A build shows the footprint
+ * of what it would add: a square for the next floor, the circle for a dome.
  */
 const Marker = ({
   palette,
   filled,
   winning,
   hovered,
+  floor,
 }: {
   palette: Palette
   filled: boolean
   winning: boolean
   hovered: boolean
+  /** The level a build here would add (0 to 2), or undefined for a round marker. */
+  floor?: number
 }) => {
   const disc = useRef<Mesh>(null)
   const group = useRef<Group>(null)
@@ -357,7 +375,9 @@ const Marker = ({
   })
   return (
     <group ref={group} position={[0, 0.015, 0]}>
-      <lineLoop geometry={innerRing}>
+      <lineLoop
+        geometry={floor === undefined ? innerRing : squareOutlines[floor]}
+      >
         <lineBasicMaterial color={palette.mine} />
       </lineLoop>
       {winning && (
@@ -368,7 +388,7 @@ const Marker = ({
       {filled && (
         <mesh
           ref={disc}
-          geometry={discGeometry}
+          geometry={floor === undefined ? discGeometry : squareFills[floor]}
           rotation={[-Math.PI / 2, 0, 0]}
         >
           <meshBasicMaterial
@@ -442,6 +462,8 @@ interface TileProps {
   hovered: boolean
   selectedWorker: boolean
   canClickTile: boolean
+  /** A click here builds (rather than places or moves). */
+  buildsHere: boolean
   winningMove: boolean
   canSelectWorker: boolean
   canPerformActions: boolean
@@ -460,6 +482,7 @@ const Tile = ({
   hovered,
   selectedWorker,
   canClickTile,
+  buildsHere,
   winningMove,
   canSelectWorker,
   canPerformActions,
@@ -496,6 +519,7 @@ const Tile = ({
             palette={palette}
             filled
             winning={winningMove}
+            floor={buildsHere && height < DOME_HEIGHT - 1 ? height : undefined}
             hovered={hovered}
           />
         )}
@@ -568,6 +592,7 @@ const Scene = ({
               nextActionType,
             )
           const canMove = can('move_worker')
+          const canBuild = can('build_from_worker')
           return (
             <Tile
               key={`${y}-${x}`}
@@ -581,9 +606,8 @@ const Scene = ({
               playerId={playerId}
               hovered={hoveredTile?.x === x && hoveredTile.y === y}
               selectedWorker={selectedTile?.x === x && selectedTile.y === y}
-              canClickTile={
-                can('place_worker') || canMove || can('build_from_worker')
-              }
+              canClickTile={can('place_worker') || canMove || canBuild}
+              buildsHere={canBuild}
               winningMove={canMove && tile.height === DOME_HEIGHT - 1}
               canSelectWorker={can('select_worker')}
               canPerformActions={canPerformActions}
