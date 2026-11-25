@@ -999,14 +999,15 @@ const Table = (
     )
   }, [tableCard])
 
-  // A new game starts with empty piles.
-  const fresh = scores[0] === 0 && scores[1] === 0
+  // A rematch starts with empty piles. (Not "both scores are 0": a taboo can
+  // bring a score back to 0 with real cards still on the pile.)
+  const lastMode = useRef(mode)
   useEffect(() => {
-    if (fresh)
-      setLanded((current) =>
-        current[0].length || current[1].length ? { 0: [], 1: [] } : current,
-      )
-  }, [fresh])
+    if (lastMode.current === 'over' && mode !== 'over') {
+      setLanded({ 0: [], 1: [] })
+    }
+    lastMode.current = mode
+  }, [mode])
 
   const handleExited = (card: LiveCard) => {
     setCards((current) => current.filter((c) => c.key !== card.key))
