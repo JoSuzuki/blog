@@ -46,7 +46,7 @@ const LogoutButton = () => {
         onClick={() => void handleLogout()}
         disabled={pending}
         aria-label="Sair"
-        className={`relative ${sessionButtonClass}`}
+        className={sessionButtonClass}
       >
         Sair
       </button>

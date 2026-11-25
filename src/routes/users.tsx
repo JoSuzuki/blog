@@ -3,6 +3,7 @@ import { useState } from 'react'
 import Article from '~/components/article/article'
 import Footer from '~/components/footer/footer'
 import Navbar from '~/components/navbar/navbar'
+import { ErrorMessage } from '~/components/notice/notice'
 import { ROLES } from '~/lib/auth/roles'
 import type { Role } from '~/lib/auth/roles'
 import { getUsers } from '~/lib/users/get-users'
@@ -77,11 +78,7 @@ function Users({ users, currentUserId }: UsersProps) {
 
   return (
     <div data-testid="users">
-      {error && (
-        <p role="alert" className="my-sm text-accent" data-testid="users-error">
-          {error}
-        </p>
-      )}
+      <ErrorMessage message={error} testId="users-error" />
       <div className="overflow-auto">
         <table className="w-full table-auto text-left text-sm">
           <thead>

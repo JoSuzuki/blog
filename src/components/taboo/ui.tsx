@@ -1,8 +1,13 @@
 import { ClientOnly } from '@tanstack/react-router'
 import { Children, Component, Suspense, lazy } from 'react'
 import type { ReactNode } from 'react'
-import CommonLink from '~/components/common-link/common-link'
-import LoginButton from '~/components/login-button/login-button'
+import Button from '~/components/button/button'
+import type { ButtonStyle } from '~/components/button/button'
+import {
+  LoginRequired as GameLoginRequired,
+  Unavailable as GameUnavailable,
+} from '~/components/game-notices/game-notices'
+import { ErrorMessage, StatusBanner } from '~/components/notice/notice'
 import type { Team } from '~/lib/taboo/game'
 import { TABOO_PATH, TEAM_NAMES } from '~/lib/taboo/room'
 import type { CardFace, PlayedCard, RoomPlayerView } from '~/lib/taboo/room'
@@ -53,20 +58,17 @@ export const TeamName = ({ team }: { team: Team }) => (
   </span>
 )
 
+// Tabu's names for the button tones.
 const TONES = {
-  accent: 'border-accent bg-accent text-background',
-  plain: 'border-accent bg-background text-accent',
-  // The game colors as outlines, like the site's own buttons.
-  good: 'border-success-ink bg-background text-success-ink [--pressable-color:var(--colors-success-ink)]',
-  bad: 'border-team-red-ink bg-background text-team-red-ink [--pressable-color:var(--colors-team-red-ink)]',
-  0: 'border-team-blue-ink bg-background text-team-blue-ink [--pressable-color:var(--colors-team-blue-ink)]',
-  1: 'border-team-red-ink bg-background text-team-red-ink [--pressable-color:var(--colors-team-red-ink)]',
-} as const
+  accent: { variant: 'solid' },
+  plain: {},
+  good: { tone: 'success' },
+  bad: { tone: 'danger' },
+  0: { tone: 'team-blue' },
+  1: { tone: 'team-red' },
+} as const satisfies Record<string, ButtonStyle>
 
-/**
- * A game button: the site's square, pressable button (an offset shadow that
- * lifts on hover), outlined in a game color.
- */
+/** A game button: the site's large button, in a game color. */
 export const BigButton = ({
   children,
   onClick,
@@ -85,27 +87,17 @@ export const BigButton = ({
   /** On phones, share the row with the other buttons, tall and easy to hit. */
   wide?: boolean
 }) => (
-  <button
-    type="button"
+  <Button
+    {...TONES[tone]}
+    size="lg"
+    wide={wide}
     onClick={onClick}
     disabled={disabled}
-    data-testid={testId}
-    className={
-      'pressable touch-manipulation border px-md py-sm text-md tracking-tight select-none wght-bold ' +
-      'disabled:cursor-not-allowed disabled:opacity-50 ' +
-      (wide
-        ? 'flex-1 py-md text-lg tablet:flex-none tablet:py-sm tablet:text-md '
-        : '') +
-      TONES[tone]
-    }
+    hint={hint}
+    testId={testId}
   >
     {children}
-    {hint && (
-      <kbd className="ml-sm hidden border border-current px-xs text-xs wght-semibold tablet:inline">
-        {hint}
-      </kbd>
-    )}
-  </button>
+  </Button>
 )
 
 /** A small square that says whether a player has the room open. */
@@ -174,12 +166,12 @@ const OUTCOMES = {
   correct: {
     text: '+1',
     name: 'acertou',
-    className: 'border-success text-success',
+    className: 'border-success-ink text-success-ink',
   },
   taboo: {
     text: '−1',
     name: 'tabu',
-    className: 'border-team-red text-team-red',
+    className: 'border-team-red-ink text-team-red-ink',
   },
   skipped: { text: '0', name: 'pulou', className: 'border-accent text-accent' },
   timeout: { text: '⏱', name: 'tempo', className: 'border-accent text-accent' },
@@ -207,38 +199,27 @@ export const PlayedCards = ({ cards }: { cards: PlayedCard[] }) =>
 
 /** Shown instead of a Tabu page to a reader who is not logged in. */
 export const LoginRequired = () => (
-  <div data-testid="taboo-login">
-    <p className="mb-md">
-      Para jogar é preciso entrar com a sua conta do Google: é assim que a sala
-      sabe quem é quem (e te guarda o lugar se a conexão cair).
-    </p>
-    <LoginButton />
-  </div>
+  <GameLoginRequired testId="taboo-login">
+    Para jogar é preciso entrar com a sua conta do Google: é assim que a sala
+    sabe quem é quem (e te guarda o lugar se a conexão cair).
+  </GameLoginRequired>
 )
 
 export const Unavailable = ({ children }: { children: ReactNode }) => (
-  <p data-testid="taboo-unavailable">
-    {children} <CommonLink href={TABOO_PATH}>Ver as salas →</CommonLink>
-  </p>
+  <GameUnavailable roomsHref={TABOO_PATH} testId="taboo-unavailable">
+    {children}
+  </GameUnavailable>
 )
 
-export const ActionError = ({ message }: { message: string | null }) =>
-  message ? (
-    <p role="alert" className="my-sm text-accent" data-testid="taboo-error">
-      {message}
-    </p>
-  ) : null
+export const ActionError = ({ message }: { message: string | null }) => (
+  <ErrorMessage message={message} testId="taboo-error" />
+)
 
 /** A banner while the live connection is down. */
 export const Reconnecting = () => (
-  <div
-    role="status"
-    className="mb-sm flex items-center gap-sm border border-accent bg-accent-background px-sm py-xs text-sm"
-    data-testid="taboo-reconnecting"
-  >
-    <span className="inline-block h-sm w-sm animate-spin bg-accent" />
+  <StatusBanner busy testId="taboo-reconnecting">
     Reconectando… seu lugar na sala está guardado.
-  </div>
+  </StatusBanner>
 )
 
 /**

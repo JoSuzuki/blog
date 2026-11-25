@@ -1,34 +1,11 @@
-import { useEffect, useState } from 'react'
+import { readColorToken } from '~/lib/site-theme'
 import type { Team } from '~/lib/taboo/game'
 
-// The site's theme and design tokens, for the parts of Tabu that cannot use
-// CSS: the 3D table and the card faces drawn on a canvas. Everything else
-// uses the Tailwind names of the same tokens (see src/app.css).
+// The design tokens for the parts of Tabu that cannot use CSS: the 3D table
+// and the card faces drawn on a canvas (see src/lib/site-theme.ts).
 
-export type SiteTheme = 'light' | 'dark' | 'secret'
-
-const THEMES: SiteTheme[] = ['light', 'dark', 'secret']
-
-const currentTheme = (): SiteTheme => {
-  if (typeof document === 'undefined') return 'dark'
-  const value = document.documentElement.getAttribute('data-theme')
-  return THEMES.includes(value as SiteTheme) ? (value as SiteTheme) : 'dark'
-}
-
-/** The theme on <html>, following the theme button. */
-export const useSiteTheme = (): SiteTheme => {
-  const [theme, setTheme] = useState<SiteTheme>('dark')
-  useEffect(() => {
-    setTheme(currentTheme())
-    const observer = new MutationObserver(() => setTheme(currentTheme()))
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-theme'],
-    })
-    return () => observer.disconnect()
-  }, [])
-  return theme
-}
+export { useSiteTheme } from '~/lib/site-theme'
+export type { SiteTheme } from '~/lib/site-theme'
 
 export interface Palette {
   team: Record<Team, { light: string; dark: string }>
@@ -56,10 +33,7 @@ const FALLBACK: Palette = {
 
 /** The design tokens as they are now, for the current theme. */
 export const readPalette = (): Palette => {
-  if (typeof document === 'undefined') return FALLBACK
-  const style = getComputedStyle(document.documentElement)
-  const token = (name: string, fallback: string) =>
-    style.getPropertyValue(`--colors-${name}`).trim() || fallback
+  const token = readColorToken
   return {
     team: {
       0: {

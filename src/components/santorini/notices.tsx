@@ -1,27 +1,24 @@
 import type { ReactNode } from 'react'
-import CommonLink from '~/components/common-link/common-link'
-import LoginButton from '~/components/login-button/login-button'
+import {
+  LoginRequired as GameLoginRequired,
+  Unavailable as GameUnavailable,
+} from '~/components/game-notices/game-notices'
+import { ErrorMessage } from '~/components/notice/notice'
 
 /** Shown instead of a Santorini page to a reader who is not logged in. */
 export const LoginRequired = () => (
-  <div data-testid="santorini-login">
-    <p className="mb-md">
-      Para jogar é preciso entrar com a sua conta do Google: é assim que a sala
-      sabe quem é quem.
-    </p>
-    <LoginButton />
-  </div>
+  <GameLoginRequired testId="santorini-login">
+    Para jogar é preciso entrar com a sua conta do Google: é assim que a sala
+    sabe quem é quem.
+  </GameLoginRequired>
 )
 
 export const Unavailable = ({ children }: { children: ReactNode }) => (
-  <p data-testid="santorini-unavailable">
-    {children} <CommonLink href="/games/santorini">Ver as salas →</CommonLink>
-  </p>
+  <GameUnavailable roomsHref="/games/santorini" testId="santorini-unavailable">
+    {children}
+  </GameUnavailable>
 )
 
-export const ActionError = ({ message }: { message: string | null }) =>
-  message ? (
-    <p role="alert" className="my-sm text-accent" data-testid="santorini-error">
-      {message}
-    </p>
-  ) : null
+export const ActionError = ({ message }: { message: string | null }) => (
+  <ErrorMessage message={message} testId="santorini-error" />
+)

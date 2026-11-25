@@ -148,21 +148,23 @@
 }
 
 /*
- * The offset shadow that lifts on hover and flattens when pressed. It is the
- * accent color unless an element sets `--pressable-color` (a colored game
- * button uses its own color).
+ * The offset shadow that lifts on hover and flattens when pressed: the mark of
+ * everything that can be clicked, and only of that (see DESIGN.md). It is the
+ * accent color unless an element sets `--pressable-color` (an outlined game
+ * button uses its own color). It moves with `translate`, so it also works on
+ * absolutely positioned elements, and a disabled control stays flat.
  */
 @utility pressable {
-  position: relative;
   box-shadow: 1px 1px 0 0 var(--pressable-color, var(--colors-accent));
-  &:hover {
-    top: -1px;
-    left: -1px;
+  &:hover:not(:disabled) {
+    translate: -1px -1px;
     box-shadow: 2px 2px 0 0 var(--pressable-color, var(--colors-accent));
   }
-  &:active {
-    top: 1px;
-    left: 1px;
+  &:active:not(:disabled) {
+    translate: 1px 1px;
+    box-shadow: none;
+  }
+  &:disabled {
     box-shadow: none;
   }
 }
@@ -212,7 +214,16 @@
     --container-max-width: 65ch;
   }
 
-  :root[data-theme='secret'] {
+  /*
+   * The three themes. The selectors work on any element, not only <html>, so
+   * a part of a page can show another theme (the /design reference page puts
+   * the three side by side); such an element also needs `bg-background
+   * text-text`. Each theme sets every color that differs between themes.
+   */
+  [data-theme='secret'] {
+    --colors-team-blue-ink: var(--colors-team-blue);
+    --colors-team-red-ink: var(--colors-team-red);
+    --colors-success-ink: var(--colors-success);
     --colors-secondary: #ff3164;
     --colors-accent: #ec0f2d;
     --colors-accent-background: #300300;
@@ -222,7 +233,10 @@
     --colors-inline-code: #a11010;
   }
 
-  :root[data-theme='dark'] {
+  [data-theme='dark'] {
+    --colors-team-blue-ink: var(--colors-team-blue);
+    --colors-team-red-ink: var(--colors-team-red);
+    --colors-success-ink: var(--colors-success);
     --colors-secondary: #c25b84;
     --colors-accent: #7670db;
     --colors-accent-background: #150044;
@@ -232,7 +246,7 @@
     --colors-inline-code: #4842b3;
   }
 
-  :root[data-theme='light'] {
+  [data-theme='light'] {
     --colors-team-blue-ink: var(--colors-team-blue-dark);
     --colors-team-red-ink: var(--colors-team-red-dark);
     --colors-success-ink: var(--colors-success-dark);

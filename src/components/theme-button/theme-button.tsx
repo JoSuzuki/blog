@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
+import { buttonClass } from '~/components/button/button'
 import { useRedactedContext } from '~/components/redacted/redacted'
 
 const SECRET_REDIRECT_KEY = 'secretRedirect'
@@ -95,7 +96,7 @@ const ThemeButton = () => {
       onKeyDown={handleKeyDown}
       onKeyUp={handleKeyUp}
       aria-label="Trocar tema"
-      className="pressable size-[30px] border border-accent text-accent"
+      className={buttonClass({ size: 'icon' })}
     >
       {theme === null ? null : reveal ? '🔓' : themeMap[theme]}
     </button>

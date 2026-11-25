@@ -1,16 +1,13 @@
 import { useRef, useState } from 'react'
+import { buttonClass } from '~/components/button/button'
 import { renderGoogleSignInButton } from '~/lib/auth/google-identity'
 import { login } from '~/lib/auth/login'
 import { useSession } from '~/lib/auth/use-session'
 import { reconnectSocket } from '~/lib/realtime/connection'
 import { useReload } from '~/lib/use-reload'
 
-// The offset-shadow look the legacy Login button had (a translate on hover and
-// press, unlike the `pressable` utility, which moves with top/left).
-export const sessionButtonClass =
-  'border border-accent px-sm text-accent wght-semibold [box-shadow:1px_1px_0_0_var(--colors-accent)] ' +
-  'hover:[transform:translate(-1px,-1px)] hover:[box-shadow:2px_2px_0_0_var(--colors-accent)] ' +
-  'active:[transform:translate(1px,1px)] active:[box-shadow:none] disabled:cursor-default'
+/** The top bar's buttons (Login, Sair). */
+export const sessionButtonClass = buttonClass({ size: 'compact' })
 
 const LOAD_FAILED =
   'Não foi possível carregar o login do Google. Tente de novo.'
@@ -64,7 +61,7 @@ const LoginButton = () => {
         type="button"
         onClick={openDialog}
         aria-label="Login"
-        className={`relative ${sessionButtonClass}`}
+        className={sessionButtonClass}
       >
         Login
       </button>
@@ -77,7 +74,7 @@ const LoginButton = () => {
           type="button"
           aria-label="Fechar"
           onClick={() => dialogRef.current?.close()}
-          className={`absolute top-0 right-0 py-xs text-sm leading-none ${sessionButtonClass}`}
+          className={`absolute top-0 right-0 ${buttonClass({ size: 'sm' })} leading-none`}
         >
           X
         </button>

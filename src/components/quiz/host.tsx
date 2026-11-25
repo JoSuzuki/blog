@@ -1,5 +1,7 @@
+import { buttonClass } from '~/components/button/button'
 import { useState } from 'react'
 import CommonLink from '~/components/common-link/common-link'
+import { ErrorMessage } from '~/components/notice/notice'
 import { QUIZ_PATH } from '~/lib/quiz/quiz'
 import type { QuizState } from '~/lib/quiz/quiz'
 import {
@@ -13,8 +15,7 @@ import { Answered, Reveal, Scoreboard } from './results'
 import { useQuiz, useQuizAction } from './use-quiz'
 import type { LoadedQuiz } from './use-quiz'
 
-const buttonClassName =
-  'pressable min-h-12 border border-accent px-md py-sm text-text disabled:opacity-40'
+const buttonClassName = `${buttonClass()} min-h-12`
 
 /**
  * The shared screen, and the host's controls: the print as large as the
@@ -36,11 +37,7 @@ const QuizHost = ({ loaded }: { loaded: LoadedQuiz }) => {
 
   return (
     <div data-testid="quiz-host" data-phase={state?.phase ?? 'NONE'}>
-      {error && (
-        <p role="alert" className="my-sm text-accent" data-testid="quiz-error">
-          {error}
-        </p>
-      )}
+      <ErrorMessage message={error} testId="quiz-error" />
       {!running || !state || !print ? (
         <div className="mx-auto max-w-container">
           {state?.phase === 'FINISHED' && (

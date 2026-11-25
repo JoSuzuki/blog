@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { buttonClass } from '~/components/button/button'
 import { quizImagePath } from '~/lib/quiz/quiz'
 import type { QuizImageKind, QuizPrintView } from '~/lib/quiz/quiz'
 
@@ -101,8 +102,7 @@ const Zoom = ({ src, alt, print, onClose }: ZoomProps) => {
     }
   }, [onClose])
 
-  const controlClassName =
-    'min-h-12 min-w-12 border border-accent bg-background px-sm text-text disabled:opacity-40'
+  const controlClassName = `${buttonClass()} min-h-12 min-w-12`
 
   return (
     <div

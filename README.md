@@ -15,7 +15,7 @@ server, stored in an iron-session sealed cookie), which only pre-fills the comme
 ```
 content/posts/   the posts (one .mdx file per post; the file name is the URL slug)
 src/routes/      file-based routes, pages and feeds, with flat file names (`posts.$slug.tsx` is `/posts/$slug`)
-src/components/  UI components (Tailwind utilities; tokens in src/app.css)
+src/components/  UI components (Tailwind utilities; tokens in src/app.css; see DESIGN.md)
 src/content/     post collection, frontmatter schema, MDX Vite plugins
 src/lib/         actions (server functions) and what they share; see below
 server/          socket.io handlers (rooms, handshake checks)
@@ -25,6 +25,12 @@ prisma.config.ts the Prisma CLI's settings: schema path, seed command, connectio
 public/          fonts, images, favicon
 Dockerfile, fly.toml, .github/workflows/fly-deploy.yml   deployment
 ```
+
+### Design system
+
+`DESIGN.md` describes the tokens (in `src/app.css`), the shared components (`Button`, `choiceClass`,
+`Badge`, `ErrorMessage`, `StatusBanner`, ...) and the rules (square, the offset shadow only on what can
+be clicked, outlined buttons, phone first). `/design` draws all of them in the three themes.
 
 ### Loaders and actions
 
