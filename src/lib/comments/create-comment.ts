@@ -3,6 +3,7 @@ import { getRequest, setResponseStatus } from '@tanstack/react-start/server'
 import { z } from 'zod'
 import { isPostRoute } from '~/content/posts'
 import { prisma } from '~/lib/db.server'
+import { isMailConfigured, sendEmail } from '~/lib/mail/mailer.server'
 import { takeRateLimit } from '~/lib/rate-limit.server'
 import { postRoom } from '~/lib/realtime/events'
 import { getIO } from '~/lib/realtime/io.server'
@@ -196,26 +197,15 @@ interface CommentNotification {
 }
 
 /**
- * Emails the owner about the comment through SendGrid. Fire and forget: it
- * returns nothing to wait for and never throws, so a mail outage cannot fail
- * a comment. Does nothing unless SENDGRID_API_KEY, COMMENT_NOTIFY_TO and
- * COMMENT_NOTIFY_FROM are all set.
+ * Emails the owner about the comment (see `~/lib/mail/mailer.server`). Fire
+ * and forget: `sendEmail` never throws, so a mail outage cannot fail a
+ * comment. Does nothing unless RESEND_API_KEY, MAIL_FROM and
+ * COMMENT_NOTIFY_TO are all set.
  */
 function emailOwner(notification: CommentNotification): void {
-  const apiKey = process.env.SENDGRID_API_KEY?.trim()
   const to = process.env.COMMENT_NOTIFY_TO?.trim()
-  const from = process.env.COMMENT_NOTIFY_FROM?.trim()
-  if (!apiKey || !to || !from) return
-
-  void (async () => {
-    try {
-      const { default: sgMail } = await import('@sendgrid/mail')
-      sgMail.setApiKey(apiKey)
-      await sgMail.send({ to, from, ...buildEmail(notification) })
-    } catch (error) {
-      console.error('Comment notification email failed:', error)
-    }
-  })()
+  if (!to || !isMailConfigured()) return
+  void sendEmail({ to, ...buildEmail(notification) })
 }
 
 function buildEmail({ route, name, comment }: CommentNotification) {

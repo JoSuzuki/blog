@@ -17,6 +17,7 @@
     "db:migrate": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "quiz:upload": "tsx --env-file-if-exists=.env scripts/upload-quiz-prints.ts",
+    "mail:test": "tsx --env-file-if-exists=.env scripts/send-test-email.ts",
     "test": "tsx --test 'src/**/*.test.ts'"
   },
   "prettier": {
@@ -33,7 +34,6 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
-    "@sendgrid/mail": "^8.1.6",
     "@tanstack/react-router": "^1.170.46",
     "@tanstack/react-start": "^1.169.5",
     "compression": "^1.8.2",
