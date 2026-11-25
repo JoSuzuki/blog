@@ -107,8 +107,8 @@ export const createComment = createServerFn({ method: 'POST' })
 
     // 3. Rate limit: 5 comments per 10 minutes per client address, unless
     // COMMENT_RATE_LIMIT_MAX and COMMENT_RATE_LIMIT_WINDOW_SECONDS say
-    // otherwise. Counted in this process's memory, which is enough for one
-    // always-on machine.
+    // otherwise. Counted in this process's memory, which is enough while the
+    // site runs as a single machine (a restart forgets the counts).
     const limited = takeRateLimit('create-comment', getRequest(), {
       limit: positiveInt(process.env.COMMENT_RATE_LIMIT_MAX, 5),
       windowMs:

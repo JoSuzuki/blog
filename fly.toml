@@ -1,9 +1,7 @@
 # Fly.io app configuration, modelled on mazeps's. Reference:
 # https://fly.io/docs/reference/configuration/
 #
-# PLACEHOLDER: `app` is a guess. Use the name `fly apps create` gives you (and
-# keep them in step). This file was written without flyctl and has not been
-# checked with `fly config validate`; run that before the first deploy.
+# `app` is the name of the Fly app the site runs as.
 
 app = 'josuzuki-blog'
 primary_region = 'gru'

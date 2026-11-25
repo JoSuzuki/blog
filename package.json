@@ -30,12 +30,9 @@
     ],
     "tailwindStylesheet": "./src/app.css"
   },
-  "prisma": {
-    "seed": "tsx --env-file-if-exists=.env prisma/seed.ts"
-  },
   "dependencies": {
-    "@prisma/adapter-pg": "^6.19.3",
-    "@prisma/client": "^6.19.3",
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
     "@sendgrid/mail": "^8.1.6",
     "@tanstack/react-router": "^1.170.46",
     "@tanstack/react-start": "^1.169.5",
@@ -48,7 +45,7 @@
     "iron-session": "^9.1.0",
     "morgan": "^1.12.1",
     "prism-react-renderer": "^2.4.1",
-    "prisma": "^6.19.3",
+    "prisma": "^7.10.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "socket.io": "^4.8.4",

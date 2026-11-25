@@ -1,8 +1,10 @@
 import {
   acquireSocket,
+  getSocket,
   onSocketCreated,
   reconnectSocket,
   releaseSocket,
+  whenSocketReady,
 } from './connection'
 import type { ClientSocket } from './connection'
 import type {
@@ -51,12 +53,14 @@ export const subscribeToSantorini = (
   const subscription = { channel, onChange }
   subscriptions.add(subscription)
   const socket = acquireSocket()
-  if (socket.connected) joinAndSync(socket, channel)
+  if (socket?.connected) joinAndSync(socket, channel)
 
   return () => {
     subscriptions.delete(subscription)
-    if (socket.connected && !channelsInUse().has(channel)) {
-      socket.emit('santorini:leave', channel)
+    // The socket as it is now: it may have been created since subscribing.
+    const current = getSocket()
+    if (current?.connected && !channelsInUse().has(channel)) {
+      current.emit('santorini:leave', channel)
     }
     releaseSocket()
   }
@@ -119,21 +123,28 @@ const send = (
   ) => void,
 ): Promise<SantoriniAck> =>
   new Promise((resolve) => {
-    const socket = acquireSocket()
-    const attempt = (retryAsLoggedIn: boolean) => {
-      emit(socket.timeout(ANSWER_TIMEOUT_MS), (error, answer) => {
-        if (!error && !answer.ok && answer.error === 'login') {
-          if (retryAsLoggedIn) {
-            reconnectSocket()
-            attempt(false)
-            return
-          }
-        }
+    acquireSocket()
+    void whenSocketReady().then((socket) => {
+      if (!socket) {
         releaseSocket()
-        resolve(error ? NO_ANSWER : answer)
-      })
-    }
-    attempt(true)
+        resolve(NO_ANSWER)
+        return
+      }
+      const attempt = (retryAsLoggedIn: boolean) => {
+        emit(socket.timeout(ANSWER_TIMEOUT_MS), (error, answer) => {
+          if (!error && !answer.ok && answer.error === 'login') {
+            if (retryAsLoggedIn) {
+              reconnectSocket()
+              attempt(false)
+              return
+            }
+          }
+          releaseSocket()
+          resolve(error ? NO_ANSWER : answer)
+        })
+      }
+      attempt(true)
+    })
   })
 
 /** Adds a step (place, select, move, build) to the player's turn. */

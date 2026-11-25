@@ -5,10 +5,11 @@ ARG NODE_VERSION=24
 # Production dependencies only. The Prisma CLI and tsx are regular
 # dependencies because the release command (`prisma migrate deploy`) and the
 # one-time seed run inside this image. `postinstall` runs `prisma generate`,
-# so the schema has to exist in this stage.
+# so the schema and prisma.config.ts have to exist in this stage.
 FROM node:${NODE_VERSION}-alpine AS production-dependencies-env
 WORKDIR /app
 COPY package.json package-lock.json ./
+COPY prisma.config.ts ./
 COPY prisma ./prisma
 RUN npm ci --omit=dev
 
@@ -16,6 +17,7 @@ RUN npm ci --omit=dev
 FROM node:${NODE_VERSION}-alpine AS build-env
 WORKDIR /app
 COPY package.json package-lock.json ./
+COPY prisma.config.ts ./
 COPY prisma ./prisma
 RUN npm ci
 COPY . .
@@ -34,7 +36,9 @@ COPY --chown=node:node --from=production-dependencies-env /app/node_modules ./no
 # bundle has its own copy inside dist/).
 COPY --chown=node:node --from=production-dependencies-env /app/src/generated ./src/generated
 COPY --chown=node:node --from=build-env /app/dist ./dist
-# Migrations and the one-time seed with its input.
+# Migrations and the one-time seed with its input, and the Prisma CLI's
+# configuration (where the schema is, which URL to connect with).
+COPY --chown=node:node prisma.config.ts ./
 COPY --chown=node:node prisma ./prisma
 COPY --chown=node:node backup-comments.json backup-hits.json ./
 USER node

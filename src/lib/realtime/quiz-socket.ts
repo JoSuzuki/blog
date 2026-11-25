@@ -1,4 +1,9 @@
-import { acquireSocket, onSocketCreated, releaseSocket } from './connection'
+import {
+  acquireSocket,
+  onSocketCreated,
+  releaseSocket,
+  whenSocketReady,
+} from './connection'
 import type { ClientSocket } from './connection'
 import type {
   QuizAck,
@@ -46,7 +51,7 @@ export const subscribeToQuiz = (handlers: QuizSubscription): (() => void) => {
   subscriptions.add(handlers)
   const socket = acquireSocket()
   // Otherwise the 'connect' handler above does it.
-  if (socket.connected) handlers.onSync()
+  if (socket?.connected) handlers.onSync()
   return () => {
     subscriptions.delete(handlers)
     releaseSocket()
@@ -73,10 +78,17 @@ const send = (
   ) => void,
 ): Promise<QuizAck> =>
   new Promise((resolve) => {
-    const socket = acquireSocket()
-    emit(socket.timeout(ANSWER_TIMEOUT_MS), (error, answer) => {
-      releaseSocket()
-      resolve(error ? NO_ANSWER : answer)
+    acquireSocket()
+    void whenSocketReady().then((socket) => {
+      if (!socket) {
+        releaseSocket()
+        resolve(NO_ANSWER)
+        return
+      }
+      emit(socket.timeout(ANSWER_TIMEOUT_MS), (error, answer) => {
+        releaseSocket()
+        resolve(error ? NO_ANSWER : answer)
+      })
     })
   })
 
