@@ -422,17 +422,33 @@ interface FlyingCardProps {
   /** The team whose pile gets a guessed card. */
   pileTeam: Team
   urgent: boolean
+  /** Seconds to wait on the deck before being dealt (the last card leaves first). */
+  delay: number
+  /** Where a guessed card comes to rest on its pile. */
+  landing: { pos: [number, number, number]; rz: number } | null
   onExited: () => void
 }
 
 const ENTER_S = 0.6
 const EXIT_S: Record<CardOutcome, number> = {
-  correct: 0.75,
+  correct: 0.85,
   skipped: 0.55,
   taboo: 0.95,
   timeout: 0.6,
 }
 const FLAT_DOWN = Math.PI / 2
+const TURN = Math.PI * 2
+
+/**
+ * How long the next card waits on the deck after the last one is played, so
+ * it rises once the old card is out of its way.
+ */
+const DEAL_AFTER: Record<CardOutcome, number> = {
+  correct: 0.4,
+  skipped: 0.3,
+  taboo: 0.65,
+  timeout: 0.35,
+}
 
 /** The card in play: dealt from the deck, floating, then sent off. */
 const TableCard = ({
@@ -444,6 +460,8 @@ const TableCard = ({
   exit,
   pileTeam,
   urgent,
+  delay,
+  landing,
   onExited,
 }: FlyingCardProps) => {
   const group = useRef<Group>(null)
@@ -475,7 +493,7 @@ const TableCard = ({
     const g = group.current
     if (!g) return
     const now = state.clock.elapsedTime
-    born.current ??= now
+    born.current ??= now + delay
     const s = layout.cardScale
     const [hx, hy, hz] = layout.hover
     const [dx, dy, dz] = layout.deck
@@ -494,23 +512,19 @@ const TableCard = ({
       const [rx, ry, rz] = exitFrom.current.rot
       const red = frontMaterial.emissive
       if (exit === 'correct') {
-        // An arc to the team's pile, turning over on the way (so everyone
-        // sees the word), landing face down on top.
+        // An arc to the team's pile, spinning on the way and slowing down to
+        // rest face up exactly where it will lie on the pile.
         const e = ease.inOutCubic(t)
-        const [tx, ty, tz] = layout.piles[pileTeam]
+        const [tx, ty, tz] = landing?.pos ?? layout.piles[pileTeam]
         g.position.set(
           MathUtils.lerp(px, tx, e),
-          MathUtils.lerp(py, ty + 0.35, e) + Math.sin(e * Math.PI) * 1.4,
+          MathUtils.lerp(py, ty, e) + Math.sin(e * Math.PI) * 1.4,
           MathUtils.lerp(pz, tz, e),
         )
         g.rotation.set(
-          MathUtils.lerp(rx, FLAT_DOWN, e),
-          MathUtils.lerp(
-            ry,
-            Math.round(ry / Math.PI) * Math.PI + Math.PI * 2,
-            e,
-          ),
-          MathUtils.lerp(rz, (pileTeam === 0 ? 1 : -1) * 0.25, e),
+          MathUtils.lerp(rx, -FLAT_DOWN, e),
+          MathUtils.lerp(ry, Math.round(ry / TURN) * TURN + TURN, e),
+          MathUtils.lerp(rz, landing?.rz ?? 0, e),
         )
         g.scale.setScalar(MathUtils.lerp(s, layout.pileScale, e))
       } else if (exit === 'skipped') {
@@ -551,8 +565,9 @@ const TableCard = ({
       return
     }
 
-    // Dealt: up from the deck, turning upright.
-    const t = Math.min(1, (now - born.current) / ENTER_S)
+    // Dealt: up from the deck, turning upright (hidden while it waits).
+    g.visible = now >= born.current
+    const t = MathUtils.clamp((now - born.current) / ENTER_S, 0, 1)
     const e = ease.outCubic(t)
     const pointer = state.pointer
     const bob = Math.sin(now * 1.6) * 0.05
@@ -595,6 +610,63 @@ const jitter = (i: number, salt: number) => {
   return x - Math.floor(x) - 0.5
 }
 
+const LAYER = CARD_D + 0.004
+const PILE_MESSINESS = 0.3
+const pileSalt = (team: Team) => team * 31 + 3
+
+/** Where the i-th card from the bottom of a pile lies, in the pile's own space. */
+const pileSlot = (i: number, salt: number, messiness: number) => ({
+  pos: [
+    jitter(i, salt) * 0.12,
+    CARD_D / 2 + i * LAYER,
+    jitter(i, salt + 1) * 0.12,
+  ] as [number, number, number],
+  rz: jitter(i, salt + 2) * messiness,
+})
+
+/** The same, on the table (a team's pile is scaled down and placed). */
+const pileSlotOnTable = (layout: Layout, team: Team, i: number) => {
+  const { pos, rz } = pileSlot(i, pileSalt(team), PILE_MESSINESS)
+  const [ox, oy, oz] = layout.piles[team]
+  const k = layout.pileScale
+  return {
+    pos: [ox + pos[0] * k, oy + pos[1] * k, oz + pos[2] * k] as [
+      number,
+      number,
+      number,
+    ],
+    rz,
+  }
+}
+
+/** A guessed card at rest on its team's pile, face up. */
+const PileCard = ({
+  geometries,
+  front,
+  back,
+  layout,
+  team,
+  layer,
+}: {
+  geometries: Geometries
+  front: Texture
+  back: Texture
+  layout: Layout
+  team: Team
+  layer: number
+}) => {
+  const { pos, rz } = pileSlotOnTable(layout, team, layer)
+  return (
+    <group
+      position={pos}
+      rotation={[-FLAT_DOWN, 0, rz]}
+      scale={layout.pileScale}
+    >
+      <CardMesh geometries={geometries} front={front} back={back} />
+    </group>
+  )
+}
+
 interface StackProps {
   geometries: Geometries
   back: Texture
@@ -604,6 +676,8 @@ interface StackProps {
   salt: number
   /** Spread of the cards' rotation, in radians. */
   messiness: number
+  /** Cast the pile's shadow even with no cards (real cards lie on top). */
+  shadow?: boolean
 }
 
 const MAX_STACK = 40
@@ -617,6 +691,7 @@ const Stack = ({
   scale,
   salt,
   messiness,
+  shadow = false,
 }: StackProps) => {
   const shown = Math.min(count, MAX_STACK)
   return (
@@ -625,27 +700,22 @@ const Stack = ({
         position-y={0.002}
         rotation-x={-Math.PI / 2}
         scale={[CARD_W * 1.5, CARD_H * 1.3, 1]}
-        opacity={count > 0 ? 0.35 : 0}
+        opacity={count > 0 || shadow ? 0.35 : 0}
         color={SHADOW.light}
       />
-      {Array.from({ length: shown }, (_, i) => (
-        <group
-          key={i}
-          position={[
-            jitter(i, salt) * 0.12,
-            CARD_D / 2 + i * (CARD_D + 0.004),
-            jitter(i, salt + 1) * 0.12,
-          ]}
-          rotation={[FLAT_DOWN, 0, jitter(i, salt + 2) * messiness]}
-        >
-          {i === shown - 1 ? (
-            <CardMesh geometries={geometries} front={back} back={back} />
-          ) : (
-            // Only the top card's face can be seen.
-            <mesh geometry={geometries.body} material={paperEdge} />
-          )}
-        </group>
-      ))}
+      {Array.from({ length: shown }, (_, i) => {
+        const slot = pileSlot(i, salt, messiness)
+        return (
+          <group key={i} position={slot.pos} rotation={[FLAT_DOWN, 0, slot.rz]}>
+            {i === shown - 1 ? (
+              <CardMesh geometries={geometries} front={back} back={back} />
+            ) : (
+              // Only the top card's face can be seen.
+              <mesh geometry={geometries.body} material={paperEdge} />
+            )}
+          </group>
+        )
+      })}
     </group>
   )
 }
@@ -835,7 +905,18 @@ interface LiveCard {
   face: CardFace | null
   team: Team
   exit: CardOutcome | null
+  delay: number
+  /** A guessed card's place among its team's real cards (0 is the first). */
+  slot: number | null
 }
+
+interface LandedCard {
+  key: string
+  face: CardFace | null
+}
+
+/** The guessed cards drawn as themselves on a pile; older ones join the plain stack. */
+const MAX_REAL_PILE = 14
 
 const Table = (
   props: TabooSceneProps & {
@@ -858,8 +939,15 @@ const Table = (
   const textures = useTextures(props.fontsReady, theme, palette)
   const layout = useLayout()
 
-  // The cards on (and leaving) the table.
+  // The cards on (and leaving) the table, and the guessed cards that came to
+  // rest on a pile (this session's: a reload starts the piles as plain stacks).
   const [cards, setCards] = useState<LiveCard[]>([])
+  const [landed, setLanded] = useState<Record<Team, LandedCard[]>>({
+    0: [],
+    1: [],
+  })
+  const landedRef = useRef(landed)
+  landedRef.current = landed
   const outcomeByKey = useMemo(
     () => new Map(outcomes.map((o) => [o.key, o])),
     [outcomes],
@@ -867,16 +955,24 @@ const Table = (
   useEffect(() => {
     setCards((current) => {
       let changed = false
+      let delay = 0
       const next = current.map((card) => {
         if (card.exit || card.key === tableCard?.key) return card
         changed = true
         const played = outcomeByKey.get(card.key)
-        return {
-          ...card,
-          face: played?.card ?? card.face,
-          exit: played?.outcome ?? 'timeout',
-        }
+        const exit = played?.outcome ?? 'timeout'
+        delay = Math.max(delay, DEAL_AFTER[exit])
+        return { ...card, face: played?.card ?? card.face, exit, slot: null }
       })
+      // Guessed cards take the next places on their pile, in order.
+      for (const card of next) {
+        if (card.exit !== 'correct' || card.slot !== null) continue
+        const taken = next.filter(
+          (c) =>
+            c.team === card.team && c.slot !== null && c.exit === 'correct',
+        ).length
+        card.slot = landedRef.current[card.team].length + taken
+      }
       if (tableCard && !current.some((c) => c.key === tableCard.key)) {
         changed = true
         next.push({
@@ -884,6 +980,8 @@ const Table = (
           face: tableCard.card,
           team: speakingTeam,
           exit: null,
+          delay,
+          slot: null,
         })
       }
       return changed ? next : current
@@ -901,11 +999,42 @@ const Table = (
     )
   }, [tableCard])
 
-  // Guessed cards in flight are not on their pile yet.
-  const inFlight: [number, number] = [0, 0]
-  for (const card of cards)
-    if (card.exit === 'correct') inFlight[card.team] += 1
-  const pileCount = (team: Team) => Math.max(0, scores[team] - inFlight[team])
+  // A new game starts with empty piles.
+  const fresh = scores[0] === 0 && scores[1] === 0
+  useEffect(() => {
+    if (fresh)
+      setLanded((current) =>
+        current[0].length || current[1].length ? { 0: [], 1: [] } : current,
+      )
+  }, [fresh])
+
+  const handleExited = (card: LiveCard) => {
+    setCards((current) => current.filter((c) => c.key !== card.key))
+    if (card.exit === 'correct') {
+      setLanded((current) => ({
+        ...current,
+        [card.team]: [
+          ...current[card.team],
+          { key: card.key, face: card.face },
+        ],
+      }))
+    }
+  }
+
+  // Each pile: a plain stack for the points this browser did not see land,
+  // then the real cards on top, then the places of the cards in flight.
+  const piles = ([0, 1] as const).map((team) => {
+    const real = landed[team].slice(-MAX_REAL_PILE)
+    const flying = cards.filter((c) => c.team === team && c.exit === 'correct')
+    const base = Math.max(0, scores[team] - real.length - flying.length)
+    return { real, base, landedCount: landed[team].length }
+  })
+  const landingFor = (card: LiveCard) => {
+    if (card.exit !== 'correct' || card.slot === null) return null
+    const pile = piles[card.team]
+    const layer = pile.base + pile.real.length + (card.slot - pile.landedCount)
+    return pileSlotOnTable(layout, card.team, layer)
+  }
 
   const urgent = timeLeft !== null && timeLeft < 0.12
 
@@ -935,16 +1064,33 @@ const Table = (
             messiness={0.04}
           />
           {([0, 1] as const).map((team) => (
-            <Stack
-              key={team}
-              geometries={geometries}
-              back={textures.back(team)}
-              count={pileCount(team)}
-              position={layout.piles[team]}
-              scale={layout.pileScale}
-              salt={team * 31 + 3}
-              messiness={0.3}
-            />
+            <group key={team}>
+              <Stack
+                geometries={geometries}
+                back={textures.back(team)}
+                count={piles[team].base}
+                position={layout.piles[team]}
+                scale={layout.pileScale}
+                salt={pileSalt(team)}
+                messiness={PILE_MESSINESS}
+                shadow={piles[team].real.length > 0}
+              />
+              {piles[team].real.map((card, i) => (
+                <PileCard
+                  key={card.key}
+                  geometries={geometries}
+                  front={
+                    card.face
+                      ? textures.front(card.face, team)
+                      : textures.back(team)
+                  }
+                  back={textures.back(team)}
+                  layout={layout}
+                  team={team}
+                  layer={piles[team].base + i}
+                />
+              ))}
+            </group>
           ))}
           {mode === 'ready' && (
             <WaitingCard
@@ -964,9 +1110,9 @@ const Table = (
               exit={card.exit}
               pileTeam={card.team}
               urgent={urgent && !card.exit}
-              onExited={() =>
-                setCards((current) => current.filter((c) => c.key !== card.key))
-              }
+              delay={card.delay}
+              landing={landingFor(card)}
+              onExited={() => handleExited(card)}
             />
           ))}
           {mode === 'playing' && timeLeft !== null && (

@@ -2,12 +2,12 @@ import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import Article from '~/components/article/article'
 import {
   ActionError,
-  BigButton,
   LoginRequired,
   Unavailable,
 } from '~/components/taboo/ui'
 import { useLiveTaboo, useRoomAction } from '~/components/taboo/use-taboo'
 import { MAX_PLAYERS } from '~/lib/taboo/game'
+import Button from '~/components/button/button'
 import Footer from '~/components/footer/footer'
 import Navbar from '~/components/navbar/navbar'
 import { createRoom } from '~/lib/taboo/create-room'
@@ -82,14 +82,14 @@ function Rooms({ rooms }: RoomsProps) {
 
   return (
     <div data-testid="taboo-rooms">
-      <BigButton
-        tone="good"
+      <Button
+        type="button"
         onClick={() => void handleCreate()}
         disabled={pending}
         testId="taboo-create"
       >
         Criar nova sala
-      </BigButton>
+      </Button>
       <ActionError message={error} />
       <h2 className="mt-lg mb-sm">Salas abertas ({rooms.length})</h2>
       {rooms.length === 0 ? (
