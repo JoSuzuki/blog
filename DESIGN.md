@@ -39,7 +39,7 @@ element, so a part of a page can show another theme (give it `bg-background text
 | `text`              | Body text                                       | black     | white     | `#fff7ee` |
 | `accent`            | Controls, borders, UI links, errors, active tab | `#432a79` | `#7670db` | `#ec0f2d` |
 | `accent-background` | Tinted surfaces: tags, banners, the game table  | `#ebe2ff` | `#150044` | `#300300` |
-| `secondary`         | Links in prose (`CommonLink`), list marks       | `#b34270` | `#c25b84` | `#ff3164` |
+| `secondary`         | Links in prose (`CommonLink`), list marks       | `#b0500a` | `#ffab5e` | `#ff3164` |
 | `dimmed`            | Quiet details (the dot between comment fields)  | `#bbd1e2` | `#522ba9` | `#ce202e` |
 | `inline-code`       | Inline code in posts                            | `#cae8ff` | `#4842b3` | `#a11010` |
 

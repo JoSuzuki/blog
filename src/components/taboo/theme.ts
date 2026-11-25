@@ -25,7 +25,7 @@ const FALLBACK: Palette = {
   },
   success: '#1fa971',
   accent: '#7670db',
-  secondary: '#c25b84',
+  secondary: '#ffab5e',
   background: '#170440',
   text: '#ffffff',
   purple: '#432a79',

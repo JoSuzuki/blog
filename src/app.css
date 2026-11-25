@@ -238,7 +238,7 @@
     --colors-team-blue-ink: var(--colors-team-blue);
     --colors-team-red-ink: var(--colors-team-red);
     --colors-success-ink: var(--colors-success);
-    --colors-secondary: #c25b84;
+    --colors-secondary: #ffab5e;
     --colors-accent: #7670db;
     --colors-accent-background: #150044;
     --colors-dimmed: #522ba9;
@@ -251,7 +251,7 @@
     --colors-team-blue-ink: var(--colors-team-blue-dark);
     --colors-team-red-ink: var(--colors-team-red-dark);
     --colors-success-ink: var(--colors-success-dark);
-    --colors-secondary: #b34270;
+    --colors-secondary: #b0500a;
     --colors-accent: #432a79;
     --colors-accent-background: #ebe2ff;
     --colors-dimmed: #bbd1e2;
