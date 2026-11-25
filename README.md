@@ -306,7 +306,8 @@ secrets or `fly.toml` `[env]` in production.
 | `SITE_URL`                                                     | Defaults to `https://josuzuki.me`. Must equal the public origin: it is used in the feeds and in the socket.io origin check (other origins are refused, so no live comments).                              |
 | `IRON_SESSION_SECRET`                                          | 32 characters or more. Without it (or if shorter) everyone is logged out, sign-in does nothing useful, and a warning is logged at startup. Changing it logs everyone out.                                 |
 | `GOOGLE_CLIENT_ID`                                             | Defaults to the site's existing client id. Set only to use another one.                                                                                                                                   |
-| `SENDGRID_API_KEY`, `COMMENT_NOTIFY_TO`, `COMMENT_NOTIFY_FROM` | All three are needed to email a notification for each comment; otherwise no email is sent.                                                                                                                |
+| `RESEND_API_KEY`, `MAIL_FROM`                                  | No email is sent (`src/lib/mail/mailer.server.ts`). `MAIL_FROM` is the sender, e.g. `JoSuzuki <blog@josuzuki.me>`, on a domain verified in Resend. Setup: [docs/resend.md](docs/resend.md).                |
+| `COMMENT_NOTIFY_TO`                                            | Where each comment's notification email goes. Without it (or without the two above) no comment email is sent.                                                                                             |
 | `COMMENT_RATE_LIMIT_MAX`, `COMMENT_RATE_LIMIT_WINDOW_SECONDS`  | 5 comments per client address per 600 seconds. The limiter is in memory, so it assumes one machine.                                                                                                       |
 | `PORT`                                                         | 3000.                                                                                                                                                                                                     |
 | `NODE_ENV`                                                     | `production` selects the built server (HTTPS redirect, CSP); `npm run dev`/`npm start` set it.                                                                                                            |
@@ -344,8 +345,8 @@ identical in `fly.toml`.
    ```sh
    fly secrets set -a <app> --stage \
      DATABASE_URL='postgres://...' IRON_SESSION_SECRET='<32 or more random characters>'
-   # optional: DIRECT_URL (with a pooler), SENDGRID_API_KEY, COMMENT_NOTIFY_TO,
-   # COMMENT_NOTIFY_FROM, GOOGLE_CLIENT_ID
+   # optional: DIRECT_URL (with a pooler), RESEND_API_KEY, MAIL_FROM,
+   # COMMENT_NOTIFY_TO, GOOGLE_CLIENT_ID
    ```
 4. First deploy, one machine: `fly deploy -a <app> --ha=false`. Watch the release command; then
    `fly status -a <app>` and `fly scale count 1 -a <app>` if two machines appeared.
