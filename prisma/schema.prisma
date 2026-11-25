@@ -31,6 +31,8 @@ model User {
   santoriniRoomPlayers  SantoriniRoomPlayer[]
   hostedQuizGames       QuizGame[]
   quizGuesses           QuizGuess[]
+  createdTabooRooms     TabooRoom[]
+  tabooRoomPlayers      TabooRoomPlayer[]
 
   @@index([email])
 }
@@ -175,4 +177,48 @@ model QuizGuess {
   @@unique([gameId, printId, slot, userId])
   @@index([userId])
   @@index([printId])
+}
+
+// A table of Tabu (the team word game under /games/tabu). A room is WAITING
+// while players gather and pick teams, PLAYING once someone starts, FINISHED
+// after the last turn (and WAITING again on a rematch). `settings` holds the
+// options chosen in the lobby (TabooSettings in src/lib/taboo/game.ts);
+// `gameState` the whole game as JSON (TabooGameState), null until it starts.
+// It includes the shuffled deck, so it never leaves the server as it is: each
+// player gets a view made for them. `updatedAt` doubles as the version every
+// write checks, so two requests cannot both write.
+model TabooRoom {
+  id        Int               @id @default(autoincrement())
+  roomCode  String            @unique
+  creator   User              @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  creatorId Int
+  status    TabooRoomStatus   @default(WAITING)
+  settings  Json
+  gameState Json?
+  players   TabooRoomPlayer[]
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  // The rooms list shows the WAITING and PLAYING ones.
+  @@index([status])
+}
+
+enum TabooRoomStatus {
+  WAITING
+  PLAYING
+  FINISHED
+}
+
+// A seat in a Tabu room. Its id is the player id inside the game state.
+// `team` is 0 (azul) or 1 (vermelho).
+model TabooRoomPlayer {
+  id     Int       @id @default(autoincrement())
+  user   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+  room   TabooRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId Int
+  team   Int       @default(0)
+
+  @@unique([roomId, userId])
+  @@index([userId])
 }

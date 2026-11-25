@@ -49,6 +49,15 @@
   --color-text: var(--colors-text);
   --color-background: var(--colors-background);
   --color-inline-code: var(--colors-inline-code);
+  --color-team-blue: var(--colors-team-blue);
+  --color-team-blue-dark: var(--colors-team-blue-dark);
+  --color-team-red: var(--colors-team-red);
+  --color-team-red-dark: var(--colors-team-red-dark);
+  --color-success: var(--colors-success);
+  --color-success-dark: var(--colors-success-dark);
+  --color-team-blue-ink: var(--colors-team-blue-ink);
+  --color-team-red-ink: var(--colors-team-red-ink);
+  --color-success-ink: var(--colors-success-ink);
 
   --text-*: initial;
   --text-xs: var(--font-sizes-xs);
@@ -138,14 +147,18 @@
   font-variation-settings: var(--font-weights-bold);
 }
 
-/* The offset accent shadow that lifts on hover and flattens when pressed. */
+/*
+ * The offset shadow that lifts on hover and flattens when pressed. It is the
+ * accent color unless an element sets `--pressable-color` (a colored game
+ * button uses its own color).
+ */
 @utility pressable {
   position: relative;
-  box-shadow: 1px 1px 0 0 var(--colors-accent);
+  box-shadow: 1px 1px 0 0 var(--pressable-color, var(--colors-accent));
   &:hover {
     top: -1px;
     left: -1px;
-    box-shadow: 2px 2px 0 0 var(--colors-accent);
+    box-shadow: 2px 2px 0 0 var(--pressable-color, var(--colors-accent));
   }
   &:active {
     top: 1px;
@@ -161,6 +174,26 @@
     --colors-selection: #3297fd;
     --colors-purple: #432a79;
     --colors-purple-background: #ebe2ff;
+
+    /*
+     * Game colors, the same in every theme: the two teams (Tabu's Azul and
+     * Vermelho) and success (a right answer, a "go" button). Each has a dark
+     * shade for gradients, pressed states and text on light backgrounds.
+     */
+    --colors-team-blue: #3d6bff;
+    --colors-team-blue-dark: #1f3fd1;
+    --colors-team-red: #ff5257;
+    --colors-team-red-dark: #d3263a;
+    --colors-success: #1fa971;
+    --colors-success-dark: #0e6b45;
+
+    /*
+     * The game colors as text and outlines (an outlined game button): the
+     * color itself on dark themes, its dark shade on light ones for contrast.
+     */
+    --colors-team-blue-ink: var(--colors-team-blue);
+    --colors-team-red-ink: var(--colors-team-red);
+    --colors-success-ink: var(--colors-success);
 
     --font-sizes-xs: 1rem;
     --font-sizes-sm: 1.125rem;
@@ -200,6 +233,9 @@
   }
 
   :root[data-theme='light'] {
+    --colors-team-blue-ink: var(--colors-team-blue-dark);
+    --colors-team-red-ink: var(--colors-team-red-dark);
+    --colors-success-ink: var(--colors-success-dark);
     --colors-secondary: #b34270;
     --colors-accent: #432a79;
     --colors-accent-background: #ebe2ff;
