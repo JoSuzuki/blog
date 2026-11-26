@@ -1,3 +1,5 @@
+// Before anything that builds a Zod schema: see the module.
+import './lib/zod-config'
 import { createRouter } from '@tanstack/react-router'
 import {
   createIsomorphicFn,
