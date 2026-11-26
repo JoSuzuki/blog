@@ -9,7 +9,8 @@ small custom Express 5 server (`server.js`) that also hosts socket.io. Posts are
 `content/posts`, compiled at build time; their frontmatter is validated with zod by a Vite plugin.
 Comments and page-view counters live in Postgres through Prisma; a new comment is broadcast over
 socket.io to everyone reading that post. Readers can sign in with Google (an ID token verified on the
-server, stored in an iron-session sealed cookie), which only pre-fills the comment name. The feeds
+server) or with an email and password (see Login below), either way stored in an iron-session sealed
+cookie, which pre-fills the comment name and gives a seat in the games. The feeds
 (`/feed.xml`, `/atom.xml`, `/feed.json`) are server routes. Production runs as one container on Fly.io.
 
 ```
@@ -69,6 +70,7 @@ src/lib/comments/get-comments.ts
 src/lib/hits/register-hit.ts
 src/lib/santorini/create-room.ts     and five more, see Games below
 src/lib/auth/login.ts                validate, rate limit, verify the Google token, record the user, set the session
+src/lib/auth/sign-up.ts              and login-with-password, verify-email, request-password-reset, reset-password
 src/lib/auth/get-session.ts
 src/lib/auth/logout.ts
 ```
@@ -87,6 +89,38 @@ replaces the handler with a request and removes what only the handler used. For 
 example, no `const limiter = createRateLimiter(...)` at the top of an action; `takeRateLimit` keeps
 the limiters instead). TanStack Start's import protection checks this: the build fails, and `npm run
 dev` warns, if a `.server` module would reach the browser.
+
+### Login
+
+Two ways in, both from the Login dialog, both ending in the same session cookie (the reader's
+email, name and, for Google, their Google id; the email names the `User` row):
+
+- **Google**: as before (`login.ts`).
+- **Email and password**, modeled on mazeps. `sign-up` creates the account and emails a link to
+  `/confirmar-email`; the password works only once that link is opened, so nobody can register an
+  address they do not own (and a Google sign-in as that address later drops an unconfirmed password).
+  `request-password-reset` emails a link to `/redefinir-senha` (1 hour), which sets a new password
+  and logs in; it is also how a reader who always used Google gets a password. The links' pages use
+  them from a button, not on load, so mail scanners do not spend them.
+- Passwords are hashed with Node's built-in scrypt (`auth/password.server.ts`, no native
+  dependency). Link tokens are single use and stored as SHA-256 (`AuthToken`). Every action is rate
+  limited per client address. Emails go through `src/lib/mail/mailer.server.ts` (Resend); in `npm
+  run dev` without Resend they are printed to the console, links included.
+
+### Profiles and accounts
+
+- **Nickname.** `/perfil` (the Perfil button in the top bar) lets a reader change their name and
+  nickname. The nickname is what the site calls them everywhere: game seats, room lists, game
+  history, the quiz, the greeting and the comment form's default name (`displayNameOf` in
+  `src/lib/users/display-name.ts`; without a nickname, the first word of the name). Nicknames need
+  not be unique. On phones Sair lives on `/perfil`, since only one
+  button fits beside the site name.
+- **Deleting an account** is on `/users` (admins; not your own row nor another admin's). It also
+  deletes the Santorini and Tabu games the account created or played, finished ones included, since
+  a game's state names both seats; it is refused while the account is in a game still going.
+  Comments stay. The session ends on the reader's next request: a missing row is only recreated
+  from a Google session in its first 10 minutes (login records the user as a best effort), so the
+  cookie of a deleted account stops counting (`findOrCreateUser`).
 
 ### Games: Santorini
 
@@ -312,6 +346,7 @@ secrets or `fly.toml` `[env]` in production.
 | `SITE_URL`                                                     | Defaults to `https://josuzuki.me`. Must equal the public origin: it is used in the feeds and in the socket.io origin check (other origins are refused, so no live comments).                              |
 | `IRON_SESSION_SECRET`                                          | 32 characters or more. Without it (or if shorter) everyone is logged out, sign-in does nothing useful, and a warning is logged at startup. Changing it logs everyone out.                                 |
 | `GOOGLE_CLIENT_ID`                                             | Defaults to the site's existing client id. Set only to use another one.                                                                                                                                   |
+| `RESEND_API_KEY`, `MAIL_FROM`                                  | Needed for email and password accounts: without them sign-up and "Esqueci minha senha" answer that it is unavailable (in `npm run dev` the emails are printed instead). Google login is unaffected.       |
 | `SENDGRID_API_KEY`, `COMMENT_NOTIFY_TO`, `COMMENT_NOTIFY_FROM` | All three are needed to email a notification for each comment; otherwise no email is sent.                                                                                                                |
 | `COMMENT_RATE_LIMIT_MAX`, `COMMENT_RATE_LIMIT_WINDOW_SECONDS`  | 5 comments per client address per 600 seconds. The limiter is in memory, so it assumes one machine.                                                                                                       |
 | `PORT`                                                         | 3000.                                                                                                                                                                                                     |

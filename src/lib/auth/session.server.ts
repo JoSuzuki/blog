@@ -9,8 +9,8 @@ import type { UnsealErrorReason } from 'iron-session'
 import { z } from 'zod'
 import type { SessionUser } from './session-user'
 
-// The session: a sealed cookie holding the signed-in reader's Google identity
-// (no database involved). Everything about it is in this module, in three
+// The session: a sealed cookie holding the signed-in reader's identity (no
+// database involved). Everything about it is in this module, in three
 // parts:
 //
 // 1. The cookie: its name, lifetime, attributes and the secret that seals it.
@@ -106,7 +106,7 @@ export const reportSessionConfig = () => {
   const result = getSessionPassword()
   if (!result.ok) {
     console.warn(
-      `[session] ${describePasswordProblem(result.problem)}: Google login is ` +
+      `[session] ${describePasswordProblem(result.problem)}: login is ` +
         'disabled and every visitor is treated as logged out. Set it to a ' +
         `random string of at least ${MIN_PASSWORD_LENGTH} characters (the same ` +
         'value as the old site, so existing sessions survive).',
@@ -120,23 +120,26 @@ export const reportSessionConfig = () => {
 
 // What a valid seal may contain. `firstName` is optional because Google omits
 // `given_name` for some accounts and the legacy site stored whatever it got
-// (JSON drops undefined), so a legacy cookie can lack it.
+// (JSON drops undefined), so a legacy cookie can lack it. `googleId` is
+// missing from the session of a password login.
 const sessionPayloadSchema = z.object({
   name: z.string().min(1),
   email: z.string().min(1),
-  googleId: z.string().min(1),
+  googleId: z.string().min(1).optional(),
   firstName: z.string().optional(),
+  issuedAt: z.number().int().positive().optional(),
 })
 
 const toSessionUser = (payload: unknown): SessionUser | null => {
   const parsed = sessionPayloadSchema.safeParse(payload)
   if (!parsed.success) return null
-  const { name, email, googleId, firstName } = parsed.data
+  const { name, email, googleId, firstName, issuedAt } = parsed.data
   return {
     name,
     email,
-    googleId,
+    ...(googleId ? { googleId } : {}),
     firstName: firstName || name.split(/\s+/)[0] || name,
+    ...(issuedAt ? { issuedAt } : {}),
   }
 }
 
@@ -164,8 +167,9 @@ export const sealSession = async (user: SessionUser): Promise<string> => {
   const result = getSessionPassword()
   if (!result.ok) throw new Error(describePasswordProblem(result.problem))
   const { name, email, firstName, googleId } = user
+  const issuedAt = user.issuedAt ?? Date.now()
   return sealData(
-    { name, email, firstName, googleId },
+    { name, email, firstName, googleId, issuedAt },
     { password: result.password, ttl: SESSION_TTL_SECONDS },
   )
 }

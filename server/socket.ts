@@ -112,7 +112,13 @@ const identify = async (socket: IOSocket): Promise<number | null> => {
   if (socket.data.userId != null || !socket.data.user) {
     return socket.data.userId ?? null
   }
-  const { id } = await findOrCreateUser(socket.data.user)
+  const user = await findOrCreateUser(socket.data.user)
+  // A deleted account: the socket is a visitor's from now on.
+  if (!user) {
+    socket.data.user = null
+    return null
+  }
+  const { id } = user
   socket.data.userId = id
   void socket.join(userRoom(id))
   return id

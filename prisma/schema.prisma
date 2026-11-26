@@ -22,8 +22,14 @@ datasource db {
 model User {
   id                    Int                   @id @default(autoincrement())
   name                  String
+  /// What the site calls the reader (games, greeting, comments); null falls back to the first word of `name`. Chosen on /perfil; several readers may share one.
+  nickname              String?
   email                 String                @unique
   googleId              String?
+  /// scrypt hash of the reader's password (see src/lib/auth/password.server.ts); null for Google-only accounts.
+  passwordHash          String?
+  /// When the reader proved they own `email`: a confirmation link, a password reset or a Google sign-in. A password only logs in once this is set.
+  emailVerifiedAt       DateTime?
   role                  Role                  @default(USER)
   createdAt             DateTime              @default(now())
   updatedAt             DateTime              @updatedAt
@@ -33,8 +39,29 @@ model User {
   quizGuesses           QuizGuess[]
   createdTabooRooms     TabooRoom[]
   tabooRoomPlayers      TabooRoomPlayer[]
+  authTokens            AuthToken[]
 
   @@index([email])
+}
+
+// A single-use link sent by email: confirming the address of a new password
+// account, or resetting a password. Only the SHA-256 of the token is stored,
+// so the table alone cannot be used to log in.
+model AuthToken {
+  id        Int              @id @default(autoincrement())
+  tokenHash String           @unique
+  purpose   AuthTokenPurpose
+  userId    Int
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime         @default(now())
+
+  @@index([userId])
+}
+
+enum AuthTokenPurpose {
+  VERIFY_EMAIL
+  RESET_PASSWORD
 }
 
 enum Role {

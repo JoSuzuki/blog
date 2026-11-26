@@ -23,7 +23,7 @@ const CommentForm = ({ route, onCreated }: CommentFormProps) => {
   const sending = useRef(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { user } = useSession()
+  const { displayName } = useSession()
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault()
@@ -57,12 +57,12 @@ const CommentForm = ({ route, onCreated }: CommentFormProps) => {
 
   return (
     <form ref={formRef} onSubmit={handleSubmit}>
-      {/* As on the legacy site, the name starts as the logged-in reader's. */}
+      {/* The name starts as what the site calls the logged-in reader. */}
       <Input
         name="name"
         label="Nome"
         maxLength={NAME_MAX_LENGTH}
-        defaultValue={user?.name}
+        defaultValue={displayName ?? undefined}
       />
       <TextArea
         name="comment"

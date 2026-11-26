@@ -97,22 +97,38 @@ const USER_UPSERT_TIMEOUT_MS = 5000
 
 /**
  * Step 5. Records the user as the legacy /api/login did: create a row on
- * first login (matched by email), leave an existing one alone.
+ * first login (matched by email), leave an existing one alone, except that
+ * an unconfirmed email sign-up for the same address is taken over.
  *
  * Best effort. The session does not depend on the row (nothing reads it yet),
  * so if the database is down or slow, login still succeeds with just the
  * cookie and the failure is logged; the row is created on a later login.
  */
 async function recordUser(identity: GoogleIdentity) {
-  const upsert = prisma.user.upsert({
-    where: { email: identity.email },
-    update: {},
-    create: {
-      email: identity.email,
-      name: identity.name,
-      googleId: identity.googleId,
-    },
-  })
+  const upsert = (async () => {
+    await prisma.user.upsert({
+      where: { email: identity.email },
+      update: {},
+      create: {
+        email: identity.email,
+        name: identity.name,
+        googleId: identity.googleId,
+        emailVerifiedAt: new Date(),
+      },
+    })
+    // Google vouches for the address. A row nobody had confirmed yet is an
+    // unfinished email sign-up: its password was chosen by someone who never
+    // proved the address is theirs, so it is dropped (the owner can set one
+    // with "Esqueci minha senha"), and the row is now confirmed.
+    await prisma.user.updateMany({
+      where: { email: identity.email, emailVerifiedAt: null },
+      data: {
+        emailVerifiedAt: new Date(),
+        passwordHash: null,
+        googleId: identity.googleId,
+      },
+    })
+  })()
   let timer: ReturnType<typeof setTimeout> | undefined
   const timeout = new Promise<never>((_, reject) => {
     timer = setTimeout(

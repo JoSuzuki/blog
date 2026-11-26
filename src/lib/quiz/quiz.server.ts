@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { displayNameOf } from '~/lib/users/display-name'
 import type { CurrentUser } from '~/lib/auth/current-user.server'
 import { isAdmin } from '~/lib/auth/roles'
 import { prisma } from '~/lib/db.server'
@@ -45,9 +46,6 @@ export const hostInputSchema = z.object({
   gameId: z.number().int().positive(),
   position: z.number().int().min(0),
 })
-
-/** What other players see of a reader: the first name only. */
-const toDisplayName = (name: string) => name.trim().split(/\s+/)[0] || name
 
 const slotsSchema = z.array(
   z.object({ label: z.string().regex(QUIZ_SLOT_PATTERN), person: z.string() }),
@@ -101,7 +99,7 @@ export const loadQuizState = async (): Promise<QuizState | null> => {
     }),
     prisma.user.findMany({
       where: { quizGuesses: { some: { gameId: game.id } } },
-      select: { id: true, name: true },
+      select: { id: true, name: true, nickname: true },
     }),
   ])
 
@@ -119,7 +117,7 @@ export const loadQuizState = async (): Promise<QuizState | null> => {
   const players: QuizPlayerView[] = participants
     .map((user) => ({
       userId: user.id,
-      name: toDisplayName(user.name),
+      name: displayNameOf(user),
       score: scoreByUser.get(user.id) ?? 0,
       answered:
         labels.length > 0 &&

@@ -6,6 +6,7 @@ import { requireAdmin } from './admin.server'
 export interface UserSummary {
   id: number
   name: string
+  nickname: string | null
   email: string
   role: Role
   /** ISO 8601. */
@@ -37,6 +38,7 @@ export const getUsers = createServerFn({ method: 'GET' }).handler(
         select: {
           id: true,
           name: true,
+          nickname: true,
           email: true,
           role: true,
           createdAt: true,
